@@ -1,0 +1,57 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: howmuchlove-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: howmuchlove_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./var/database:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - howmuchlove-net
+
+  # Backend API (Node.js/Express)
+  backend:
+    build:
+      context: ./backend
+    container_name: howmuchlove-backend
+    restart: unless-stopped
+    volumes:
+      - ./backend/src:/app/src
+      - ./var/uploads:/app/public/uploads
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/howmuchlove_db"
+      NODE_ENV: development
+    networks:
+      - howmuchlove-net
+
+  # Nginx Web Server / Reverse Proxy
+  nginx:
+    image: nginx:stable-alpine
+    container_name: howmuchlove-nginx
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./var/uploads:/var/www/html/uploads
+    depends_on:
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - howmuchlove-net
+
+networks:
+  howmuchlove-net:
+    driver: bridge
