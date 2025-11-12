@@ -442,29 +442,28 @@ app.post('/api/payments/create-preference', protect, async (req: Request, res: R
 
   try {
     const preference = new Preference(mpClient);
-    const response = await preference.create({
-      body: {
-        items: [
-          {
-            title: `Plano ${planName} - HowMuchLove`,
-            unit_price: price,
-            quantity: 1,
-            currency_id: 'BRL',
-          },
-        ],
-        payer: {
-          email: userEmail,
+    const preferenceData = {
+      items: [
+        {
+          title: `Plano ${planName} - HowMuchLove`,
+          unit_price: price,
+          quantity: 1,
+          currency_id: 'BRL',
         },
-        back_urls: {
-          success: `${BASE_URL}/payment-success`,
-          failure: `${BASE_URL}/payment-failure`,
-          pending: `${BASE_URL}/payment-pending`,
-        },
-        auto_return: 'approved',
-        notification_url: `${BASE_URL}/api/payments/webhook`,
-        external_reference: `${userEmail}-${planName}-${Date.now()}`,
+      ],
+      payer: {
+        email: userEmail,
       },
-    });
+      back_urls: {
+        success: `${BASE_URL}/payment-success`,
+        failure: `${BASE_URL}/payment-failure`,
+        pending: `${BASE_URL}/payment-pending`,
+      },
+      notification_url: `${BASE_URL}/api/payments/webhook`,
+      external_reference: `${userEmail}-${planName}-${Date.now()}`,
+    };
+    console.log('Creating preference with data:', JSON.stringify(preferenceData, null, 2));
+    const response = await preference.create({ body: preferenceData });
     res.status(200).json({ init_point: response.init_point, preferenceId: response.id });
   } catch (error) {
     console.error('Error creating Mercado Pago preference:', error);

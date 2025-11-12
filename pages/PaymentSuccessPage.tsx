@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from '../hooks/useNavigate';
 import { useNotification } from '../contexts/NotificationContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import PageWrapper from '../components/PageWrapper';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import CheckIcon from '../components/icons/CheckIcon';
+import { CheckIcon } from '../components/icons/CheckIcon';
 
 const PaymentSuccessPage: React.FC = () => {
   const { navigate } = useNavigate();
