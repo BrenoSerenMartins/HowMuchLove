@@ -34,11 +34,13 @@ const HomePage: React.FC = () => {
       <Header />
       <main className="flex-grow">
         <PageWrapper>
-          <HeroSection />
           <div className="container mx-auto px-4">
-            <section id="demo" className="-mt-36 md:-mt-40 relative z-10 scroll-mt-20">
-                <CounterDemo isDashboard={false} />
-            </section>
+            <HeroSection />
+          </div>
+          <section id="demo" className="-mt-36 md:-mt-40 relative z-10 scroll-mt-20">
+              <CounterDemo isDashboard={false} />
+          </section>
+          <div className="container mx-auto px-4">
             <PricingSection id="pricing" />
           </div>
         </PageWrapper>

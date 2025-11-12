@@ -76,8 +76,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlan
 
   const handleSelectPlan = async (planName: string) => {
     if (!user) {
-      addToast('Você precisa estar logado para comprar um plano.', 'error');
-      navigate('/login');
+      addToast('Crie uma conta para escolher um plano.', 'info');
+      navigate('/register');
       return;
     }
 

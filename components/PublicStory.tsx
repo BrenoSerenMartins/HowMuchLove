@@ -36,7 +36,10 @@ const getLayoutPanelClasses = (position: LayoutPosition) => {
 
 const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
     <div className="flex flex-col items-center">
-      <span className="text-4xl md:text-6xl font-bold text-white tracking-tighter" style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.4)' }}>
+      <span 
+        className="text-4xl md:text-6xl font-bold text-white tracking-tighter" 
+        style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.4)' }}
+      >
         {String(value).padStart(2, '0')}
       </span>
       <span className="text-[10px] sm:text-xs md:text-sm font-light text-white/80 uppercase tracking-widest" style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.4)' }}>
@@ -115,6 +118,33 @@ interface PublicStoryProps {
     setIsMuted?: (isMuted: boolean) => void;
 }
 
+// --- Custom Hook for Intersection Observer ---
+const useOnScreen = (ref: React.RefObject<HTMLElement>, rootMargin = "0px") => {
+    const [isIntersecting, setIntersecting] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIntersecting(true);
+                    observer.unobserve(entry.target);
+                }
+            },
+            { rootMargin }
+        );
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+        return () => {
+            if (ref.current) {
+                observer.unobserve(ref.current);
+            }
+        };
+    }, []);
+
+    return isIntersecting;
+};
+
 const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMuted, setIsMuted }) => {
     if (!storyData) {
         return (
@@ -127,37 +157,53 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
     const { startDate, message, images, layoutPosition = 'bottom', youtubeUrl, plan } = storyData;
     const date = startDate ? new Date(startDate) : null;
     const videoId = youtubeUrl ? extractYouTubeID(youtubeUrl) : null;
+    const backgroundImageUrl = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
     const [topImageIndex, setTopImageIndex] = useState(0);
-    const [bottomImageIndex, setBottomImageIndex] = useState(0);
-    const [topLayerOpacity, setTopLayerOpacity] = useState(1);
 
     useEffect(() => {
         if (!images || images.length <= 1) return;
 
         const timer = setTimeout(() => {
-            const nextIndex = (topImageIndex + 1) % images.length;
-            setBottomImageIndex(nextIndex);
-            setTopLayerOpacity(0);
-
-            const swapTimer = setTimeout(() => {
-                setTopImageIndex(nextIndex);
-                setTopLayerOpacity(1);
-            }, 1000);
-
-            return () => clearTimeout(swapTimer);
+            setTopImageIndex((prevIndex) => (prevIndex + 1) % images.length);
         }, 5000);
 
         return () => clearTimeout(timer);
     }, [topImageIndex, images]);
 
-    const topImage = images && images.length > 0 ? images[topImageIndex] : null;
-    const bottomImage = images && images.length > 0 ? images[bottomImageIndex] : null;
+    const messageRef = React.useRef<HTMLDivElement>(null);
+    const isMessageOnScreen = useOnScreen(messageRef, "-100px");
 
     return (
-        <div className="min-h-screen w-full flex flex-col bg-slate-900 pt-4">
-            {plan === 'Gratis' && <Watermark />} {/* Render watermark if plan is Gratis */}
+        <div 
+            className="min-h-screen w-full flex flex-col pt-4 relative overflow-hidden"
+        >
+            <style>
+                {`
+                    .blurry-background::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-image: url(${backgroundImageUrl});
+                        background-size: cover;
+                        background-position: center;
+                        filter: blur(5px);
+                        animation: pan-background 30s infinite alternate linear;
+                        z-index: -1;
+                    }
 
+                    @keyframes pan-background {
+                        0% { background-position: 0% 0%; }
+                        100% { background-position: 100% 100%; }
+                    }
+                `}
+            </style>
+            <div className="blurry-background">
+                {plan === 'Gratis' && <Watermark />} {/* Render watermark if plan is Gratis */}
+            </div>
             {/* Mute/Unmute Button */}
             {videoId && hasEntered && (
                 <button
@@ -174,32 +220,38 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             )}
 
             {/* Image and Counter Section */}
-            <div className="px-4 w-full max-w-screen-lg mx-auto">
+            <div className="px-4 w-full max-w-screen-2xl mx-auto">
                 <section 
                   className={`relative w-full h-[calc(100vh-5rem)] flex flex-col rounded-3xl shadow-2xl overflow-hidden ${getLayoutContainerClasses(layoutPosition)}`}
-                  style={!topImage && !bottomImage ? { background: 'linear-gradient(135deg, #4a0e29, #2d0b1d)' } : {}}
+                  style={{ 
+                    ...(!images || images.length === 0 ? { background: 'linear-gradient(135deg, #4a0e29, #2d0b1d)' } : {}),
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.3)' // Custom outer shadow
+                  }}
                 >
                     {/* Background Image Layers for Cross-fade */}
-                    {bottomImage && (
+                    {images && images.map((image, index) => (
                         <div
-                            className="absolute inset-0 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${bottomImage.image_url})` }}
-                        >
-                            <div className="absolute inset-0 bg-black/40 z-0"></div>
-                        </div>
-                    )}
-                    {topImage && (
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-                            style={{ 
-                                backgroundImage: `url(${topImage.image_url})`,
-                                opacity: topLayerOpacity
+                            key={image.id}
+                            className="absolute inset-0 bg-cover bg-center rounded-3xl transition-all duration-1000 ease-in-out"
+                            style={{
+                                backgroundImage: `url(${image.image_url})`,
+                                opacity: index === topImageIndex ? 1 : 0,
+                                transform: index === topImageIndex ? 'scale(1)' : 'scale(0.9)',
+                                filter: index === topImageIndex ? 'blur(0px)' : 'blur(4px)',
+                                zIndex: index === topImageIndex ? 1 : 0,
                             }}
                         >
-                            <div className="absolute inset-0 bg-black/40 z-0"></div>
+                            <div className="absolute inset-0 bg-black/40 z-0 rounded-3xl"></div>
+                            {/* Border Overlay */}
+                            <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none z-20"></div>
                         </div>
-                    )}
+                    ))}
                     
+                    {/* Inner Vignette Effect */}
+                    <div className="absolute inset-0 z-10 pointer-events-none" style={{
+                        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 65%, rgba(0,0,0,0.5) 100%)'
+                    }}></div>
+
                     {/* Counter Layer (always visible) */}
                     <div className={`relative z-10 ${getLayoutPanelClasses(layoutPosition)}`}>
                         <div className="max-w-4xl mx-auto space-y-6">
@@ -208,18 +260,45 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                     </div>
                 
                     {/* Placeholder for empty story */}
-                    {!topImage && !message && (
+                    {(!images || images.length === 0) && !message && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                         <p className="text-white/50 text-lg text-center">Adicione conteúdo à sua história para vê-la aqui.</p>
                       </div>
                     )}
                 </section>            </div>
 
+            {/* Scroll Down Arrow */}
+            {!isMessageOnScreen && message && (
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-subtle-bounce">
+                    <style>
+                        {`
+                            @keyframes subtle-bounce {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-5px); }
+                            }
+                            .animate-subtle-bounce {
+                                animation: subtle-bounce 1.5s infinite ease-in-out;
+                            }
+                        `}
+                    </style>
+                    <svg className="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </div>
+            )}
+
             {/* Message Section */}
             {message && (
-                <section className="relative z-10 flex-grow flex items-center justify-center w-full py-8 px-4">
-                    <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl shadow-xl p-8 max-w-3xl w-full">
-                        <p className="font-cursive text-slate-200 text-2xl sm:text-3xl lg:text-4xl leading-relaxed break-words text-center">
+                <section 
+                    ref={messageRef}
+                    className={`transition-opacity duration-1000 ${isMessageOnScreen ? 'opacity-100' : 'opacity-0'} flex-grow flex items-center justify-center w-full py-8 px-4`}
+                >
+                    <div 
+                        className="bg-slate-800/60 backdrop-blur-md rounded-2xl shadow-xl p-8 max-w-3xl w-full"
+                    >
+                        <p 
+                            className="font-cursive text-slate-200 text-2xl sm:text-3xl lg:text-4xl leading-relaxed break-words text-center"
+                        >
                             <QuoteStartIcon className="text-slate-600" />
                             {message}
                         </p>

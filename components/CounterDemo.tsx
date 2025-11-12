@@ -4,6 +4,9 @@ import { ptBR } from 'date-fns/locale/pt-BR';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import UpgradeToUnlock from './UpgradeToUnlock';
+import { PLAN_FEATURES } from '../utils/planConfig';
+import StoryPreview from './StoryPreview';
 import type { LoveStoryData, StoryImage } from '../types';
 
 registerLocale('pt-BR', ptBR);
@@ -36,64 +39,6 @@ const AccordionSection: React.FC<{
           {children}
         </div>
       </div>
-    </div>
-  );
-};
-
-
-const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
-  <div className="flex flex-col items-center">
-    <span className="text-4xl md:text-6xl font-bold text-white tracking-tighter" style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.4)' }}>
-      {String(value).padStart(2, '0')}
-    </span>
-    <span className="text-[10px] sm:text-xs md:text-sm font-light text-white/80 uppercase tracking-widest" style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.4)' }}>
-      {label}
-    </span>
-  </div>
-);
-
-const DurationCounter: React.FC<{ startDate: Date | null }> = ({ startDate }) => {
-  const [duration, setDuration] = useState<{ years: number; months: number; days: number; hours: number; minutes: number; seconds: number; } | null>(null);
-
-  useEffect(() => {
-    if (!startDate) {
-      setDuration(null);
-      return;
-    }
-    const calculateDuration = () => {
-      const now = new Date();
-      let years = now.getFullYear() - startDate.getFullYear();
-      let months = now.getMonth() - startDate.getMonth();
-      let days = now.getDate() - startDate.getDate();
-      let hours = now.getHours() - startDate.getHours();
-      let minutes = now.getMinutes() - startDate.getMinutes();
-      let seconds = now.getSeconds() - startDate.getSeconds();
-      if (seconds < 0) { seconds += 60; minutes--; }
-      if (minutes < 0) { minutes += 60; hours--; }
-      if (hours < 0) { hours += 24; days--; }
-      if (days < 0) {
-        const daysInLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-        days += daysInLastMonth;
-        months--;
-      }
-      if (months < 0) { months += 12; years--; }
-      setDuration({ years, months, days, hours, minutes, seconds });
-    };
-    calculateDuration();
-    const interval = setInterval(calculateDuration, 1000);
-    return () => clearInterval(interval);
-  }, [startDate]);
-
-  if (!duration) return <div className="text-center"><p className="text-xl sm:text-2xl font-semibold text-white/90">{!startDate ? "Escolha uma data para começar a contar." : "Calculando..."}</p></div>;
-
-  return (
-    <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 md:gap-6 text-center">
-      <TimeUnit value={duration.years} label="Anos" />
-      <TimeUnit value={duration.months} label="Meses" />
-      <TimeUnit value={duration.days} label="Dias" />
-      <TimeUnit value={duration.hours} label="Horas" />
-      <TimeUnit value={duration.minutes} label="Minutos" />
-      <TimeUnit value={duration.seconds} label="Segundos" />
     </div>
   );
 };
@@ -131,7 +76,6 @@ interface CounterDemoProps {
 }
 
 const MAX_MESSAGE_LENGTH = 280;
-const PLAN_LIMITS: { [key: string]: number } = { 'Sonho': 1, 'Eterno': 10, 'Infinito': 20 };
 
 const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageUpload, onImageDelete, isDashboard, saveStatus, onDirty, currentPlan }) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -144,11 +88,14 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
   const [entryButtonText, setEntryButtonText] = useState('');
   const [errors, setErrors] = useState<{ startDate?: string; message?: string, images?: string }>({});
   const [openSection, setOpenSection] = useState<string | null>('content');
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
-  const imageLimit = PLAN_LIMITS[currentPlan || ''] || 1;
+  const plan = currentPlan || 'Gratis';
+  const features = PLAN_FEATURES[plan as keyof typeof PLAN_FEATURES] || PLAN_FEATURES['Gratis'];
+  const imageLimit = features.imageLimit;
   const limitReached = images.length >= imageLimit;
 
   useEffect(() => {
@@ -174,17 +121,22 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
   }, [youtubeUrl]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0 && onImageUpload) {
-      onDirty?.();
+    if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-      setErrors(prev => ({ ...prev, images: 'Enviando imagem...' }));
-      try {
-        const newImage = await onImageUpload(file);
-        setImages(currentImages => [...currentImages, newImage]);
-        setErrors(prev => ({ ...prev, images: undefined }));
-      } catch (error: any) {
-        console.error("Upload failed", error);
-        setErrors(prev => ({ ...prev, images: error.message || 'O upload da imagem falhou.' }));
+      if (isDashboard && onImageUpload) {
+        onDirty?.();
+        setErrors(prev => ({ ...prev, images: 'Enviando imagem...' }));
+        try {
+          const newImage = await onImageUpload(file);
+          setImages(currentImages => [...currentImages, newImage]);
+          setErrors(prev => ({ ...prev, images: undefined }));
+        } catch (error: any) {
+          console.error("Upload failed", error);
+          setErrors(prev => ({ ...prev, images: error.message || 'O upload da imagem falhou.' }));
+        }
+      } else {
+        // For non-dashboard (demo) version, just show a local preview
+        setLocalImageUrl(URL.createObjectURL(file));
       }
     }
   };
@@ -222,30 +174,24 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
       message,
       images,
       layoutPosition,
-      youtubeUrl,
-      storyPassword, // Always send the password field
-      entryButtonText,
+      youtubeUrl: features.allowYoutube ? youtubeUrl : '',
+      storyPassword: features.allowPasswordProtection ? storyPassword : '',
+      entryButtonText: features.allowCustomButton ? entryButtonText : '',
     };
     onSave(storyData);
   };
   
   const handleLayoutChange = (position: 'top' | 'center' | 'bottom') => { onDirty?.(); setLayoutPosition(position); };
   
-  // Helper functions for layout classes
-  const getLayoutContainerClasses = (position: 'top' | 'center' | 'bottom') => {
-    switch(position) {
-      case 'top': return 'justify-start';
-      case 'center': return 'justify-center items-center';
-      case 'bottom': default: return 'justify-end';
-    }
+  const handleScrollToPricing = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
-  
-  const getLayoutPanelClasses = (position: 'top' | 'center' | 'bottom') => {
-    switch(position) {
-      case 'top': return 'w-full bg-gradient-to-b from-black/70 via-black/50 to-transparent pt-6 pb-16 px-4 md:pt-8 md:px-8';
-      case 'center': return 'w-full max-w-4xl bg-black/40 backdrop-blur-sm rounded-2xl p-6 md:p-8';
-      case 'bottom': default: return 'w-full bg-gradient-to-t from-black/70 via-black/50 to-transparent pt-16 pb-6 px-4 md:pb-8 md:px-8';
-    }
+
+  const previewStoryData = {
+    startDate: startDate?.toISOString(),
+    message,
+    images,
+    layoutPosition,
   };
 
   return (
@@ -277,23 +223,26 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
             <AccordionSection title="Mídia e Aparência" sectionId="media" openSection={openSection} setOpenSection={setOpenSection}>
               {/* Image Uploader */}
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-2">Fotos de vocês ({images.length}/{imageLimit})</label>
-                <div className="space-y-2 max-h-72 overflow-y-auto p-2 bg-slate-50 border rounded-lg">
-                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={images.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                      {images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
-                    </SortableContext>
-                  </DndContext>
-                </div>
+                <label className="block text-sm font-medium text-slate-600 mb-2">Fotos de vocês ({isDashboard ? `${images.length}/${imageLimit}` : '1/1'})</label>
+                {isDashboard && (
+                  <div className="space-y-2 max-h-72 overflow-y-auto p-2 bg-slate-50 border rounded-lg">
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <SortableContext items={images.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                        {images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                )}
                 <div className="min-h-[1.25rem] mt-1">
                   {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
                 </div>
-                <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={limitReached} />
-                <button onClick={() => fileInputRef.current?.click()} disabled={limitReached} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm mt-3 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    Adicionar Foto
-                </button>
-                {limitReached && <p className="text-sm text-slate-500 mt-2 text-center">Você atingiu o limite de {imageLimit} imagem(ns) do seu plano.</p>}
+                <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={isDashboard && limitReached} />
+                <UpgradeToUnlock isFeatureAllowed={!isDashboard || !limitReached} message={`Você atingiu o limite de ${imageLimit} imagem(ns). Faça um upgrade para adicionar mais.`}>
+                  <button onClick={() => fileInputRef.current?.click()} disabled={isDashboard && limitReached} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm mt-3 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                      Adicionar Foto
+                  </button>
+                </UpgradeToUnlock>
               </div>
               {/* Layout Position Controls */}
               <div>
@@ -309,7 +258,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
                 </div>
               </div>
               {/* YouTube URL Input */}
-              {(currentPlan === 'Eterno' || currentPlan === 'Infinito') && (
+              <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message="Adicione uma música de fundo do YouTube à sua história.">
                 <div>
                   <label htmlFor="youtubeUrl" className="block text-sm font-medium text-slate-600 mb-2">Música do YouTube (Opcional)</label>
                   <div className="relative">
@@ -320,6 +269,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
                       onChange={(e) => { onDirty?.(); setYoutubeUrl(e.target.value); }}
                       placeholder="Cole o link do YouTube aqui"
                       className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 pr-10"
+                      disabled={!features.allowYoutube}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       {youtubeUrl && (
@@ -332,12 +282,11 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
                     </div>
                   </div>
                 </div>
-              )}
+              </UpgradeToUnlock>
             </AccordionSection>
 
             <AccordionSection title="Configurações de Acesso" sectionId="access" openSection={openSection} setOpenSection={setOpenSection}>
-              {/* Story Password Input */}
-              {(currentPlan === 'Eterno' || currentPlan === 'Infinito') && (
+              <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message="Proteja sua história com uma senha.">
                 <div>
                   <label htmlFor="storyPassword" className="block text-sm font-medium text-slate-600 mb-2">Senha da História (Opcional)</label>
                   <input
@@ -347,11 +296,11 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
                     onChange={(e) => { onDirty?.(); setStoryPassword(e.target.value); }}
                     placeholder="Digite para definir ou alterar a senha"
                     className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+                    disabled={!features.allowPasswordProtection}
                   />
                 </div>
-              )}
-              {/* Entry Button Text Input */}
-              {(currentPlan === 'Eterno' || currentPlan === 'Infinito') && (
+              </UpgradeToUnlock>
+              <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message="Personalize o texto do botão de entrada da sua história.">
                 <div>
                   <label htmlFor="entryButtonText" className="block text-sm font-medium text-slate-600 mb-2">Texto do Botão de Entrada (Opcional)</label>
                   <input
@@ -361,13 +310,10 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
                     onChange={(e) => { onDirty?.(); setEntryButtonText(e.target.value); }}
                     placeholder="Ex: Entrar, Ver nossa história..."
                     className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+                    disabled={!features.allowCustomButton}
                   />
                 </div>
-              )}
-              {/* Message for Sonho plan */}
-              {currentPlan === 'Sonho' && (
-                <p className="text-sm text-slate-500 text-center">Recursos como senha, música de fundo e mais estão disponíveis nos planos superiores. ✨</p>
-              )}
+              </UpgradeToUnlock>
             </AccordionSection>
           </div>
           {isDashboard && (
@@ -377,17 +323,17 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
           )}
         </div>
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <div 
-            className={`relative w-full min-h-[450px] overflow-hidden flex flex-col bg-romantic-gradient bg-cover bg-center rounded-xl shadow-inner ${getLayoutContainerClasses(layoutPosition)}`}
-            style={{ backgroundImage: images.length > 0 ? `url(${images[0].image_url})` : undefined }}
-          >
-            {images.length > 0 && <div className="absolute inset-0 bg-black/40 z-0"></div>}
-            <div className={`relative z-10 ${getLayoutPanelClasses(layoutPosition)}`}>
-              <div className="max-w-4xl mx-auto space-y-6">
-                <DurationCounter startDate={startDate} />
-              </div>
-            </div>
+          <div className="w-full h-full min-h-[500px]">
+            <StoryPreview storyData={previewStoryData} localImageUrl={localImageUrl} />
           </div>
+          {!isDashboard && (
+            <button 
+              onClick={handleScrollToPricing}
+              className="w-full font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 !mt-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-xl"
+            >
+              Salvar e Compartilhar
+            </button>
+          )}
         </div>
       </div>
     </div>
