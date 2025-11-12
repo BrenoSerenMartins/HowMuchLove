@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { User, LoveStoryData, StoryImage } from '../types';
 
 // The Nginx reverse proxy will route requests starting with /api to the backend service.
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Create an Axios instance with default settings
 const apiClient = axios.create({
