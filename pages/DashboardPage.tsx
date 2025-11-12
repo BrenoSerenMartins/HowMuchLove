@@ -9,6 +9,7 @@ import PageWrapper from '../components/PageWrapper';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useNotification } from '../contexts/NotificationContext';
 import QRCodeModal from '../components/QRCodeModal';
+import PublicStory from '../components/PublicStory';
 
 const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; plan?: string; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, plan, navigate }) => {
   const isGratis = plan === 'Gratis';
@@ -84,7 +85,7 @@ const DashboardPage: React.FC = () => {
     const fetchStory = async () => {
       setIsLoading(true);
       const data = await loadStory();
-      setStoryData(data);
+      setStoryData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', entryButtonText: '' });
       if (data?.startDate && user) { // Only show share link if story has a start date
         setShareLink(generateShareLink(user.email));
       }
@@ -187,9 +188,10 @@ const DashboardPage: React.FC = () => {
   };
   
   if (isPreviewing) {
+    const previewData = { ...storyData, plan: user?.plan };
     return (
       <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900">
-        <PublicStory storyData={storyData} hasEntered isMuted={false} setIsMuted={() => {}} />
+        <PublicStory storyData={previewData} hasEntered isMuted={false} setIsMuted={() => {}} />
         <button
             onClick={() => setIsPreviewing(false)}
             className="fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-sm text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-white transition-all duration-300 flex items-center gap-2 group"

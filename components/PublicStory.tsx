@@ -100,16 +100,20 @@ const QuoteStartIcon: React.FC<{ className?: string }> = ({ className = 'text-wh
     </svg>
 );
 
-const Watermark: React.FC = () => (
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-    <span 
-      className="text-white text-5xl font-bold opacity-20 transform -rotate-45 select-none"
-      style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
-    >
-      HOWMUCHLOVE.COM
-    </span>
-  </div>
-);
+const Watermark: React.FC = () => {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><rect width='200' height='200' fill='rgba(0,0,0,0.02)'/><text x='50%' y='50%' font-size='24' fill='white' fill-opacity='0.3' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45, 100, 100)'>howmuchlove.com.br</text></svg>`;
+    const encodedSvg = `data:image/svg+xml;base64,${btoa(svg)}`;
+
+    return (
+        <div 
+            className="absolute inset-0 pointer-events-none z-50"
+            style={{
+                backgroundImage: `url("${encodedSvg}")`,
+                backgroundRepeat: 'repeat'
+            }}
+        ></div>
+    );
+};
 
 interface PublicStoryProps {
     storyData: LoveStoryData | null;
@@ -306,6 +310,14 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                 </section>
             )}
             {videoId && hasEntered && <YouTubePlayer videoId={videoId} isMuted={isMuted ?? true} />}
+            {plan === 'Gratis' && (
+                <a 
+                    href="/#/settings#pricing-section"
+                    className="fixed bottom-4 left-4 z-50 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                    Remover Marca D'água
+                </a>
+            )}
         </div>
     );
 };
