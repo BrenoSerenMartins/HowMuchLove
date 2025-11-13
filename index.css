@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://unpkg.com/react-datepicker@6.9.0/dist/react-datepicker.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  overscroll-behavior: none;
+}
+body {
+  font-family: 'Poppins', sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+.font-cursive {
+  font-family: 'Dancing Script', cursive;
+}
+.bg-animated-lights {
+  background-color: #fff1f5;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f9a8d4' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  position: relative;
+}
+.lights-container {
+  position: relative;
+  overflow: hidden;
+}
+ .lights-container::before, .lights-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: 0;
+  will-change: transform;
+}
+.lights-container::before {
+  width: 300px;
+  height: 300px;
+  background: rgba(236, 72, 153, 0.15);
+  top: -50px;
+  left: -100px;
+  animation: moveLight1 15s infinite alternate;
+}
+.lights-container::after {
+  width: 400px;
+  height: 400px;
+  background: rgba(244, 114, 182, 0.15);
+  bottom: -100px;
+  right: -150px;
+  animation: moveLight2 20s infinite alternate;
+}
+
+@keyframes moveLight1 {
+  from { transform: translate(-100px, -50px) scale(1); }
+  to { transform: translate(100px, 100px) scale(1.2); }
+}
+
+@keyframes moveLight2 {
+  from { transform: translate(-100px, 50px) scale(1.2); }
+  to { transform: translate(100px, -100px) scale(1); }
+}
+
+.bg-romantic-gradient {
+  background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  overscroll-behavior: none;
+}
+
+.react-datepicker__year-select,
+.react-datepicker__month-select {
+    padding: 5px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0; /* slate-200 */
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin: 0 4px;
+}
+.react-datepicker__year-select:focus,
+.react-datepicker__month-select:focus {
+    outline: none;
+    border-color: #ec4899; /* pink-500 */
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+}
