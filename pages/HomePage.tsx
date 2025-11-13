@@ -19,9 +19,18 @@ const HomePage: React.FC = () => {
     }
   }, [user, isLoading, navigate]);
 
-  // While the auth state is loading, we can show a spinner or a blank page
-  // to prevent a flash of the homepage before redirection.
-  if (isLoading || user) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex justify-center items-center bg-slate-900">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // If the user is logged in, the useEffect hook will redirect them to the dashboard.
+  // We render a loading spinner here to prevent a "flash" of the homepage content
+  // before the redirect happens.
+  if (user) {
     return (
       <div className="min-h-screen w-full flex justify-center items-center bg-slate-900">
         <LoadingSpinner />
