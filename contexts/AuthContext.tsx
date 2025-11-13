@@ -20,8 +20,6 @@ interface AuthContextType {
   // These will be refactored in a later phase to use Supabase directly
   saveStory: (storyData: LoveStoryData) => Promise<void>;
   loadStory: () => Promise<LoveStoryData | null>;
-  uploadImage: (file: File) => Promise<StoryImage>;
-  simulatePlan: (planName: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -33,8 +31,6 @@ export const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   saveStory: async () => {},
   loadStory: async () => null,
-  uploadImage: async () => ({ id: 0, image_url: '', display_order: 0 }),
-  simulatePlan: async () => {},
   refreshUser: async () => {},
 });
 
@@ -159,13 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error(errorData.error || 'Erro ao salvar história via Edge Function.');
     }
   };
-  
-  const simulatePlan = async (planName: string) => {
-    if (!user) throw new Error("Usuário não autenticado.");
-    const updatedUser = await api.updateUserPlan(planName);
-    setUser(updatedUser);
-  };
-  
+
   const loadStory = useCallback(async (): Promise<LoveStoryData | null> => {
     if (!user) return null;
     
@@ -205,13 +195,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [user]);
 
-  const uploadImage = async (file: File): Promise<StoryImage> => {
-    if (!user) throw new Error("Usuário não autenticado.");
-    return await api.uploadStoryImage(file);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, saveStory, loadStory, uploadImage, simulatePlan, refreshUser: verifyAuth }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, saveStory, loadStory, refreshUser: verifyAuth }}>
       {children}
     </AuthContext.Provider>
   );
