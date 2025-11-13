@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "howmuchlove"
+project_id = "ptkgstjgjdwnegsfcndo"
 
 [api]
 enabled = true
@@ -366,3 +366,25 @@ entrypoint = "./functions/delete-image/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/delete-image/*.html" ]
+
+[functions.save-story]
+enabled = true
+verify_jwt = true
+import_map = "./functions/save-story/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/save-story/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/save-story/*.html" ]
+
+[functions.create-payment-preference]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-payment-preference/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/create-payment-preference/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/create-payment-preference/*.html" ]

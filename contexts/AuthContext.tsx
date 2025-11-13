@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import type { LoveStoryData, StoryImage } from '../types';
@@ -21,7 +21,6 @@ interface AuthContextType {
   saveStory: (storyData: LoveStoryData) => Promise<void>;
   loadStory: () => Promise<LoveStoryData | null>;
   uploadImage: (file: File) => Promise<StoryImage>;
-  deleteImage: (imageId: number) => Promise<void>;
   simulatePlan: (planName: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -35,7 +34,6 @@ export const AuthContext = createContext<AuthContextType>({
   saveStory: async () => {},
   loadStory: async () => null,
   uploadImage: async () => ({ id: 0, image_url: '', display_order: 0 }),
-  deleteImage: async () => {},
   simulatePlan: async () => {},
   refreshUser: async () => {},
 });
@@ -135,63 +133,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveStory = async (storyData: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]): Promise<void> => {
     if (!user) throw new Error("Usuário não autenticado.");
 
-    // 1. Handle image deletions first
-    if (imageIdsToDelete.length > 0) {
-      const deletePromises = imageIdsToDelete.map(id => deleteImage(id));
-      await Promise.all(deletePromises);
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Sessão não encontrada para salvar história.");
 
-    // 2. Save the story text data to get the story ID
-    const { data: storyId, error: rpcError } = await supabase.rpc('create_or_update_story', {
-      p_start_date: storyData.startDate,
-      p_story_text: storyData.message,
-      p_layout_position: storyData.layoutPosition,
-      p_youtube_url: storyData.youtubeUrl,
-      p_entry_button_text: storyData.entryButtonText,
-      p_story_password: storyData.storyPassword,
+    const SUPABASE_FUNCTION_URL = `${supabase.supabaseUrl}/functions/v1/save-story`;
+
+    const formData = new FormData();
+    formData.append('storyData', JSON.stringify(storyData));
+    formData.append('imageIdsToDelete', imageIdsToDelete.join(','));
+    newFiles.forEach(file => {
+      formData.append('newFiles', file);
     });
 
-    if (rpcError) {
-      console.error('Error saving story text data:', rpcError);
-      throw rpcError;
-    }
+    const response = await fetch(SUPABASE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: formData,
+    });
 
-    // 3. Upload new images if any
-    if (newFiles.length > 0) {
-      const uploadPromises = newFiles.map(async (file) => {
-        const fileExtension = file.name.split('.').pop();
-        const filePath = `${user.id}/${storyId}/${Date.now()}-${Math.random()}.${fileExtension}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('story-images')
-          .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage
-          .from('story-images')
-          .getPublicUrl(filePath);
-
-        return {
-          story_id: storyId,
-          image_url: publicUrlData.publicUrl,
-        };
-      });
-
-      const uploadedImages = await Promise.all(uploadPromises);
-
-      // 4. Insert image records into the database
-      const { error: imageInsertError } = await supabase
-        .from('story_images')
-        .insert(uploadedImages.map((img, index) => ({
-          ...img,
-          display_order: (storyData.images?.length || 0) + index,
-        })));
-
-      if (imageInsertError) {
-        console.error('Error inserting image records:', imageInsertError);
-        throw imageInsertError;
-      }
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error calling Edge Function to save story:', errorData);
+      throw new Error(errorData.error || 'Erro ao salvar história via Edge Function.');
     }
   };
   
@@ -201,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(updatedUser);
   };
   
-  const loadStoryFromContext = async (): Promise<LoveStoryData | null> => {
+  const loadStory = useCallback(async (): Promise<LoveStoryData | null> => {
     if (!user) return null;
     
     const { data: story, error } = await supabase
@@ -238,39 +203,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       youtubeUrl: story.youtube_url,
       entryButtonText: story.entry_button_text,
     };
-  };
+  }, [user]);
 
   const uploadImage = async (file: File): Promise<StoryImage> => {
     if (!user) throw new Error("Usuário não autenticado.");
     return await api.uploadStoryImage(file);
   };
 
-  const deleteImage = async (imageId: number): Promise<void> => {
-    if (!user) throw new Error("Usuário não autenticado.");
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Sessão não encontrada para deletar imagem.");
-
-    const SUPABASE_FUNCTION_URL = `${supabase.supabaseUrl}/functions/v1/delete-image`;
-
-    const response = await fetch(SUPABASE_FUNCTION_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ imageId }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error calling Edge Function to delete image:', errorData);
-      throw new Error(errorData.error || 'Erro ao deletar imagem via Edge Function.');
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, saveStory, loadStory: loadStoryFromContext, uploadImage, deleteImage, simulatePlan, refreshUser: verifyAuth }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, saveStory, loadStory, uploadImage, simulatePlan, refreshUser: verifyAuth }}>
       {children}
     </AuthContext.Provider>
   );

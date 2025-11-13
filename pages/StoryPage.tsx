@@ -46,7 +46,7 @@ const StoryPage: React.FC = () => {
     };
     
     loadStory();
-  }, [route, storyId]);
+  }, []);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
