@@ -22,6 +22,7 @@ export interface StoryImage {
 }
 
 export interface LoveStoryData {
+  id?: number;
   startDate: string | null;
   message: string;
   images: StoryImage[];

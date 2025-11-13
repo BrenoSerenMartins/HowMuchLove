@@ -66,8 +66,7 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
 
 interface CounterDemoProps {
   initialData?: LoveStoryData | null;
-  onSave?: (data: LoveStoryData) => void;
-  onImageUpload?: (file: File) => Promise<StoryImage>;
+  onSave?: (data: LoveStoryData, newFiles: File[]) => void; // Modified onSave
   onImageDelete?: (id: number) => Promise<void>;
   isDashboard?: boolean;
   saveStatus?: 'idle' | 'saving';
@@ -77,10 +76,11 @@ interface CounterDemoProps {
 
 const MAX_MESSAGE_LENGTH = 280;
 
-const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageUpload, onImageDelete, isDashboard, saveStatus, onDirty, currentPlan }) => {
+const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageDelete, isDashboard, saveStatus, onDirty, currentPlan }) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [message, setMessage] = useState('');
   const [images, setImages] = useState<StoryImage[]>([]);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]); // New state for files
   const [layoutPosition, setLayoutPosition] = useState<'top' | 'center' | 'bottom'>('bottom');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [isYoutubeUrlValid, setIsYoutubeUrlValid] = useState(false);
@@ -88,7 +88,6 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
   const [entryButtonText, setEntryButtonText] = useState('');
   const [errors, setErrors] = useState<{ startDate?: string; message?: string, images?: string }>({});
   const [openSection, setOpenSection] = useState<string | null>('content');
-  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -106,7 +105,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
       setLayoutPosition(initialData.layoutPosition || 'bottom');
       setYoutubeUrl(initialData.youtubeUrl || '');
       setEntryButtonText(initialData.entryButtonText || '');
-      // Do NOT set the password field. It's for changing/setting only.
+      setNewImageFiles([]); // Reset local files on data load
     }
   }, [initialData]);
 
@@ -123,36 +122,26 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-      if (isDashboard && onImageUpload) {
-        onDirty?.();
-        setErrors(prev => ({ ...prev, images: 'Enviando imagem...' }));
-        try {
-          const newImage = await onImageUpload(file);
-          setImages(currentImages => [...currentImages, newImage]);
-          setErrors(prev => ({ ...prev, images: undefined }));
-        } catch (error: any) {
-          console.error("Upload failed", error);
-          setErrors(prev => ({ ...prev, images: error.message || 'O upload da imagem falhou.' }));
-        }
-      } else {
-        // For non-dashboard (demo) version, just show a local preview
-        setLocalImageUrl(URL.createObjectURL(file));
-      }
+      onDirty?.();
+      
+      // Add the file to our local file state
+      setNewImageFiles(prevFiles => [...prevFiles, file]);
+
+      // Create a temporary local URL for preview
+      const localUrl = URL.createObjectURL(file);
+      const tempId = Date.now(); // Use a temporary ID for the key and sorting
+      
+      // Add a temporary image object to the images array for preview
+      setImages(currentImages => [
+        ...currentImages,
+        { id: tempId, image_url: localUrl, display_order: currentImages.length }
+      ]);
     }
   };
 
-  const handleDeleteImage = async (id: number) => {
-    if (!onImageDelete) return;
+  const handleDeleteImage = (id: number) => {
     onDirty?.();
-    const originalImages = images;
     setImages(currentImages => currentImages.filter(img => img.id !== id));
-    try {
-      await onImageDelete(id);
-    } catch (error) {
-      console.error("Delete failed", error);
-      setErrors(prev => ({ ...prev, images: 'Falha ao deletar a imagem.' }));
-      setImages(originalImages); // Revert on failure
-    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -169,16 +158,18 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
 
   const handleSave = async () => {
     if (!onSave) return;
+    
     const storyData: LoveStoryData = {
       startDate: startDate ? startDate.toISOString() : null,
       message,
-      images,
+      images, // Pass the full list, including local blobs
       layoutPosition,
       youtubeUrl: features.allowYoutube ? youtubeUrl : '',
       storyPassword: features.allowPasswordProtection ? storyPassword : '',
       entryButtonText: features.allowCustomButton ? entryButtonText : '',
     };
-    onSave(storyData);
+    onSave(storyData, newImageFiles);
+    setNewImageFiles([]); // Clear local files after initiating save
   };
   
   const handleLayoutChange = (position: 'top' | 'center' | 'bottom') => { onDirty?.(); setLayoutPosition(position); };
@@ -324,7 +315,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageU
         </div>
         <div className="lg:col-span-3 flex flex-col gap-6">
           <div className="w-full h-full min-h-[500px]">
-            <StoryPreview storyData={previewStoryData} localImageUrl={localImageUrl} />
+            <StoryPreview storyData={previewStoryData} />
           </div>
           {!isDashboard && (
             <button 

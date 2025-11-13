@@ -96,17 +96,27 @@ const DashboardPage: React.FC = () => {
     }
   }, [loadStory, user, isPreviewing]);
 
-  const handleSaveStory = async (data: LoveStoryData) => {
+  const handleSaveStory = async (newData: LoveStoryData, newFiles: File[]) => {
     setSaveStatus('saving');
     try {
-      await saveStory(data);
-      setStoryData(data);
-      if (data.startDate && user) { // Only generate share link if there's a date
+      // Determine which images to delete
+      const originalImageIds = new Set(storyData?.images.map(img => img.id) || []);
+      const currentImageIds = new Set(newData.images.map(img => img.id));
+      const imageIdsToDelete = Array.from(originalImageIds).filter(id => !currentImageIds.has(id));
+
+      // The saveStory function in AuthContext will now handle everything
+      await saveStory(newData, newFiles, imageIdsToDelete); 
+      
+      // After saving, reload the story to get the final state
+      const updatedStoryData = await loadStory();
+      setStoryData(updatedStoryData || newData);
+
+      if (updatedStoryData?.startDate && user) {
         setShareLink(generateShareLink(user.email));
       } else {
         setShareLink(null);
       }
-      setIsDirty(false); // Clear dirty state after successful save
+      setIsDirty(false);
       addToast('Sua história foi salva com sucesso!', 'success');
     } catch (error) {
       console.error("Failed to save story", error);
@@ -139,7 +149,7 @@ const DashboardPage: React.FC = () => {
                        <CounterDemo 
                           initialData={storyData} 
                           onSave={handleSaveStory} 
-                          onImageUpload={uploadImage}
+                          onImageUpload={undefined} // No longer used
                           onImageDelete={deleteImage}
                           saveStatus={saveStatus}
                           isDashboard 
@@ -166,7 +176,7 @@ const DashboardPage: React.FC = () => {
             <CounterDemo 
               initialData={storyData} 
               onSave={handleSaveStory} 
-              onImageUpload={uploadImage}
+              onImageUpload={undefined} // No longer used
               onImageDelete={deleteImage}
               saveStatus={saveStatus}
               isDashboard 
