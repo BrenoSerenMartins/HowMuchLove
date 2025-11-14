@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';
 import CounterDemo from '../components/CounterDemo';
@@ -8,12 +8,20 @@ import PageWrapper from '../components/PageWrapper';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getMpPublicKey } from '../utils/api';
 
 const HomePage: React.FC = () => {
   const { user, isLoading } = useAuth();
   const { navigate } = useNavigate();
+  const [mpPublicKey, setMpPublicKey] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchKey = async () => {
+      const key = await getMpPublicKey();
+      setMpPublicKey(key);
+    };
+    fetchKey();
+
     if (!isLoading && user) {
       navigate('/dashboard');
     }
@@ -50,7 +58,7 @@ const HomePage: React.FC = () => {
               <CounterDemo isDashboard={false} />
           </section>
           <div className="container mx-auto px-4">
-            <PricingSection id="pricing" />
+            <PricingSection id="pricing" mpPublicKey={mpPublicKey} />
           </div>
         </PageWrapper>
       </main>
