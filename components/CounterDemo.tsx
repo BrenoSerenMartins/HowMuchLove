@@ -66,7 +66,7 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
 
 interface CounterDemoProps {
   initialData?: LoveStoryData | null;
-  onSave?: (data: LoveStoryData, newFiles: File[]) => void; // Modified onSave
+  onSave?: (data: LoveStoryData, newFiles: File[]) => void;
   onImageDelete?: (id: number) => Promise<void>;
   isDashboard?: boolean;
   saveStatus?: 'idle' | 'saving';
@@ -77,15 +77,17 @@ interface CounterDemoProps {
 const MAX_MESSAGE_LENGTH = 280;
 
 const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageDelete, isDashboard, saveStatus, onDirty, currentPlan }) => {
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [message, setMessage] = useState('');
-  const [images, setImages] = useState<StoryImage[]>([]);
-  const [newImageFiles, setNewImageFiles] = useState<File[]>([]); // New state for files
-  const [layoutPosition, setLayoutPosition] = useState<'top' | 'center' | 'bottom'>('bottom');
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [isYoutubeUrlValid, setIsYoutubeUrlValid] = useState(false);
-  const [storyPassword, setStoryPassword] = useState('');
-  const [entryButtonText, setEntryButtonText] = useState('');
+  const [localData, setLocalData] = useState<LoveStoryData>({
+    startDate: null,
+    message: '',
+    images: [],
+    layoutPosition: 'bottom',
+    youtubeUrl: '',
+    storyPassword: '',
+    entryButtonText: '',
+  });
+  
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<{ startDate?: string; message?: string, images?: string }>({});
   const [openSection, setOpenSection] = useState<string | null>('content');
   
@@ -95,138 +97,107 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
   const plan = currentPlan || 'Gratis';
   const features = PLAN_FEATURES[plan as keyof typeof PLAN_FEATURES] || PLAN_FEATURES['Gratis'];
   const imageLimit = features.imageLimit;
-  const limitReached = images.length >= imageLimit;
+  const limitReached = localData.images.length >= imageLimit;
 
   useEffect(() => {
     if (initialData) {
-      setStartDate(initialData.startDate ? new Date(initialData.startDate) : null);
-      setMessage(initialData.message || '');
-      setImages(initialData.images || []);
-      setLayoutPosition(initialData.layoutPosition || 'bottom');
-      setYoutubeUrl(initialData.youtubeUrl || '');
-      setEntryButtonText(initialData.entryButtonText || '');
-      setNewImageFiles([]); // Reset local files on data load
+      setLocalData({
+        startDate: initialData.startDate || null,
+        message: initialData.message || '',
+        images: initialData.images || [],
+        layoutPosition: initialData.layoutPosition || 'bottom',
+        youtubeUrl: initialData.youtubeUrl || '',
+        storyPassword: initialData.storyPassword || '',
+        entryButtonText: initialData.entryButtonText || '',
+      });
+      setNewImageFiles([]);
     }
   }, [initialData]);
 
-  useEffect(() => {
-    const extractYouTubeID = (url: string): string | null => {
-        if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    };
-    setIsYoutubeUrlValid(!!extractYouTubeID(youtubeUrl));
-  }, [youtubeUrl]);
+  const updateLocalData = (field: keyof LoveStoryData, value: any) => {
+    onDirty?.();
+    setLocalData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       onDirty?.();
       
-      // Add the file to our local file state
       setNewImageFiles(prevFiles => [...prevFiles, file]);
 
-      // Create a temporary local URL for preview
       const localUrl = URL.createObjectURL(file);
-      const tempId = Date.now(); // Use a temporary ID for the key and sorting
+      const tempId = Date.now();
       
-      // Add a temporary image object to the images array for preview
-      setImages(currentImages => [
-        ...currentImages,
-        { id: tempId, image_url: localUrl, display_order: currentImages.length }
+      updateLocalData('images', [
+        ...localData.images,
+        { id: tempId, image_url: localUrl, display_order: localData.images.length }
       ]);
     }
   };
 
   const handleDeleteImage = (id: number) => {
-    onDirty?.();
-    setImages(currentImages => currentImages.filter(img => img.id !== id));
+    updateLocalData('images', localData.images.filter(img => img.id !== id));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      onDirty?.();
-      setImages((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = localData.images.findIndex(item => item.id === active.id);
+      const newIndex = localData.images.findIndex(item => item.id === over.id);
+      updateLocalData('images', arrayMove(localData.images, oldIndex, newIndex));
     }
   };
 
   const handleSave = async () => {
     if (!onSave) return;
-    
-    const storyData: LoveStoryData = {
-      startDate: startDate ? startDate.toISOString() : null,
-      message,
-      images, // Pass the full list, including local blobs
-      layoutPosition,
-      youtubeUrl: features.allowYoutube ? youtubeUrl : '',
-      storyPassword: features.allowPasswordProtection ? storyPassword : '',
-      entryButtonText: features.allowCustomButton ? entryButtonText : '',
-    };
-    onSave(storyData, newImageFiles);
-    setNewImageFiles([]); // Clear local files after initiating save
+    onSave(localData, newImageFiles);
+    setNewImageFiles([]);
   };
-  
-  const handleLayoutChange = (position: 'top' | 'center' | 'bottom') => { onDirty?.(); setLayoutPosition(position); };
   
   const handleScrollToPricing = () => {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const previewStoryData = {
-    startDate: startDate?.toISOString(),
-    message,
-    images,
-    layoutPosition,
-  };
-
   return (
     <div className="bg-white/60 backdrop-blur-md p-4 md:p-8 rounded-2xl shadow-lg border border-slate-200/80">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+        {/* --- Editor Panel --- */}
         <div className="lg:col-span-2">
           <h3 className="font-bold text-xl mb-4 text-slate-700 px-2">Editor da História</h3>
           <div className="border-t border-slate-200/80">
             <AccordionSection title="Conteúdo Principal" sectionId="content" openSection={openSection} setOpenSection={setOpenSection}>
-              {/* Date Picker */}
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-2">Quando tudo começou?</label>
                 <DatePicker
-                  selected={startDate} onChange={(d) => { onDirty?.(); setStartDate(d); }} dateFormat="dd/MM/yyyy" placeholderText="dd/mm/aaaa" maxDate={new Date()} locale="pt-BR"
+                  selected={localData.startDate ? new Date(localData.startDate) : null}
+                  onChange={(d: Date | null) => updateLocalData('startDate', d ? d.toISOString() : null)}
+                  dateFormat="dd/MM/yyyy" placeholderText="dd/mm/aaaa" maxDate={new Date()} locale="pt-BR"
                   className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
                 />
               </div>
-              {/* Message Textarea */}
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-slate-600 mb-2">Deixe uma mensagem surpresa</label>
                 <textarea
-                  id="message" value={message} onChange={(e) => { onDirty?.(); setMessage(e.target.value); }} placeholder="Escreva algo especial aqui..." rows={3}
+                  id="message" value={localData.message} onChange={(e) => updateLocalData('message', e.target.value)}
+                  placeholder="Escreva algo especial aqui..." rows={3}
                   className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
                 ></textarea>
-                <div className="text-right mt-1"><span className={`text-sm ${message.length > MAX_MESSAGE_LENGTH ? 'text-red-500' : 'text-slate-500'}`}>{message.length}/{MAX_MESSAGE_LENGTH}</span></div>
               </div>
             </AccordionSection>
 
             <AccordionSection title="Mídia e Aparência" sectionId="media" openSection={openSection} setOpenSection={setOpenSection}>
-              {/* Image Uploader */}
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-2">Fotos de vocês ({isDashboard ? `${images.length}/${imageLimit}` : '1/1'})</label>
+                <label className="block text-sm font-medium text-slate-600 mb-2">Fotos de vocês ({isDashboard ? `${localData.images.length}/${imageLimit}` : '1/1'})</label>
                 {isDashboard && (
                   <div className="space-y-2 max-h-72 overflow-y-auto p-2 bg-slate-50 border rounded-lg">
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                      <SortableContext items={images.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                        {images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
+                      <SortableContext items={localData.images.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                        {localData.images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
                       </SortableContext>
                     </DndContext>
                   </div>
                 )}
-                <div className="min-h-[1.25rem] mt-1">
-                  {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
-                </div>
                 <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={isDashboard && limitReached} />
                 <UpgradeToUnlock isFeatureAllowed={!isDashboard || !limitReached} message={`Você atingiu o limite de ${imageLimit} imagem(ns). Faça um upgrade para adicionar mais.`}>
                   <button onClick={() => fileInputRef.current?.click()} disabled={isDashboard && limitReached} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-sm hover:bg-slate-200 transition-colors text-sm mt-3 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed">
@@ -235,73 +206,24 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
                   </button>
                 </UpgradeToUnlock>
               </div>
-              {/* Layout Position Controls */}
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-2">Posição do contador</label>
                 <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-lg">
-                    {(['top', 'center', 'bottom'] as ('top' | 'center' | 'bottom')[]).map(pos => (
+                    {(['top', 'center', 'bottom'] as const).map(pos => (
                         <button
-                          key={pos} onClick={() => handleLayoutChange(pos)}
-                          className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-pink-400 ${layoutPosition === pos ? 'bg-white text-pink-600 shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
+                          key={pos} onClick={() => updateLocalData('layoutPosition', pos)}
+                          className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-pink-400 ${localData.layoutPosition === pos ? 'bg-white text-pink-600 shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
                           {pos === 'top' ? 'Superior' : pos === 'center' ? 'Centro' : 'Inferior'}
                         </button>
                     ))}
                 </div>
               </div>
-              {/* YouTube URL Input */}
               <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message="Adicione uma música de fundo do YouTube à sua história.">
                 <div>
                   <label htmlFor="youtubeUrl" className="block text-sm font-medium text-slate-600 mb-2">Música do YouTube (Opcional)</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="youtubeUrl"
-                      value={youtubeUrl}
-                      onChange={(e) => { onDirty?.(); setYoutubeUrl(e.target.value); }}
-                      placeholder="Cole o link do YouTube aqui"
-                      className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 pr-10"
-                      disabled={!features.allowYoutube}
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      {youtubeUrl && (
-                        isYoutubeUrlValid ? (
-                          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                        ) : (
-                          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </UpgradeToUnlock>
-            </AccordionSection>
-
-            <AccordionSection title="Configurações de Acesso" sectionId="access" openSection={openSection} setOpenSection={setOpenSection}>
-              <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message="Proteja sua história com uma senha.">
-                <div>
-                  <label htmlFor="storyPassword" className="block text-sm font-medium text-slate-600 mb-2">Senha da História (Opcional)</label>
-                  <input
-                    type="password"
-                    id="storyPassword"
-                    value={storyPassword}
-                    onChange={(e) => { onDirty?.(); setStoryPassword(e.target.value); }}
-                    placeholder="Digite para definir ou alterar a senha"
-                    className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-                    disabled={!features.allowPasswordProtection}
-                  />
-                </div>
-              </UpgradeToUnlock>
-              <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message="Personalize o texto do botão de entrada da sua história.">
-                <div>
-                  <label htmlFor="entryButtonText" className="block text-sm font-medium text-slate-600 mb-2">Texto do Botão de Entrada (Opcional)</label>
-                  <input
-                    type="text"
-                    id="entryButtonText"
-                    value={entryButtonText}
-                    onChange={(e) => { onDirty?.(); setEntryButtonText(e.target.value); }}
-                    placeholder="Ex: Entrar, Ver nossa história..."
-                    className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-                    disabled={!features.allowCustomButton}
+                  <input type="text" id="youtubeUrl" value={localData.youtubeUrl} onChange={(e) => updateLocalData('youtubeUrl', e.target.value)} placeholder="Cole o link do YouTube aqui"
+                    className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 pr-10"
+                    disabled={!features.allowYoutube}
                   />
                 </div>
               </UpgradeToUnlock>
@@ -313,9 +235,18 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
             </button>
           )}
         </div>
+
+        {/* --- Preview "Monitor" --- */}
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <div className="w-full h-full min-h-[500px]">
-            <StoryPreview storyData={previewStoryData} />
+          <div className="w-full h-full min-h-[600px] bg-slate-800 rounded-xl shadow-2xl p-2 border-4 border-slate-700">
+            <div className="flex items-center gap-1.5 px-2 mb-2">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            </div>
+            <div className="bg-slate-900 h-[550px] overflow-y-scroll rounded-md relative">
+              <StoryPreview storyData={localData} />
+            </div>
           </div>
           {!isDashboard && (
             <button 
