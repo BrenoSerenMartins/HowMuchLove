@@ -178,7 +178,7 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
             expirationDate: 'cardExpirationDate',
             securityCode: 'securityCode',
             identificationNumber: 'identificationNumber',
-            identificationType: 'identificationType'
+            identificationType: 'identificationType',
           };
           const errorField = fieldMap[errorDetail.field] || errorDetail.field || 'generic';
           newFieldErrors[errorField] = errorDetail.message;
@@ -192,20 +192,18 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
     }
   };
 
+  const inputClasses = "w-full px-4 py-2.5 bg-black/20 border rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 text-white placeholder-slate-400 transition-colors";
   const getFieldClass = (fieldName: string) => {
     return fieldErrors[fieldName]
       ? 'border-red-500 focus:ring-red-500'
-      : 'border-slate-300 focus:ring-pink-500';
+      : 'border-white/20 focus:ring-pink-500';
   };
 
   return (
-    <div className="bg-white p-5 rounded-lg shadow-md max-w-md w-full mx-auto">
-      <div className="text-center mb-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <img src="/images/logo.png" alt="Logo do site" className="h-7 w-auto" />
-          <h2 className="text-xl font-bold text-slate-800">Checkout</h2>
-        </div>
-        <p className="text-base text-slate-600">Plano <span className="font-semibold text-pink-600">{planName}</span> - Total: <span className="font-semibold text-pink-600">R$ {amount.toFixed(2)}</span></p>
+    <div className="w-full mx-auto">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white">Checkout</h2>
+        <p className="text-base text-slate-300 mt-1">Plano <span className="font-semibold text-pink-400">{planName}</span> - Total: <span className="font-semibold text-pink-400">R$ {amount.toFixed(2)}</span></p>
       </div>
 
       {!isFormReady ? (
@@ -214,23 +212,23 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
         </div>
       ) : (
         <>
-          {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+          {error && <p className="bg-red-500/20 text-red-300 p-3 rounded-lg text-center text-sm mb-4">{error}</p>}
           
-          <form id="form-checkout" className="space-y-1.5" onSubmit={handleSubmit}>
+          <form id="form-checkout" className="space-y-4" onSubmit={handleSubmit}>
             {/* 1. Cardholder Name */}
-            <div className="py-1">
+            <div>
               <input
                 type="text"
                 id="form-checkout__cardholderName"
                 data-checkout="cardholderName"
-                className={`w-full px-4 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getFieldClass('cardholderName')}`}
+                className={`${inputClasses} ${getFieldClass('cardholderName')}`}
                 placeholder="Nome e sobrenome"
               />
-              {fieldErrors.cardholderName && <p className="text-red-500 text-xs mt-1">{fieldErrors.cardholderName}</p>}
+              {fieldErrors.cardholderName && <p className="text-red-400 text-xs mt-1">{fieldErrors.cardholderName}</p>}
             </div>
 
             {/* 2. Card Number */}
-            <div className="py-1 relative">
+            <div className="relative">
               <div id="form-checkout__cardNumber" className={`mp-input-container h-11 rounded-lg p-3 border ${getFieldClass('cardNumber')}`}></div>
               {cardThumbnail && (
                 <img 
@@ -239,23 +237,23 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
                   className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-auto"
                 />
               )}
-              {fieldErrors.cardNumber && <p className="text-red-500 text-xs mt-1">{fieldErrors.cardNumber}</p>}
+              {fieldErrors.cardNumber && <p className="text-red-400 text-xs mt-1">{fieldErrors.cardNumber}</p>}
             </div>
 
             {/* 3. Expiration Date & CVV */}
-            <div className="grid grid-cols-2 gap-3 py-1">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <div id="form-checkout__cardExpirationDate" className={`mp-input-container h-11 rounded-lg p-3 border ${getFieldClass('cardExpirationDate')}`}></div>
-                {fieldErrors.cardExpirationDate && <p className="text-red-500 text-xs mt-1">{fieldErrors.cardExpirationDate}</p>}
+                {fieldErrors.cardExpirationDate && <p className="text-red-400 text-xs mt-1">{fieldErrors.cardExpirationDate}</p>}
               </div>
               <div>
                 <div id="form-checkout__securityCode" className={`mp-input-container h-11 rounded-lg p-3 border ${getFieldClass('securityCode')}`}></div>
-                {fieldErrors.securityCode && <p className="text-red-500 text-xs mt-1">{fieldErrors.securityCode}</p>}
+                {fieldErrors.securityCode && <p className="text-red-400 text-xs mt-1">{fieldErrors.securityCode}</p>}
               </div>
             </div>
             
             {/* 4. Document Number */}
-            <div className="py-1">
+            <div>
               {/* Hidden Select for SDK */}
               <div className="hidden">
                 <select
@@ -277,44 +275,44 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
               <div>
                 <input
                   type="text"
-                  className={`w-full px-4 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getFieldClass('identificationNumber')}`}
+                  className={`${inputClasses} ${getFieldClass('identificationNumber')}`}
                   placeholder="CPF ou CNPJ"
                   value={maskIdentificationNumber(identificationNumber)}
                   onChange={handleIdentificationNumberChange}
                 />
-                {fieldErrors.identificationNumber && <p className="text-red-500 text-xs mt-1">{fieldErrors.identificationNumber}</p>}
+                {fieldErrors.identificationNumber && <p className="text-red-400 text-xs mt-1">{fieldErrors.identificationNumber}</p>}
               </div>
             </div>
 
-            <div className="py-1 hidden">
+            <div className="hidden">
               <select
                 id="form-checkout__issuer"
                 data-checkout="issuer"
-                className={`w-full px-4 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getFieldClass('issuer')}`}
+                className={`${inputClasses} ${getFieldClass('issuer')}`}
               ></select>
-              {fieldErrors.issuer && <p className="text-red-500 text-xs mt-1">{fieldErrors.issuer}</p>}
+              {fieldErrors.issuer && <p className="text-red-400 text-xs mt-1">{fieldErrors.issuer}</p>}
             </div>
             
             {/* 5. Installments */}
-            <div className="py-1">
+            <div>
               <select
                 id="form-checkout__installments"
                 data-checkout="installments"
-                className={`w-full px-4 py-2.5 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getFieldClass('installments')}`}
+                className={`${inputClasses} ${getFieldClass('installments')}`}
               ></select>
-              {fieldErrors.installments && <p className="text-red-500 text-xs mt-1">{fieldErrors.installments}</p>}
+              {fieldErrors.installments && <p className="text-red-400 text-xs mt-1">{fieldErrors.installments}</p>}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-pink-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-pink-600 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:from-slate-600 disabled:to-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed"
               disabled={loading || !cardForm}
             >
               {loading ? 'Processando...' : `Pagar R$ ${amount.toFixed(2)}`}
             </button>
 
-            <div className="mt-3 pt-3 border-t border-slate-200 text-center text-slate-500 text-sm">
-              <div className="flex items-center justify-center gap-1">
+            <div className="mt-4 pt-4 border-t border-white/20 text-center text-slate-400 text-sm">
+              <div className="flex items-center justify-center gap-1.5">
                 <span>Processado por</span>
                 <img 
                   src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.21.1/mercadopago/logo__large.png" 

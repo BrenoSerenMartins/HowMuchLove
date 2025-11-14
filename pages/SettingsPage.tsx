@@ -181,11 +181,11 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {isCheckoutModalOpen && selectedPlanDetails && mpPublicKey && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div className="relative bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+          <div className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsCheckoutModalOpen(false)}
-              className="absolute top-3 right-3 text-slate-500 hover:text-slate-800 text-2xl"
+              className="absolute top-4 right-4 text-slate-300 hover:text-white text-3xl"
             >
               &times;
             </button>
