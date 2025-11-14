@@ -3,16 +3,17 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CounterDemo from '../components/CounterDemo';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from '../hooks/useNavigate'; // Use the custom useNavigate hook
-import type { LoveStoryData } from '../types';
+import { useNavigate } from '../hooks/useNavigate';
+import type { LoveStoryData, Plan } from '../types';
 import PageWrapper from '../components/PageWrapper';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useNotification } from '../contexts/NotificationContext';
 import QRCodeModal from '../components/QRCodeModal';
 import PublicStory from '../components/PublicStory';
 
-const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; plan?: string; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, plan, navigate }) => {
-  const isGratis = plan === 'Gratis';
+// --- Styled ShareSection ---
+const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<Plan> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
+  const isGratis = planFeatures?.plan_name === 'Gratis';
 
   const handleShareClick = () => {
     if (isGratis) {
@@ -23,31 +24,27 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
   };
 
   return (
-    <div className="mt-8 bg-pink-50/80 backdrop-blur-sm border-t-2 border-pink-200 p-4 rounded-lg">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div className="mt-12 bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-black/30">
+      <div className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <h3 className="font-bold text-lg text-pink-800">Sua história está no ar!</h3>
-          <p className="text-pink-700 mt-1 text-sm">
+          <h3 className="font-bold text-lg text-white">Sua história está no ar!</h3>
+          <p className="text-slate-300 mt-1 text-sm">
             {isGratis 
               ? "Faça um upgrade para compartilhar sua história com o mundo."
               : "Use os botões para ver uma prévia ou compartilhar com o mundo."
             }
           </p>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-3 flex-shrink-0">
           <button
             onClick={onPreview}
-            className="bg-white text-center border-2 border-pink-500 text-pink-500 font-semibold py-2 px-4 rounded-md hover:bg-pink-50 transition-colors duration-200"
+            className="bg-white/20 text-center border border-white/20 text-white font-semibold py-2 px-5 rounded-lg shadow-sm hover:bg-white/30 hover:-translate-y-0.5 transition-all duration-200"
           >
             Ver Prévia
           </button>
           <button
             onClick={handleShareClick}
-            className={`font-semibold py-2 px-4 rounded-md transition-colors duration-200 ${
-              isGratis
-                ? 'bg-pink-500 text-white hover:bg-pink-600'
-                : 'bg-pink-500 text-white hover:bg-pink-600'
-            }`}
+            className="font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white"
           >
             {isGratis ? 'Fazer Upgrade' : 'Compartilhar'}
           </button>
@@ -57,9 +54,10 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
   );
 };
 
+// --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
-  const { user, saveStory, loadStory, uploadImage, deleteImage } = useAuth();
-  const { setIsDirty, navigate } = useNavigate(); // Get navigate from custom hook
+  const { user, saveStory, loadStory, deleteImage, planFeatures } = useAuth();
+  const { setIsDirty, navigate } = useNavigate();
   const { addToast } = useNotification();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,10 +73,7 @@ const DashboardPage: React.FC = () => {
   }
 
   useEffect(() => {
-    // Reset dirty state when component unmounts (e.g., after confirming navigation away)
-    return () => {
-        setIsDirty(false);
-    };
+    return () => { setIsDirty(false); };
   }, [setIsDirty]);
 
   useEffect(() => {
@@ -86,12 +81,12 @@ const DashboardPage: React.FC = () => {
       setIsLoading(true);
       const data = await loadStory();
       setStoryData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', entryButtonText: '' });
-      if (data?.startDate && user) { // Only show share link if story has a start date
+      if (data?.startDate && user) {
         setShareLink(generateShareLink(user.email));
       }
       setIsLoading(false);
     };
-    if (!isPreviewing) { // Don't refetch when returning from preview
+    if (!isPreviewing) {
         fetchStory();
     }
   }, [loadStory, user, isPreviewing]);
@@ -99,18 +94,9 @@ const DashboardPage: React.FC = () => {
   const handleSaveStory = async (newData: LoveStoryData, newFiles: File[]) => {
     setSaveStatus('saving');
     try {
-      // Determine which images to delete
-      const originalImageIds = new Set(storyData?.images.map(img => img.id) || []);
-      const currentImageIds = new Set(newData.images.map(img => img.id));
-      const imageIdsToDelete = Array.from(originalImageIds).filter(id => !currentImageIds.has(id));
-
-      // The saveStory function in AuthContext will now handle everything
-      await saveStory(newData, newFiles, imageIdsToDelete); 
-      
-      // After saving, reload the story to get the final state
+      await saveStory(newData, newFiles, []); // Simplified call
       const updatedStoryData = await loadStory();
       setStoryData(updatedStoryData || newData);
-
       if (updatedStoryData?.startDate && user) {
         setShareLink(generateShareLink(user.email));
       } else {
@@ -135,70 +121,47 @@ const DashboardPage: React.FC = () => {
       );
     }
     
-    if (!storyData?.startDate) {
-        return (
-            <PageWrapper>
-                 <div className="text-center">
-                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800">
-                        Seja bem-vindo(a), <span className="text-pink-500">{user?.name}!</span>
-                    </h1>
-                    <p className="text-slate-600 mt-2 text-base sm:text-lg max-w-2xl mx-auto">
-                        Sua história de amor ainda não foi contada. Preencha os detalhes abaixo para começar a celebrar cada momento.
-                    </p>
-                    <div className="mt-8">
-                       <CounterDemo 
-                          initialData={storyData} 
-                          onSave={handleSaveStory} 
-                          onImageUpload={undefined} // No longer used
-                          onImageDelete={deleteImage}
-                          saveStatus={saveStatus}
-                          isDashboard 
-                          onDirty={() => setIsDirty(true)}
-                          currentPlan={user?.plan}
-                        />
-                    </div>
-                </div>
-            </PageWrapper>
-        )
-    }
+    const WelcomeHeader = (
+        <div className="text-center mb-10 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white" style={{ textShadow: '0px 2px 5px rgba(0,0,0,0.3)'}}>
+                {storyData?.startDate ? 'Bem-vindo(a) de volta,' : 'Seja bem-vindo(a),'} <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{user?.name}!</span>
+            </h1>
+            <p className="text-slate-300 mt-3 text-base sm:text-lg max-w-2xl mx-auto">
+                {storyData?.startDate 
+                    ? 'Esta é a sua história. Personalize, salve, reviva e compartilhe seus momentos.'
+                    : 'Sua história de amor ainda não foi contada. Preencha os detalhes abaixo para começar a celebrar cada momento.'
+                }
+            </p>
+        </div>
+    );
 
     return (
-      <>
-        <PageWrapper>
-            <div className="text-center mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800">
-                    Bem-vindo(a) de volta, <span className="text-pink-500">{user?.name}!</span>
-                </h1>
-                <p className="text-slate-600 mt-2 text-base sm:text-lg">
-                    Esta é a sua história. Personalize, salve, reviva e compartilhe seus momentos.
-                </p>
-            </div>
+      <PageWrapper>
+        {WelcomeHeader}
+        <div className="transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-3xl animate-fade-in-slide-up" style={{ animationDelay: '200ms' }}>
             <CounterDemo 
               initialData={storyData} 
               onSave={handleSaveStory} 
-              onImageUpload={undefined} // No longer used
               onImageDelete={deleteImage}
               saveStatus={saveStatus}
               isDashboard 
               onDirty={() => setIsDirty(true)}
-              currentPlan={user?.plan}
+              planFeatures={planFeatures}
             />
-        </PageWrapper>
-        <div className="relative z-10">
-          {shareLink && <ShareSection 
-            shareUrl={shareLink} 
-            onPreview={() => setIsPreviewing(true)} 
-            onShare={() => setIsQrModalOpen(true)}
-            plan={user?.plan}
-            navigate={navigate} // Pass navigate prop
-          />}
         </div>
-      </>
+        {shareLink && <div className="animate-fade-in-slide-up" style={{ animationDelay: '300ms' }}><ShareSection 
+          shareUrl={shareLink} 
+          onPreview={() => setIsPreviewing(true)} 
+          onShare={() => setIsQrModalOpen(true)}
+          planFeatures={planFeatures}
+          navigate={navigate}
+        /></div>}
+      </PageWrapper>
     );
   };
   
   if (isPreviewing) {
-    const previewData = { ...storyData, plan: user?.plan };
+    const previewData = { ...storyData, plan: planFeatures?.plan_name };
     return (
       <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900">
         <PublicStory storyData={previewData} hasEntered isMuted={false} setIsMuted={() => {}} />
@@ -213,21 +176,44 @@ const DashboardPage: React.FC = () => {
     );
   }
 
+  const backgroundImageUrl = storyData?.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+
   return (
-    <div className="min-h-screen flex flex-col bg-animated-lights lights-container overscroll-none">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
-        {renderContent()}
-      </main>
-      <Footer />
-      {shareLink && (
-        <QRCodeModal 
-            isOpen={isQrModalOpen}
-            onClose={() => setIsQrModalOpen(false)}
-            url={shareLink}
-            title={storyData?.storyTitle || 'Nossa História de Amor'}
+    <div className="min-h-screen flex flex-col text-white relative">
+        <style>{`
+            @keyframes fade-in-slide-up {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in-slide-up {
+                animation: fade-in-slide-up 0.7s ease-out forwards;
+                opacity: 0; /* Start hidden */
+            }
+        `}</style>
+        <div 
+            className="fixed inset-0 z-[-2]"
+            style={{
+                backgroundImage: `url(${backgroundImageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(15px) brightness(0.7)',
+                transform: 'scale(1.1)',
+            }}
         />
-      )}
+        <div className="fixed inset-0 z-[-1] lights-container"></div>
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10">
+            {renderContent()}
+        </main>
+        <Footer />
+        {shareLink && (
+            <QRCodeModal 
+                isOpen={isQrModalOpen}
+                onClose={() => setIsQrModalOpen(false)}
+                url={shareLink}
+                title={storyData?.storyTitle || 'Nossa História de Amor'}
+            />
+        )}
     </div>
   );
 };

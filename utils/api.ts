@@ -90,6 +90,19 @@ export const getMpPublicKey = async (): Promise<string | null> => {
 };
 
 /**
+ * Fetches all plans from the database.
+ */
+export const fetchAllPlans = async () => {
+  const { data, error } = await supabase.functions.invoke('get-all-plans');
+
+  if (error) {
+    console.error('Error fetching plans from Edge Function:', error);
+    return null;
+  }
+  return data;
+};
+
+/**
  * Mocks the call to the backend Edge Function for processing payments.
  * Used for frontend development and testing.
  */

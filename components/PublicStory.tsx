@@ -164,6 +164,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
     const backgroundImageUrl = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
     const [topImageIndex, setTopImageIndex] = useState(0);
+    const [startBlur, setStartBlur] = useState(false);
 
     useEffect(() => {
         if (!images || images.length <= 1) return;
@@ -177,6 +178,15 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
 
     const messageRef = React.useRef<HTMLDivElement>(null);
     const isMessageOnScreen = useOnScreen(messageRef, "-100px");
+
+    useEffect(() => {
+        if (isMessageOnScreen) {
+            const timer = setTimeout(() => {
+                setStartBlur(true);
+            }, 500); // Delay to start blur after fade-in starts
+            return () => clearTimeout(timer);
+        }
+    }, [isMessageOnScreen]);
 
     return (
         <div 
@@ -295,13 +305,14 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             {message && (
                 <section 
                     ref={messageRef}
-                    className={`transition-opacity duration-1000 ${isMessageOnScreen ? 'opacity-100' : 'opacity-0'} flex-grow flex items-center justify-center w-full py-8 px-4`}
+                    className={`transition-opacity duration-500 ${isMessageOnScreen ? 'opacity-100' : 'opacity-0'} flex-grow flex items-center justify-center w-full py-8 px-4`}
                 >
                     <div 
-                        className="bg-slate-800/60 backdrop-blur-md rounded-2xl shadow-xl p-8 max-w-3xl w-full"
+                        className={`bg-slate-800/60 rounded-2xl shadow-xl p-8 max-w-3xl w-full transition-all duration-1000 ease-in-out ${startBlur ? 'backdrop-blur-md' : 'backdrop-blur-none'}`}
                     >
                         <p 
                             className="font-cursive text-slate-200 text-2xl sm:text-3xl lg:text-4xl leading-relaxed break-words text-center"
+                            style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}
                         >
                             <QuoteStartIcon className="text-slate-600" />
                             {message}

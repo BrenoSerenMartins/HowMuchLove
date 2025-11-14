@@ -46,7 +46,7 @@ const StoryPage: React.FC = () => {
     };
     
     loadStory();
-  }, []);
+  }, [storyId]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +85,7 @@ const StoryPage: React.FC = () => {
                 setHasEntered(true);
                 setIsMuted(false); // Unmute on entry
               }}
-              className="bg-white/90 text-slate-800 font-bold py-4 px-10 rounded-lg shadow-2xl hover:bg-white transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-4 px-10 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 will-change-transform"
             >
               {storyData.entryButtonText || 'Entrar na História'}
             </button>
@@ -97,49 +97,71 @@ const StoryPage: React.FC = () => {
     return <PublicStory storyData={storyData} hasEntered={hasEntered} isMuted={isMuted} setIsMuted={setIsMuted} />;
   };
 
+  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
+
+  const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <div className="min-h-screen flex flex-col text-white relative">
+      <div 
+          className="fixed inset-0 z-[-2]"
+          style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(15px) brightness(0.6)',
+              transform: 'scale(1.1)',
+          }}
+      />
+      <div className="fixed inset-0 z-[-1] lights-container"></div>
+      <main className="flex-grow flex items-center justify-center p-4 z-10">
+        {children}
+      </main>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex justify-center items-center bg-slate-900 overscroll-none">
+      <PageWrapper>
         <LoadingSpinner />
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen w-full flex justify-center items-center bg-slate-900 text-white text-center p-4 overscroll-none">
-        <div>
-          <h1 className="text-4xl font-bold mb-4">Oops!</h1>
-          <p className="text-xl text-white/80">{error}</p>
+      <PageWrapper>
+        <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 border border-white/20 text-center max-w-md w-full">
+          <h1 className="text-4xl font-bold mb-4 text-red-400">Oops!</h1>
+          <p className="text-xl text-slate-300">{error}</p>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
   if (isPasswordProtected && !isPasswordVerified) {
     return (
-      <div className="min-h-screen w-full flex justify-center items-center bg-slate-900 text-white p-4 overscroll-none">
-        <div className="bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center max-w-md w-full">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">Esta história é privada</h2>
-          <p className="text-slate-600 mb-6">Por favor, insira a senha para visualizá-la.</p>
+      <PageWrapper>
+        <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 border border-white/20 text-center max-w-md w-full">
+          <h2 className="text-2xl font-bold text-white mb-4">Esta história é privada</h2>
+          <p className="text-slate-300 mb-6">Por favor, insira a senha para visualizá-la.</p>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Senha"
-              className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 text-slate-800"
+              className={`${inputClasses} ${passwordError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-pink-500'}`}
             />
-            {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+            {passwordError && <p className="text-red-400 text-sm">{passwordError}</p>}
             <button
               type="submit"
-              className="w-full bg-pink-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-pink-600 transition-colors duration-300"
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
             >
               Entrar
             </button>
           </form>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
   

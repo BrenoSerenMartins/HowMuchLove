@@ -1,54 +1,10 @@
-import React, { useState } from 'react';
-import TransparentCheckoutForm from './TransparentCheckoutForm';
-import type { Plan } from '../types';
+import React, { useState, useEffect } from 'react';
 import PlanCard from './PlanCard';
-import { createPaymentPreference } from '../utils/api';
+import { fetchAllPlans } from '../utils/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { useNavigate } from '../hooks/useNavigate';
-import { useAuth } from '../hooks/useAuth'; // Import useAuth
-
-const plans: Plan[] = [
-  {
-    name: 'Sonho',
-    price: '4,90',
-    billingCycle: 'mês',
-    features: [
-      'Página salva para sempre',
-      'Imortalize seu momento favorito',
-      'Declare seu amor com uma mensagem',
-      'Link exclusivo para compartilhar',
-    ],
-    isFeatured: false,
-    cta: 'Escolher Sonho',
-  },
-  {
-    name: 'Eterno',
-    price: '29,90',
-    billingCycle: 'anual',
-    features: [
-      'Tudo do plano Sonho, e mais:',
-      'Conte sua história com até 10 fotos',
-      'Dê o tom com sua música especial',
-      'Personalize a aparência do contador',
-    ],
-    isFeatured: true,
-    cta: 'Escolher Eterno',
-  },
-  {
-    name: 'Infinito',
-    price: '49,90',
-    billingCycle: 'Pagamento único',
-    features: [
-      'Tudo do plano Eterno, e mais:',
-      'Um legado digital, sem mensalidades',
-      'Reviva cada detalhe com até 20 fotos',
-      'Emocione com um vídeo especial',
-      'Acesso a todas as futuras atualizações',
-    ],
-    isFeatured: false,
-    cta: 'Escolher Infinito',
-  },
-];
+import { useAuth } from '../hooks/useAuth';
+import type { PlanFromDB, FormattedPlan } from '../types';
 
 const planRank: { [key: string]: number } = {
   'Sonho': 1,
@@ -58,21 +14,82 @@ const planRank: { [key: string]: number } = {
 
 interface PricingSectionProps {
   id?: string;
+  plans: PlanFromDB[]; // Receives raw DB plans
   currentPlan?: string | null;
   onPlanSelect: (plan: { name: string; amount: number }) => void;
   mpPublicKey: string | null;
 }
 
-const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlanSelect, mpPublicKey }) => {
+// Helper function to generate features from DB plan data
+const generateFeatures = (plan: PlanFromDB): string[] => {
+  const features: string[] = [];
+
+  if (plan.name === 'Sonho') {
+    features.push(
+      'Página salva para sempre',
+      'Imortalize seu momento favorito',
+      'Declare seu amor com uma mensagem',
+      'Link exclusivo para compartilhar'
+    );
+  } else if (plan.name === 'Eterno') {
+    features.push(
+      'Tudo do plano Sonho, e mais:',
+      `Conte sua história com até ${plan.image_limit} fotos`,
+      'Dê o tom com sua música especial'
+    );
+    if (plan.allow_password_protection) {
+      features.push('Proteja sua página com senha');
+    }
+  } else if (plan.name === 'Infinito') {
+    features.push(
+      'Tudo do plano Eterno, e mais:',
+      'Um legado digital, sem mensalidades',
+      `Reviva cada detalhe com até ${plan.image_limit} fotos`
+    );
+    if (plan.allow_youtube) {
+      features.push('Emocione com um vídeo especial');
+    }
+    if (plan.allow_custom_button) {
+        features.push('Personalize o botão de entrada');
+    }
+    features.push('Acesso a todas as futuras atualizações');
+  }
+
+  return features;
+};
+
+
+const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect, mpPublicKey }) => {
   const { addToast } = useNotification();
   const { navigate } = useNavigate();
-  const { user } = useAuth(); // Get user from AuthContext
+  const { user } = useAuth();
+
+  // Format the raw DB plans into the structure the PlanCard expects
+  const formattedPlans: FormattedPlan[] = (dbPlans || []).map(p => ({
+    name: p.name,
+    price: p.price.toFixed(2).replace('.', ','), // Ensure 2 decimal places and comma
+    billingCycle: p.name === 'Infinito' ? 'Pagamento único' : p.name === 'Eterno' ? 'anual' : 'mês',
+    features: generateFeatures(p),
+    isFeatured: p.name === 'Eterno',
+    cta: `Escolher ${p.name}`,
+  }));
 
   const getPlanStatus = (planName: string) => {
-    if (!currentPlan) return undefined;
-    if (planName === currentPlan) return 'current';
-    if (planRank[planName] > planRank[currentPlan]) return 'upgrade';
-    if (planRank[planName] < planRank[currentPlan]) return 'downgrade';
+    if (!currentPlan || typeof currentPlan !== 'string' || !planRank[currentPlan]) {
+      return undefined;
+    }
+    const currentRank = planRank[currentPlan];
+    const newRank = planRank[planName];
+
+    if (newRank === currentRank) {
+      return 'current';
+    }
+    if (newRank > currentRank) {
+      return 'upgrade';
+    }
+    if (newRank < currentRank) {
+      return 'downgrade';
+    }
     return undefined;
   };
 
@@ -92,7 +109,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlan
       return;
     }
 
-    const selectedPlan = plans.find(p => p.name === planName);
+    const selectedPlan = formattedPlans.find(p => p.name === planName);
     if (!selectedPlan) {
       addToast('Plano não encontrado.', 'error');
       return;
@@ -105,25 +122,35 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlan
   };
   
   return (
-    <section id={id} className="text-center pt-12 sm:pt-20 md:pt-24 pb-12 scroll-mt-20">
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-slate-800">
-        Um Legado Digital para o <span className="text-pink-500">Seu Amor.</span>
-      </h2>
-      <p className="text-base sm:text-lg text-slate-600 mb-12 max-w-2xl mx-auto">
-        Gostou da prévia? Agora é hora de torná-la eterna. Salve sua homenagem e compartilhe seu link mágico com o plano ideal.
-      </p>
-      <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-8">
-        {plans.map((plan) => (
-          <div 
-            key={plan.name} 
-            className={`
-              relative w-full max-w-md md:w-1/3 transition-transform duration-300 hover:z-20
-              ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
-            `}
-          >
-            <PlanCard plan={plan} status={getPlanStatus(plan.name)} onSelect={handleSelectPlan} disabled={!mpPublicKey} />
-          </div>
-        ))}
+    <section id={id} className="py-16 sm:py-20 scroll-mt-20 overflow-hidden">
+      <div className="container mx-auto px-4">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            Um Legado Digital para o <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Seu Amor.</span>
+          </h2>
+          <p className="text-slate-300 mt-4 text-lg">
+            Gostou da prévia? Agora é hora de torná-la eterna. Salve sua homenagem e compartilhe seu link mágico com o plano ideal.
+          </p>
+        </div>
+
+        {/* Plan Cards Container - Flex for mobile, Grid for desktop */}
+        <div 
+          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar"
+          style={{ animationDelay: '300ms' }}
+        >
+          {formattedPlans.map((plan) => (
+            <div 
+              key={plan.name} 
+              className={`
+                relative w-5/6 flex-shrink-0 md:w-full transition-transform duration-300 hover:z-20
+                ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
+              `}
+            >
+              <PlanCard plan={plan} status={getPlanStatus(plan.name)} onSelect={handleSelectPlan} disabled={!mpPublicKey} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

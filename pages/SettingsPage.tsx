@@ -6,24 +6,32 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
 import { ArrowLeftIcon } from '../components/icons/ArrowLeftIcon';
 import PageWrapper from '../components/PageWrapper';
-import { getMpPublicKey } from '../utils/api';
+import { getMpPublicKey, fetchAllPlans } from '../utils/api';
 import TransparentCheckoutForm from '../components/TransparentCheckoutForm';
 import { useNotification } from '../contexts/NotificationContext';
+import type { PlanFromDB } from '../types';
 
 const SettingsPage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
   const { navigate } = useNavigate();
   const { addToast } = useNotification();
   const [mpPublicKey, setMpPublicKey] = useState<string | null>(null);
+  const [plans, setPlans] = useState<PlanFromDB[]>([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [selectedPlanDetails, setSelectedPlanDetails] = useState<{ name: string; amount: number } | null>(null);
   
   useEffect(() => {
-    const fetchKey = async () => {
-      const key = await getMpPublicKey();
+    const fetchInitialData = async () => {
+      const [key, fetchedPlans] = await Promise.all([
+        getMpPublicKey(),
+        fetchAllPlans()
+      ]);
       setMpPublicKey(key);
+      if (fetchedPlans) {
+        setPlans(fetchedPlans);
+      }
     };
-    fetchKey();
+    fetchInitialData();
 
     // Force disable overscroll for this page specifically
     const style = document.createElement('style');
@@ -73,63 +81,98 @@ const SettingsPage: React.FC = () => {
     return null; // Redirect logic in App.tsx will handle this
   }
 
+  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+
   return (
     <>
-      <div className="min-h-screen flex flex-col bg-rose-50 overscroll-none">
+      <div className="min-h-screen flex flex-col text-white relative">
+        <style>{`
+            @keyframes fade-in-slide-up {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in-slide-up {
+                animation: fade-in-slide-up 0.7s ease-out forwards;
+                opacity: 0; /* Start hidden */
+            }
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            /* Hide scrollbar for IE, Edge and Firefox */
+            .hide-scrollbar {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+        `}</style>
+        <div 
+            className="fixed inset-0 z-[-2]"
+            style={{
+                backgroundImage: `url(${backgroundImageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(15px) brightness(0.6)',
+                transform: 'scale(1.1)',
+            }}
+        />
+        <div className="fixed inset-0 z-[-1] lights-container"></div>
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10">
           <PageWrapper>
             <div className="max-w-4xl mx-auto">
-              <div className="mb-8">
+              <div className="mb-8 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 text-slate-600 font-semibold hover:text-pink-500 transition-colors duration-300 group"
+                  className="flex items-center gap-2 text-slate-300 font-semibold hover:text-white transition-colors duration-300 group"
                 >
                   <ArrowLeftIcon className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
                   <span>Voltar ao Painel</span>
                 </button>
               </div>
 
-              <div className="text-center mb-12">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800">
-                  Configurações da Conta
+              <div className="text-center mb-12 animate-fade-in-slide-up" style={{ animationDelay: '200ms' }}>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
+                  Configurações da <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Conta</span>
                 </h1>
-                <p className="text-slate-600 mt-2 text-base sm:text-lg">
+                <p className="text-slate-300 mt-2 text-base sm:text-lg">
                   Gerencie suas informações e seu plano.
                 </p>
               </div>
 
-              <div className="bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl p-8 mb-8">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Seus Dados</h2>
+              <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 mb-8 border border-white/20 animate-fade-in-slide-up" style={{ animationDelay: '300ms' }}>
+                <h2 className="text-2xl font-bold text-white mb-6">Seus Dados</h2>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Plano Atual</p>
-                    <p className="text-lg font-bold text-pink-600">{user?.plan || 'Nenhum plano ativo'}</p>
+                    <p className="text-sm font-medium text-slate-300">Plano Atual</p>
+                    <p className="text-lg font-bold text-pink-400">{user?.plan || 'Nenhum plano ativo'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Nome</p>
-                    <p className="text-lg text-slate-900">{user.name}</p>
+                    <p className="text-sm font-medium text-slate-300">Nome</p>
+                    <p className="text-lg text-white">{user.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-500">Email</p>
-                    <p className="text-lg text-slate-900">{user.email}</p>
+                    <p className="text-sm font-medium text-slate-300">Email</p>
+                    <p className="text-lg text-white">{user.email}</p>
                   </div>
                 </div>
-                <div className="border-t my-8 border-slate-200"></div>
+                <div className="border-t my-8 border-white/20"></div>
                   <button
                     onClick={handleLogout}
-                    className="w-full sm:w-auto border-2 border-red-500 text-red-500 font-semibold py-2 px-6 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors duration-300"
+                    className="w-full sm:w-auto border border-red-500 text-red-400 font-semibold py-2 px-6 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors duration-300"
                   >
                     Sair da Conta
                   </button>
               </div>
               
-              <PricingSection 
-                id="pricing-section" 
-                currentPlan={user?.plan} 
-                onPlanSelect={handlePlanSelected} 
-                mpPublicKey={mpPublicKey} 
-              />
+              <div className="animate-fade-in-slide-up" style={{ animationDelay: '400ms' }}>
+                <PricingSection 
+                  id="pricing-section" 
+                  plans={plans}
+                  currentPlan={user?.plan} 
+                  onPlanSelect={handlePlanSelected} 
+                  mpPublicKey={mpPublicKey} 
+                />
+              </div>
 
             </div>
           </PageWrapper>
