@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import TransparentCheckoutForm from './TransparentCheckoutForm';
 import type { Plan } from '../types';
 import PlanCard from './PlanCard';
 import { createPaymentPreference } from '../utils/api';
@@ -58,10 +59,11 @@ const planRank: { [key: string]: number } = {
 interface PricingSectionProps {
   id?: string;
   currentPlan?: string | null;
-  onPlanChange?: (planName: string) => void;
+  onPlanSelect: (plan: { name: string; amount: number }) => void;
+  mpPublicKey: string | null;
 }
 
-const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlanChange }) => {
+const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlanSelect, mpPublicKey }) => {
   const { addToast } = useNotification();
   const { navigate } = useNavigate();
   const { user } = useAuth(); // Get user from AuthContext
@@ -74,20 +76,32 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlan
     return undefined;
   };
 
-  const handleSelectPlan = async (planName: string) => {
+  const parsePriceToNumber = (priceString: string): number => {
+    return parseFloat(priceString.replace(',', '.'));
+  };
+
+  const handleSelectPlan = (planName: string) => {
     if (!user) {
       addToast('Crie uma conta para escolher um plano.', 'info');
       navigate('/register');
       return;
     }
 
-    try {
-      const { init_point } = await createPaymentPreference(planName);
-      window.location.href = init_point; // Redirect to Mercado Pago checkout
-    } catch (error: any) {
-      console.error('Error initiating payment:', error);
-      addToast(error.message || 'Erro ao iniciar o pagamento. Tente novamente.', 'error');
+    if (!mpPublicKey) {
+      addToast('A configuração de pagamento não está disponível no momento. Tente novamente mais tarde.', 'error');
+      return;
     }
+
+    const selectedPlan = plans.find(p => p.name === planName);
+    if (!selectedPlan) {
+      addToast('Plano não encontrado.', 'error');
+      return;
+    }
+
+    onPlanSelect({
+      name: selectedPlan.name,
+      amount: parsePriceToNumber(selectedPlan.price),
+    });
   };
   
   return (
@@ -107,7 +121,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, currentPlan, onPlan
               ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
             `}
           >
-            <PlanCard plan={plan} status={getPlanStatus(plan.name)} onSelect={handleSelectPlan} />
+            <PlanCard plan={plan} status={getPlanStatus(plan.name)} onSelect={handleSelectPlan} disabled={!mpPublicKey} />
           </div>
         ))}
       </div>

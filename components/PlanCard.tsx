@@ -8,9 +8,10 @@ interface PlanCardProps {
   plan: Plan;
   status?: PlanStatus;
   onSelect?: (planName: string) => void;
+  disabled?: boolean;
 }
 
-const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect }) => {
+const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = false }) => {
   const isCurrentPlan = status === 'current';
 
   const cardClasses = plan.isFeatured
@@ -22,7 +23,10 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect }) => {
     ? 'bg-pink-500 text-white hover:bg-pink-600'
     : 'bg-pink-100 text-pink-700 hover:bg-pink-200';
 
-  if (isCurrentPlan) {
+  if (disabled) {
+    buttonText = 'Carregando...';
+    buttonClasses = 'bg-slate-200 text-slate-500 cursor-wait';
+  } else if (isCurrentPlan) {
     buttonText = 'Seu Plano Atual';
     buttonClasses = 'bg-slate-200 text-slate-500 cursor-not-allowed';
   } else if (status === 'upgrade') {
@@ -77,7 +81,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect }) => {
       </ul>
       <button
         onClick={handleSelect}
-        disabled={isCurrentPlan}
+        disabled={isCurrentPlan || disabled}
         className={`w-full mt-10 py-3 px-6 font-semibold rounded-lg shadow-sm transition-transform transition-colors duration-300 transform hover:scale-105 ${buttonClasses}`}
       >
         {buttonText}

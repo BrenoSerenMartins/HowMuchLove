@@ -21,7 +21,7 @@ const PlanBadge: React.FC<{ planName: string }> = ({ planName }) => {
   }
 
   return (
-    <span className={`ml-3 px-2.5 py-1 rounded-full text-xs font-semibold leading-none ${styles}`}>
+    <span className={`ml-2 sm:ml-3 px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold leading-none ${styles}`}>
       {planName}
     </span>
   );
@@ -54,8 +54,8 @@ const Header: React.FC = () => {
     <header className="bg-white/70 backdrop-blur-lg shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-            <button onClick={() => navigate('/')} className="text-xl sm:text-2xl font-bold text-slate-900 focus:outline-none">
-              HowMuch<span className="text-pink-500 font-extrabold">Love</span>
+            <button onClick={() => navigate('/')} className="focus:outline-none">
+              <img src="/images/logo.png" alt="HowMuchLove Logo" className="h-7 sm:h-8 w-auto" />
             </button>
             {user && user.plan && <PlanBadge planName={user.plan} />}
         </div>

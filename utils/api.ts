@@ -71,3 +71,47 @@ export const createPaymentPreference = async (planName: string): Promise<{ init_
   const response = await apiClient.post('/payments/create-preference', { planName });
   return response.data;
 };
+
+/**
+ * Fetches the Mercado Pago public key from the app_config table.
+ */
+export const getMpPublicKey = async (): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', 'MERCADO_PAGO_PUBLIC_KEY')
+    .single();
+
+  if (error) {
+    console.error('Error fetching MP Public Key:', error);
+    return null;
+  }
+  return data?.value || null;
+};
+
+/**
+ * Mocks the call to the backend Edge Function for processing payments.
+ * Used for frontend development and testing.
+ */
+export const processPaymentMock = async (
+  cardToken: string,
+  planName: string,
+  amount: number,
+  installments: number,
+  payerEmail: string,
+  payerIdentificationType: string,
+  payerIdentificationNumber: string
+): Promise<{ success: boolean; message: string; paymentId?: string }> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (cardToken && planName && amount) {
+        // Simulate a successful payment
+        console.log('Mock Payment Processed:', { cardToken, planName, amount, installments, payerEmail, payerIdentificationType, payerIdentificationNumber });
+        resolve({ success: true, message: 'Pagamento mockado com sucesso!', paymentId: 'mock_payment_12345' });
+      } else {
+        // Simulate a failed payment
+        reject(new Error('Erro mockado: Dados de pagamento incompletos.'));
+      }
+    }, 1500); // Simulate network delay
+  });
+};
