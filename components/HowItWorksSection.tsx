@@ -31,7 +31,7 @@ interface StepCardProps {
 }
 
 const StepCard: React.FC<StepCardProps> = ({ step, icon, title, description }) => (
-  <div className="relative w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 text-center flex flex-col items-center transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform">
+  <div className="relative w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 text-center flex flex-col items-center transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform snap-center">
     <div className="absolute -top-5 bg-pink-500 text-white w-10 h-10 flex items-center justify-center rounded-full font-bold text-xl border-4 border-slate-900">{step}</div>
     <div className="mt-8 mb-4 text-pink-400">
       {icon}
@@ -64,7 +64,7 @@ const HowItWorksSection: React.FC = () => {
 
         {/* Steps Container - Flex for mobile, Grid for desktop */}
         <div 
-          className="relative flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-4 md:px-0 pb-4 pt-8 animate-fade-in-slide-up hide-scrollbar"
+          className="relative flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-8 md:px-0 pb-4 pt-8 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory scroll-pl-8 scroll-pr-8"
           style={{ animationDelay: '300ms' }}
         >
           <StepCard 

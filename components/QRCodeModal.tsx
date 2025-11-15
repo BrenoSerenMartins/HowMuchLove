@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useNotification } from '../contexts/NotificationContext'; // Import useNotification
+import { useNotification } from '../contexts/NotificationContext';
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface QRCodeModalProps {
 
 const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }) => {
   const qrCodeRef = useRef<HTMLDivElement>(null);
-  const { addToast } = useNotification(); // Use the notification hook
+  const { addToast } = useNotification();
 
   if (!isOpen) return null;
 
@@ -28,7 +28,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-        addToast('QR Code baixado com sucesso!', 'success'); // Add success toast
+        addToast('QR Code baixado com sucesso!', 'success');
       }
     }
   };
@@ -45,14 +45,12 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
         await navigator.share(shareData);
         addToast('Link compartilhado com sucesso!', 'success');
       } catch (err: any) {
-        // User cancelled share or other error
         if (err.name !== 'AbortError') {
           console.error('Share failed:', err);
           addToast('Falha ao compartilhar o link.', 'error');
         }
       }
     } else {
-      // Fallback to clipboard copy
       try {
         await navigator.clipboard.writeText(url);
         addToast('Link copiado para a área de transferência!', 'success');
@@ -65,31 +63,31 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
 
   return (
     <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-center items-center z-50 p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all"
+        className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Compartilhe sua História</h2>
-        <p className="text-slate-600 mb-6">Baixe o QR Code ou compartilhe o link diretamente.</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Compartilhe sua História</h2>
+        <p className="text-slate-300 mb-6">Baixe o QR Code ou compartilhe o link diretamente.</p>
         
-        <div ref={qrCodeRef} className="p-4 bg-slate-100 rounded-lg inline-block">
-          <QRCodeCanvas value={url} size={256} />
+        <div ref={qrCodeRef} className="p-4 bg-white rounded-lg inline-block">
+          <QRCodeCanvas value={url} size={256} bgColor="#FFFFFF" fgColor="#000000" />
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-4">
           <button
             onClick={downloadQRCode}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             Baixar QR Code
           </button>
           <button
             onClick={handleWebShare}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-200 text-slate-800 font-semibold rounded-lg hover:bg-slate-300 transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
             Compartilhar Link
@@ -98,9 +96,9 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
 
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
     </div>

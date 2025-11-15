@@ -136,14 +136,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
 
         {/* Plan Cards Container - Flex for mobile, Grid for desktop */}
         <div 
-          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar"
+          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-8 md:px-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory scroll-pl-8 scroll-pr-8"
           style={{ animationDelay: '300ms' }}
         >
           {formattedPlans.map((plan) => (
             <div 
               key={plan.name} 
               className={`
-                relative w-5/6 flex-shrink-0 md:w-full transition-transform duration-300 hover:z-20
+                relative w-3/4 flex-shrink-0 md:w-full transition-transform duration-300 hover:z-20 snap-center
                 ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
               `}
             >

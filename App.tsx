@@ -58,7 +58,7 @@ const Main: React.FC = () => {
   }, [route, user, isLoading, navigate]);
 
   const loadingFallback = (
-    <div className="min-h-screen flex items-center justify-center bg-animated-lights">
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
       <LoadingSpinner />
     </div>
   );

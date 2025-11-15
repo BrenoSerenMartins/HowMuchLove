@@ -9,7 +9,7 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, author, detail }) => (
-  <div className="w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform">
+  <div className="w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform snap-center">
     <p className="text-slate-300 text-sm flex-grow mb-4">"{quote}"</p>
     <div className="flex items-center">
       <img 
@@ -48,7 +48,7 @@ const SocialProofSection: React.FC = () => {
 
         {/* Testimonials Container - Flex for mobile, Grid for desktop */}
         <div 
-          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar"
+          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-8 md:px-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory scroll-pl-8 scroll-pr-8"
           style={{ animationDelay: '300ms' }}
         >
           <TestimonialCard 

@@ -222,7 +222,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             {videoId && hasEntered && (
                 <button
                     onClick={() => setIsMuted?.(!isMuted)}
-                    className="fixed bottom-4 right-4 z-50 bg-black/40 backdrop-blur-sm text-white p-3 rounded-full shadow-lg hover:bg-black/60 transition-all duration-300"
+                    className="fixed bottom-4 right-4 z-50 bg-black/40 backdrop-blur-sm text-white p-4 rounded-full shadow-lg hover:bg-black/60 transition-all duration-300"
                     aria-label={isMuted ? 'Ativar som' : 'Desativar som'}
                 >
                     {isMuted ? (

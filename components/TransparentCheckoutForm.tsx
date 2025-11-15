@@ -214,7 +214,7 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
         <>
           {error && <p className="bg-red-500/20 text-red-300 p-3 rounded-lg text-center text-sm mb-4">{error}</p>}
           
-          <form id="form-checkout" className="space-y-4" onSubmit={handleSubmit}>
+          <form id="form-checkout" className="space-y-6" onSubmit={handleSubmit}>
             {/* 1. Cardholder Name */}
             <div>
               <input

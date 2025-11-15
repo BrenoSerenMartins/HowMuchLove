@@ -35,16 +35,16 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
             }
           </p>
         </div>
-        <div className="flex gap-3 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={onPreview}
-            className="bg-white/20 text-center border border-white/20 text-white font-semibold py-2 px-5 rounded-lg shadow-sm hover:bg-white/30 hover:-translate-y-0.5 transition-all duration-200"
+            className="w-full bg-white/20 text-center border border-white/20 text-white font-semibold py-2 px-5 rounded-lg shadow-sm hover:bg-white/30 hover:-translate-y-0.5 transition-all duration-200"
           >
             Ver Prévia
           </button>
           <button
             onClick={handleShareClick}
-            className="font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white"
+            className="w-full font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white"
           >
             {isGratis ? 'Fazer Upgrade' : 'Compartilhar'}
           </button>
@@ -202,7 +202,7 @@ const DashboardPage: React.FC = () => {
         />
         <div className="fixed inset-0 z-[-1] lights-container"></div>
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10">
+        <main className="flex-grow container mx-auto px-8 py-8 md:py-12 z-10">
             {renderContent()}
         </main>
         <Footer />
