@@ -85,7 +85,7 @@ const Header: React.FC = () => {
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
               <button onClick={() => navigate('/')} className="focus:outline-none">
-                <img src="/images/logo.png" alt="HowMuchLove Logo" className="h-7 sm:h-8 w-auto" />
+                <img src="/images/logo.png" alt="HowMuchLove Logo" className="max-h-6 sm:max-h-7 md:max-h-8 w-auto" />
               </button>
               {user && <PlanBadge planName={user.plan} />}
           </div>

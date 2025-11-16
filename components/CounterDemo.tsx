@@ -5,7 +5,6 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import UpgradeToUnlock from './UpgradeToUnlock';
-import { PLAN_FEATURES } from '../utils/planConfig';
 import StoryPreview from './StoryPreview';
 import type { LoveStoryData, StoryImage, Plan } from '../types';
 

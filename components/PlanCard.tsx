@@ -7,7 +7,7 @@ type PlanStatus = 'current' | 'upgrade' | 'downgrade';
 interface PlanCardProps {
   plan: Plan;
   status?: PlanStatus;
-  onSelect?: (planName: string) => void;
+  onSelect?: (planId: number) => void;
   disabled?: boolean;
 }
 
@@ -53,7 +53,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
 
   const handleSelect = () => {
     if (onSelect) {
-      onSelect(plan.name);
+      onSelect(plan.id);
     }
   };
 
@@ -82,7 +82,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
       </div>
       <div className="border-t my-6 border-slate-700"></div>
       <ul className="space-y-4 text-left flex-grow">
-        {plan.features.map((feature, index) => {
+        {(plan.features || []).map((feature, index) => {
           const isSpecialFeature = feature === 'Pague uma vez, use para sempre';
           return (
             <li key={index} className="flex items-center">

@@ -1,15 +1,21 @@
 // Represents the raw plan data fetched from the database/edge function
 export interface PlanFromDB {
+  id: number;
   name: string;
   price: number;
   image_limit: number;
   allow_youtube: boolean;
   allow_password_protection: boolean;
   allow_custom_button: boolean;
+  features: string[];
+  billing_cycle: string;
+  is_featured: boolean;
+  is_active: boolean;
 }
 
 // Represents the plan data after being formatted for display in the UI
 export interface FormattedPlan {
+  id: number;
   name: string;
   price: string;
   billingCycle: string;
@@ -21,6 +27,7 @@ export interface FormattedPlan {
 // Kept for legacy components that might still use it temporarily.
 // Should be phased out.
 export interface Plan {
+  id: number;
   name: string;
   price: string;
   billingCycle: string;

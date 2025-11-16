@@ -20,45 +20,6 @@ interface PricingSectionProps {
   mpPublicKey: string | null;
 }
 
-// Helper function to generate features from DB plan data
-const generateFeatures = (plan: PlanFromDB): string[] => {
-  const features: string[] = [];
-
-  if (plan.name === 'Sonho') {
-    features.push(
-      'Página salva para sempre',
-      'Imortalize seu momento favorito',
-      'Declare seu amor com uma mensagem',
-      'Link exclusivo para compartilhar'
-    );
-  } else if (plan.name === 'Eterno') {
-    features.push(
-      'Tudo do plano Sonho, e mais:',
-      `Conte sua história com até ${plan.image_limit} fotos`,
-      'Dê o tom com sua música especial'
-    );
-    if (plan.allow_password_protection) {
-      features.push('Proteja sua página com senha');
-    }
-  } else if (plan.name === 'Infinito') {
-    features.push(
-      'Tudo do plano Eterno, e mais:',
-      'Um legado digital, sem mensalidades',
-      `Reviva cada detalhe com até ${plan.image_limit} fotos`
-    );
-    if (plan.allow_youtube) {
-      features.push('Emocione com um vídeo especial');
-    }
-    if (plan.allow_custom_button) {
-        features.push('Personalize o botão de entrada');
-    }
-    features.push('Acesso a todas as futuras atualizações');
-  }
-
-  return features;
-};
-
-
 const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect, mpPublicKey }) => {
   const { addToast } = useNotification();
   const { navigate } = useNavigate();
@@ -66,11 +27,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
 
   // Format the raw DB plans into the structure the PlanCard expects
   const formattedPlans: FormattedPlan[] = (dbPlans || []).map(p => ({
+    id: p.id,
     name: p.name,
     price: p.price.toFixed(2).replace('.', ','), // Ensure 2 decimal places and comma
-    billingCycle: p.name === 'Infinito' ? 'Pagamento único' : p.name === 'Eterno' ? 'anual' : 'mês',
-    features: generateFeatures(p),
-    isFeatured: p.name === 'Eterno',
+    billingCycle: p.billing_cycle,
+    features: p.features,
+    isFeatured: p.is_featured,
     cta: `Escolher ${p.name}`,
   }));
 
@@ -97,7 +59,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
     return parseFloat(priceString.replace(',', '.'));
   };
 
-  const handleSelectPlan = (planName: string) => {
+  const handleSelectPlan = (planId: number) => {
     if (!user) {
       addToast('Crie uma conta para escolher um plano.', 'info');
       navigate('/register');
@@ -109,7 +71,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
       return;
     }
 
-    const selectedPlan = formattedPlans.find(p => p.name === planName);
+    const selectedPlan = formattedPlans.find(p => p.id === planId);
     if (!selectedPlan) {
       addToast('Plano não encontrado.', 'error');
       return;
@@ -141,7 +103,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
         >
           {formattedPlans.map((plan) => (
             <div 
-              key={plan.name} 
+              key={plan.id} 
               className={`
                 relative w-3/4 flex-shrink-0 md:w-full transition-transform duration-300 hover:z-20 snap-center
                 ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}

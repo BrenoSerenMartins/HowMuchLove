@@ -11,7 +11,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { pool, connectDB } from './db';
 import { LoveStoryData, User } from '../../types';
 import { protect } from './middleware/auth';
-import { PLAN_PRICES } from './planConfig';
+import { PLAN_PRICES } from '../../utils/planConfig';
 
 // Load environment variables
 dotenv.config();

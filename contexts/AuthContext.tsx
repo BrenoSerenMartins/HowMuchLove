@@ -2,6 +2,9 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import type { LoveStoryData, StoryImage } from '../types';
+import { PLAN_FEATURES } from '../utils/planConfig';
+
+type PlanFeatures = typeof PLAN_FEATURES[keyof typeof PLAN_FEATURES];
 
 // Define a new type for the authenticated user, combining Supabase's user with our profile data
 interface AuthUser {
@@ -13,6 +16,7 @@ interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
+  planFeatures: PlanFeatures | null;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
@@ -25,6 +29,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
+  planFeatures: null,
   isLoading: true,
   login: async () => {},
   register: async () => {},
@@ -35,8 +40,22 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const processUserSession = (sessionUser: SupabaseAuthUser, profile: { name: string; plan: any; }) => {
+    const planName = profile.plan || 'Gratis';
+    const features = PLAN_FEATURES[planName as keyof typeof PLAN_FEATURES];
+    const authUser: AuthUser = {
+      id: sessionUser.id,
+      email: sessionUser.email || '',
+      name: profile.name,
+      plan: planName,
+    };
+    setUser(authUser);
+    setPlanFeatures(features);
+  };
 
   const verifyAuth = async () => {
     setIsLoading(true);
@@ -50,19 +69,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
 
         if (profileError) throw profileError;
-
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: profile.name,
-          plan: profile.plan,
-        });
+        processUserSession(session.user, profile);
       } else {
         setUser(null);
+        setPlanFeatures(null);
       }
     } catch (error) {
       console.error('Error verifying auth:', error);
       setUser(null);
+      setPlanFeatures(null);
     } finally {
       setIsLoading(false);
     }
@@ -84,13 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (profileError) throw profileError;
-
-      setUser({
-        id: data.user.id,
-        email: data.user.email || '',
-        name: profile.name,
-        plan: profile.plan,
-      });
+      processUserSession(data.user, profile);
     }
   };
 
@@ -107,16 +116,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw new Error(error.message);
 
     if (data.user) {
-      // Profile creation is now handled by a database trigger
-      // No need to insert profile from client-side anymore
-
-      // After successful registration, set the user
-      setUser({
-        id: data.user.id,
-        email: data.user.email || '',
-        name: name,
-        plan: 'Gratis',
-      });
+      // After successful registration, set user with 'Gratis' plan
+      processUserSession(data.user, { name, plan: 'Gratis' });
     }
   };
 
@@ -124,6 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
     setUser(null);
+    setPlanFeatures(null);
   };
 
   const saveStory = async (storyData: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]): Promise<void> => {
@@ -196,7 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, saveStory, loadStory, refreshUser: verifyAuth }}>
+    <AuthContext.Provider value={{ user, planFeatures, isLoading, login, register, logout, saveStory, loadStory, refreshUser: verifyAuth }}>
       {children}
     </AuthContext.Provider>
   );

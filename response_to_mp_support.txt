@@ -1,0 +1,1 @@
+Para a chamada `POST` para `https://api.mercadopago.com/preapproval`, o corpo de erro completo da resposta foi `{"message": "Card token service not found", "status": 404}` e o `X-Request-Id` foi `1704c29d-b941-419b-a618-d9816b0fb593`.

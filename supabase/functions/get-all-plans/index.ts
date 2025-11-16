@@ -31,7 +31,8 @@ Deno.serve(async (req) => {
     console.log("Querying 'plans' table with corrected column name...");
     const { data: plans, error } = await supabaseClient
       .from('plans')
-      .select('name, price, image_limit, allow_youtube, allow_password_protection, allow_custom_button')
+      .select('id, name, price, image_limit, allow_youtube, allow_password_protection, allow_custom_button, features, billing_cycle, is_featured')
+      .eq('is_active', true)
       .order('price', { ascending: true });
 
     if (error) {
