@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';
 import CounterDemo from '../components/CounterDemo';
 import FeaturesSection from '../components/FeaturesSection';
@@ -8,8 +7,6 @@ import SocialProofSection from '../components/SocialProofSection';
 import FAQSection from '../components/FAQSection';
 import FinalCTASection from '../components/FinalCTASection'; // Import the new component
 import PricingSection from '../components/PricingSection';
-import Footer from '../components/Footer';
-import PageWrapper from '../components/PageWrapper';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -61,82 +58,45 @@ const HomePage: React.FC = () => {
     );
   }
 
-  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-
   return (
-    <div className="min-h-screen flex flex-col text-white relative">
-        <style>{`
-            @keyframes fade-in-slide-up {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in-slide-up {
-                animation: fade-in-slide-up 0.7s ease-out forwards;
-                opacity: 0; /* Start hidden */
-            }
-            /* Hide scrollbar for Chrome, Safari and Opera */
-            .hide-scrollbar::-webkit-scrollbar {
-                display: none;
-            }
-            /* Hide scrollbar for IE, Edge and Firefox */
-            .hide-scrollbar {
-                -ms-overflow-style: none;  /* IE and Edge */
-                scrollbar-width: none;  /* Firefox */
-            }
-        `}</style>
-        <div 
-            className="fixed inset-0 z-[-2]"
-            style={{
-                backgroundImage: `url(${backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(15px) brightness(0.6)',
-                transform: 'scale(1.1)',
-            }}
-        />
-        <div className="fixed inset-0 z-[-1] lights-container"></div>
-        <Header />
-        <main className="flex-grow">
-            <PageWrapper>
-                <div className="container mx-auto px-4">
-                    <HeroSection />
-                </div>
-                
-                <FeaturesSection />
+    <>
+      <div className="container mx-auto px-4">
+          <HeroSection />
+      </div>
+      
+      <FeaturesSection />
 
-                <HowItWorksSection />
+      <HowItWorksSection />
 
-                <section id="demo" className="relative z-10 scroll-mt-20 py-16 sm:py-20">
-                    {/* Section Header for CounterDemo */}
-                    <div className="text-center max-w-3xl mx-auto mb-12 px-4 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-white">
-                            Teste ao Vivo: Crie sua Própria <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Prévia</span>
-                        </h2>
-                        <p className="text-slate-300 mt-4 text-lg">
-                            Experimente agora mesmo como é fácil e divertido criar sua história de amor.
-                        </p>
-                    </div>
-                    <CounterDemo isDashboard={false} planFeatures={null} />
-                </section>
-                
-                <SocialProofSection />
+      <section id="demo" className="relative z-10 scroll-mt-20 py-16 sm:py-20">
+          {/* Section Header for CounterDemo */}
+          <div className="text-center max-w-3xl mx-auto mb-12 px-4 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                  Teste ao Vivo: Crie sua Própria <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Prévia</span>
+              </h2>
+              <p className="text-slate-300 mt-4 text-lg">
+                  Experimente agora mesmo como é fácil e divertido criar sua história de amor.
+              </p>
+          </div>
+          <CounterDemo isDashboard={false} planFeatures={null} />
+      </section>
+      
+      <SocialProofSection />
 
-                {/* New FAQ Section Added */}
-                <FAQSection />
+      {/* New FAQ Section Added */}
+      <FAQSection />
 
-                <div className="container mx-auto px-4">
-                    <PricingSection 
-                    id="pricing" 
-                    plans={plans} 
-                    mpPublicKey={mpPublicKey} 
-                    onPlanSelect={handlePlanSelected} 
-                    />
-                </div>
-            </PageWrapper>
-            <FinalCTASection /> {/* Final CTA Section added outside PageWrapper to span full width */}
-        </main>
-        <Footer />
-    </div>
+      <div className="container mx-auto px-4">
+          <PricingSection 
+          id="pricing" 
+          plans={plans} 
+          mpPublicKey={mpPublicKey} 
+          onPlanSelect={handlePlanSelected} 
+          />
+      </div>
+      
+      <FinalCTASection />
+    </>
   );
 };
 

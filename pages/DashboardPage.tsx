@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import CounterDemo from '../components/CounterDemo';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
@@ -10,6 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { useNotification } from '../contexts/NotificationContext';
 import QRCodeModal from '../components/QRCodeModal';
 import PublicStory from '../components/PublicStory';
+import BottomNavBar from '../components/BottomNavBar';
 
 // --- Styled ShareSection ---
 const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<Plan> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
@@ -56,7 +55,7 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
 
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
-  const { user, saveStory, loadStory, deleteImage, planFeatures } = useAuth();
+  const { user, logout, saveStory, loadStory, deleteImage, planFeatures } = useAuth();
   const { setIsDirty, navigate } = useNavigate();
   const { addToast } = useNotification();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
@@ -180,32 +179,9 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">
-        <style>{`
-            @keyframes fade-in-slide-up {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in-slide-up {
-                animation: fade-in-slide-up 0.7s ease-out forwards;
-                opacity: 0; /* Start hidden */
-            }
-        `}</style>
-        <div 
-            className="fixed inset-0 z-[-2]"
-            style={{
-                backgroundImage: `url(${backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(15px) brightness(0.7)',
-                transform: 'scale(1.1)',
-            }}
-        />
-        <div className="fixed inset-0 z-[-1] lights-container"></div>
-        <Header />
-        <main className="flex-grow container mx-auto px-8 py-8 md:py-12 z-10">
+        <main className="flex-grow container mx-auto px-8 py-8 md:py-12 z-10 pb-20 md:pb-12">
             {renderContent()}
         </main>
-        <Footer />
         {shareLink && (
             <QRCodeModal 
                 isOpen={isQrModalOpen}
@@ -214,6 +190,7 @@ const DashboardPage: React.FC = () => {
                 title={storyData?.storyTitle || 'Nossa História de Amor'}
             />
         )}
+        <BottomNavBar onMenuOpen={() => {}} onLogoutRequest={logout} />
     </div>
   );
 };

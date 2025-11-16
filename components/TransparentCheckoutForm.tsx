@@ -138,9 +138,20 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
     try {
       const token = await cardForm.createCardToken({ identificationType, identificationNumber });
       const { data, error: functionError } = await supabase.functions.invoke('process-payment', {
-        body: { planName, cardToken: token.token, paymentMethodId },
+        body: { planName, cardToken: token?.token, paymentMethodId },
       });
-      if (functionError) throw new Error(functionError.message);
+
+      if (functionError) {
+        throw new Error(functionError.message || 'A função de pagamento falhou.');
+      }
+
+      // Handle Checkout Pro redirect
+      if (data.init_point) {
+        window.location.href = data.init_point;
+        return; // Stop further execution
+      }
+
+      // Handle Transparent Checkout success
       onPaymentSuccess(data);
     } catch (err: any) {
       console.error("Error during payment submission:", err);

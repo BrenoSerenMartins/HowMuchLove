@@ -3,7 +3,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
 import { useFormValidator } from '../hooks/useFormValidator';
 import { validateRequired, validateEmail } from '../utils/validators';
-import PageWrapper from '../components/PageWrapper'; // Keep PageWrapper for consistent layout
 
 const LoginPage: React.FC = () => {
     const { login } = useAuth();
@@ -26,34 +25,9 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-
     const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
 
     return (
-      <div className="min-h-screen flex flex-col text-white relative">
-        <style>{`
-            @keyframes fade-in-slide-up {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in-slide-up {
-                animation: fade-in-slide-up 0.7s ease-out forwards;
-                opacity: 0; /* Start hidden */
-            }
-        `}</style>
-        <div 
-            className="fixed inset-0 z-[-2]"
-            style={{
-                backgroundImage: `url(${backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(15px) brightness(0.6)',
-                transform: 'scale(1.1)',
-            }}
-        />
-        <div className="fixed inset-0 z-[-1] lights-container"></div>
-        
         <main className="flex-grow flex items-center justify-center p-4 z-10">
           <div className="w-full max-w-md animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
               <div className="text-center mb-8">
@@ -110,7 +84,6 @@ const LoginPage: React.FC = () => {
               </div>
           </div>
         </main>
-      </div>
     );
 };
 

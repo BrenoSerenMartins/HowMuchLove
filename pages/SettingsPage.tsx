@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import PricingSection from '../components/PricingSection';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
@@ -10,6 +8,7 @@ import { getMpPublicKey, fetchAllPlans } from '../utils/api';
 import TransparentCheckoutForm from '../components/TransparentCheckoutForm';
 import { useNotification } from '../contexts/NotificationContext';
 import type { PlanFromDB } from '../types';
+import BottomNavBar from '../components/BottomNavBar';
 
 const SettingsPage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -33,11 +32,6 @@ const SettingsPage: React.FC = () => {
     };
     fetchInitialData();
 
-    // Force disable overscroll for this page specifically
-    const style = document.createElement('style');
-    style.innerHTML = `html, body { overscroll-behavior: none !important; }`;
-    document.head.appendChild(style);
-
     // Check if the URL hash points to the pricing section and scroll to it
     if (window.location.hash.includes('pricing-section')) {
       const element = document.getElementById('pricing-section');
@@ -45,11 +39,6 @@ const SettingsPage: React.FC = () => {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
-
-    // Cleanup function to remove the style when the component unmounts
-    return () => {
-      document.head.removeChild(style);
-    };
   }, []);
 
   const handleLogout = () => {
@@ -72,9 +61,6 @@ const SettingsPage: React.FC = () => {
   const handlePaymentError = (error: any) => {
     addToast(error.message || 'Erro ao processar pagamento. Tente novamente.', 'error');
     console.error('Payment Error:', error);
-    // We keep the modal open on field validation errors, but close on others.
-    // For simplicity here, we'll just keep it open for the user to retry.
-    // setIsCheckoutModalOpen(false); 
   };
 
   if (!user) {
@@ -84,43 +70,11 @@ const SettingsPage: React.FC = () => {
   const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col text-white relative">
-        <style>{`
-            @keyframes fade-in-slide-up {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in-slide-up {
-                animation: fade-in-slide-up 0.7s ease-out forwards;
-                opacity: 0; /* Start hidden */
-            }
-            /* Hide scrollbar for Chrome, Safari and Opera */
-            .hide-scrollbar::-webkit-scrollbar {
-                display: none;
-            }
-            /* Hide scrollbar for IE, Edge and Firefox */
-            .hide-scrollbar {
-                -ms-overflow-style: none;  /* IE and Edge */
-                scrollbar-width: none;  /* Firefox */
-            }
-        `}</style>
-        <div 
-            className="fixed inset-0 z-[-2]"
-            style={{
-                backgroundImage: `url(${backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                filter: 'blur(15px) brightness(0.6)',
-                transform: 'scale(1.1)',
-            }}
-        />
-        <div className="fixed inset-0 z-[-1] lights-container"></div>
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10">
+    <div className="min-h-screen flex flex-col text-white relative">
+        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 pb-20 md:pb-12">
           <PageWrapper>
             <div className="max-w-4xl mx-auto">
-              <div className="mb-8 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+              <div className="mb-8 hidden md:flex animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
                 <button 
                   onClick={() => navigate('/dashboard')}
                   className="flex items-center gap-2 text-slate-300 font-semibold hover:text-white transition-colors duration-300 group"
@@ -177,29 +131,28 @@ const SettingsPage: React.FC = () => {
             </div>
           </PageWrapper>
         </main>
-        <Footer />
-      </div>
+        <BottomNavBar onMenuOpen={() => {}} onLogoutRequest={logout} />
 
-      {isCheckoutModalOpen && selectedPlanDetails && mpPublicKey && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-          <div className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsCheckoutModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-300 hover:text-white text-3xl"
-            >
-              &times;
-            </button>
-            <TransparentCheckoutForm
-              publicKey={mpPublicKey}
-              planName={selectedPlanDetails.name}
-              amount={selectedPlanDetails.amount}
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={handlePaymentError}
-            />
+        {isCheckoutModalOpen && selectedPlanDetails && mpPublicKey && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+            <div className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <button
+                onClick={() => setIsCheckoutModalOpen(false)}
+                className="absolute top-4 right-4 text-slate-300 hover:text-white text-3xl"
+              >
+                &times;
+              </button>
+              <TransparentCheckoutForm
+                publicKey={mpPublicKey}
+                planName={selectedPlanDetails.name}
+                amount={selectedPlanDetails.amount}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+    </div>
   );
 };
 
