@@ -55,11 +55,11 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
 
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
-  const { user, logout, saveStory, loadStory, deleteImage, planFeatures } = useAuth();
-  const { setIsDirty, navigate } = useNavigate();
+  const { user, logout, saveStory, loadStory, planFeatures } = useAuth();
+  const { setIsDirty, navigate, setPreviewMode } = useNavigate(); // Destructure setPreviewMode
   const { addToast } = useNotification();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // This is for the story data
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving'>('idle');
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
@@ -75,15 +75,27 @@ const DashboardPage: React.FC = () => {
     return () => { setIsDirty(false); };
   }, [setIsDirty]);
 
+  // Effect to manage global preview mode state
+  useEffect(() => {
+    setPreviewMode(isPreviewing);
+    return () => setPreviewMode(false); // Ensure it's reset on unmount
+  }, [isPreviewing, setPreviewMode]);
+
   useEffect(() => {
     const fetchStory = async () => {
       setIsLoading(true);
-      const data = await loadStory();
-      setStoryData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', entryButtonText: '' });
-      if (data?.startDate && user) {
-        setShareLink(generateShareLink(user.email));
+      try {
+        const data = await loadStory();
+        setStoryData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', entryButtonText: '' });
+        if (data?.startDate && user) {
+          setShareLink(generateShareLink(user.email));
+        }
+      } catch (error) {
+        console.error("Error fetching story in Dashboard:", error);
+        addToast("Não foi possível carregar sua história.", "error");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     if (!isPreviewing) {
         fetchStory();
@@ -111,21 +123,17 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Add a loading check for planFeatures
-  if (isLoading || !planFeatures) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
+  // This is the single source of truth for what this page should render.
   const renderContent = () => {
-    if (isLoading) {
+    // The global loader in App.tsx handles the initial auth load.
+    // This loader handles the subsequent story data load.
+    if (isLoading || !planFeatures) {
       return (
-        <div className="flex justify-center items-center py-20">
-          <LoadingSpinner />
-        </div>
+        <PageWrapper>
+          <div className="flex justify-center items-center py-20">
+            <LoadingSpinner />
+          </div>
+        </PageWrapper>
       );
     }
     
@@ -150,7 +158,6 @@ const DashboardPage: React.FC = () => {
             <CounterDemo 
               initialData={storyData} 
               onSave={handleSaveStory} 
-              onImageDelete={deleteImage}
               saveStatus={saveStatus}
               isDashboard 
               onDirty={() => setIsDirty(true)}
@@ -169,13 +176,13 @@ const DashboardPage: React.FC = () => {
   };
   
   if (isPreviewing) {
-    const previewData = { ...storyData, plan: planFeatures?.plan_name };
+    const previewData = { ...storyData, plan: planFeatures?.name };
     return (
       <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900">
         <PublicStory storyData={previewData} hasEntered isMuted={false} setIsMuted={() => {}} />
         <button
             onClick={() => setIsPreviewing(false)}
-            className="fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-sm text-slate-800 font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-white transition-all duration-300 flex items-center gap-2 group"
+            className="fixed top-4 left-4 z-50 bg-black/30 backdrop-blur-xl text-white font-semibold py-2 px-4 rounded-lg border border-white/10 shadow-lg hover:bg-black/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 group"
         >
             <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Voltar ao Editor
@@ -183,8 +190,6 @@ const DashboardPage: React.FC = () => {
       </div>
     );
   }
-
-  const backgroundImageUrl = storyData?.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">

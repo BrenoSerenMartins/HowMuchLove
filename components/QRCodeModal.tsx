@@ -63,7 +63,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-center items-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-center items-center z-[999] p-4"
       onClick={onClose}
     >
       <div 

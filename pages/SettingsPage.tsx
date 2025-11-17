@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from '../hooks/useNavigate';
 import { ArrowLeftIcon } from '../components/icons/ArrowLeftIcon';
 import PageWrapper from '../components/PageWrapper';
+import LoadingSpinner from '../components/LoadingSpinner'; // Adicionado: Import do LoadingSpinner
 import { getMpPublicKey, fetchAllPlans } from '../utils/api';
 import TransparentCheckoutForm from '../components/TransparentCheckoutForm';
 import { useNotification } from '../contexts/NotificationContext';
@@ -15,6 +16,7 @@ const SettingsPage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
   const { navigate } = useNavigate();
   const { addToast } = useNotification();
+  const [isLoading, setIsLoading] = useState(true); // New loading state
   const [mpPublicKey, setMpPublicKey] = useState<string | null>(null);
   const [plans, setPlans] = useState<PlanFromDB[]>([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
@@ -22,13 +24,20 @@ const SettingsPage: React.FC = () => {
   
   useEffect(() => {
     const fetchInitialData = async () => {
-      const [key, fetchedPlans] = await Promise.all([
-        getMpPublicKey(),
-        fetchAllPlans()
-      ]);
-      setMpPublicKey(key);
-      if (fetchedPlans) {
-        setPlans(fetchedPlans);
+      setIsLoading(true);
+      try {
+        const [key, fetchedPlans] = await Promise.all([
+          getMpPublicKey(),
+          fetchAllPlans()
+        ]);
+        setMpPublicKey(key);
+        if (fetchedPlans) {
+          setPlans(fetchedPlans);
+        }
+      } catch (error) {
+        addToast('Erro ao carregar dados da página.', 'error');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchInitialData();
@@ -37,7 +46,8 @@ const SettingsPage: React.FC = () => {
     if (window.location.hash.includes('pricing-section')) {
       const element = document.getElementById('pricing-section');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Use a timeout to ensure the element is rendered before scrolling
+        setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
       }
     }
   }, []);
@@ -97,6 +107,16 @@ const SettingsPage: React.FC = () => {
 
   if (!user) {
     return null; // Redirect logic in App.tsx will handle this
+  }
+
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <div className="flex justify-center items-center py-20">
+          <LoadingSpinner />
+        </div>
+      </PageWrapper>
+    );
   }
 
   const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';

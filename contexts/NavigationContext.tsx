@@ -7,6 +7,8 @@ interface NavigationContextType {
     isConfirmationModalOpen: boolean;
     confirmNavigation: () => void;
     cancelNavigation: () => void;
+    isPreviewMode: boolean; // New state
+    setPreviewMode: (mode: boolean) => void; // New function
 }
 
 const getRouteFromHash = () => {
@@ -22,12 +24,15 @@ export const NavigationContext = createContext<NavigationContextType>({
     isConfirmationModalOpen: false,
     confirmNavigation: () => {},
     cancelNavigation: () => {},
+    isPreviewMode: false, // Default value
+    setPreviewMode: () => {}, // Default function
 });
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [route, setRoute] = useState(getRouteFromHash());
     const [isDirty, setIsDirty] = useState(false);
     const [modalState, setModalState] = useState({ isOpen: false, pendingPath: '' });
+    const [isPreviewMode, setPreviewMode] = useState(false); // New state
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -66,6 +71,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isConfirmationModalOpen: modalState.isOpen,
         confirmNavigation,
         cancelNavigation,
+        isPreviewMode, // Include new state
+        setPreviewMode, // Include new function
     };
 
     return (

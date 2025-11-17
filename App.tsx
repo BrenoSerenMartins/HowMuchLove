@@ -41,7 +41,8 @@ const Main: React.FC = () => {
     navigate,
     isConfirmationModalOpen,
     confirmNavigation,
-    cancelNavigation
+    cancelNavigation,
+    isPreviewMode // Destructure new state
   } = useNavigate();
   const { user, isLoading, logout, performLogout, showLogoutConfirm, setShowLogoutConfirm } = useAuth(); // Destructure new logout states and functions
 
@@ -61,8 +62,22 @@ const Main: React.FC = () => {
   }, [route, user, isLoading, navigate]);
 
   const loadingFallback = (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <LoadingSpinner />
+    <div className="min-h-screen flex flex-col text-white relative">
+      {/* Render the same global background as the main layout */}
+      <div 
+          className="fixed inset-0 z-[-2]"
+          style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(15px) brightness(0.7)',
+              transform: 'scale(1.1)',
+          }}
+      />
+      <div className="fixed inset-0 z-[-1] lights-container"></div>
+      <main className="flex-grow flex items-center justify-center">
+        <LoadingSpinner />
+      </main>
     </div>
   );
 
@@ -94,10 +109,10 @@ const Main: React.FC = () => {
   }
 
   // Determine if the bottom nav should be shown
-  const showHeaderFooter = true; // Always true for the main layout
+  const showHeaderFooter = !isPreviewMode; // Hide header/footer in preview mode
   const isProtected = user && (route === '/dashboard' || route === '/settings');
   const isPublicHome = !user && route === '/';
-  const showBottomNavBar = isProtected || isPublicHome;
+  const showBottomNavBar = (isProtected || isPublicHome) && !isPreviewMode; // Hide bottom nav in preview mode
   const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Default background
 
   return (
@@ -138,7 +153,7 @@ const Main: React.FC = () => {
 
       {showHeaderFooter && <Header onLogoutRequest={logout} />}
       
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 pb-20 md:pb-12"> {/* Added pb-20 for bottom nav */}
+      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 pb-20 md:pb-12"> {/* Added pb-20 for bottom nav */}
         <ConfirmModal
           isOpen={isConfirmationModalOpen}
           onConfirm={confirmNavigation}
