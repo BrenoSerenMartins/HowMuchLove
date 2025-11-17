@@ -46,6 +46,13 @@ const Main: React.FC = () => {
   } = useNavigate();
   const { user, isLoading, logout, performLogout, showLogoutConfirm, setShowLogoutConfirm } = useAuth(); // Destructure new logout states and functions
 
+  const handleScrollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   React.useEffect(() => {
     if (isLoading) return; // Wait for auth loading to complete
 
@@ -151,7 +158,7 @@ const Main: React.FC = () => {
       />
       <div className="fixed inset-0 z-[-1] lights-container"></div>
 
-      {showHeaderFooter && <Header onLogoutRequest={logout} />}
+      {showHeaderFooter && <Header onLogoutRequest={logout} handleScrollTo={handleScrollTo} />}
       
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 pb-20 md:pb-12"> {/* Added pb-20 for bottom nav */}
         <ConfirmModal
