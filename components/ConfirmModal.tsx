@@ -6,29 +6,30 @@ interface ConfirmModalProps {
   onCancel: () => void;
   title: string;
   message: string;
+  confirmText?: string;
+  cancelText?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onConfirm, onCancel, title, message }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onConfirm, onCancel, title, message, confirmText = 'Confirmar', cancelText = 'Cancelar' }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100]" aria-modal="true" role="dialog">
-      {/* Inspired by landing page cards */}
-      <div className="bg-gradient-to-br from-slate-900/80 via-black/60 to-indigo-900/70 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl shadow-purple-500/10 p-6 sm:p-8 w-full max-w-md m-4 transform transition-all">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">{title}</h2>
-        <p className="text-slate-300 text-base sm:text-lg mb-8">{message}</p>
-        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+      <div className="bg-black/10 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-purple-500/10 p-6 sm:p-8 w-full max-w-md m-4 transform transition-all duration-300">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">{title}</h2>
+        <p className="text-slate-300 text-sm sm:text-base mb-8">{message}</p>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
           <button
             onClick={onCancel}
-            className="font-semibold py-2 px-5 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors duration-300"
+            className="border border-slate-700 text-slate-300 font-semibold py-2 px-5 rounded-lg hover:bg-slate-800 hover:text-white hover:border-slate-600 transition-colors duration-300"
           >
-            Cancelar
+            {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className="bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md shadow-red-500/30 hover:shadow-lg hover:shadow-red-500/40 hover:scale-105 transition-all duration-300"
+            className="bg-red-600 text-white font-semibold py-2 px-5 rounded-lg shadow-lg shadow-red-900/30 hover:bg-red-700 hover:shadow-red-800/40 transition-all duration-300"
           >
-            Sair Mesmo Assim
+            {confirmText}
           </button>
         </div>
       </div>

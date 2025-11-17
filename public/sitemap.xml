@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Pages -->
+  <url>
+    <loc>https://howmuchlove.com.br/</loc>
+    <priority>1.0</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://howmuchlove.com.br/#/login</loc>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://howmuchlove.com.br/#/register</loc>
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <!-- 
+    Ideally, public story URLs should be added here dynamically.
+    Example:
+    <url>
+      <loc>https://howmuchlove.com.br/#/story/some-story-id</loc>
+      <priority>0.8</priority>
+      <lastmod>2025-11-17</lastmod>
+    </url>
+  -->
+</urlset>

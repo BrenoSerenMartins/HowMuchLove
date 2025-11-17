@@ -1,0 +1,15 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow crawling of auth and user-specific pages
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /payment-success
+Disallow: /payment-failure
+Disallow: /payment-pending
+
+# Point to the sitemap
+Sitemap: https://howmuchlove.com.br/sitemap.xml
