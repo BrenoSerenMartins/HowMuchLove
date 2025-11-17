@@ -47,10 +47,9 @@ const FeaturesSection: React.FC = () => {
 
   return (
     <section id="features" className="py-16 sm:py-20 overflow-hidden">
-      <div className="container mx-auto">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 px-4 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+      {/* Section Header */}
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Uma Experiência <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Inesquecível</span>
           </h2>
@@ -58,39 +57,38 @@ const FeaturesSection: React.FC = () => {
             Recursos pensados para eternizar seus momentos mais preciosos.
           </p>
         </div>
+      </div>
 
-        {/* Features Container - Flex for mobile, Grid for desktop */}
-        <div 
-          className="flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-8 md:px-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory scroll-pl-8 scroll-pr-8"
-          style={{ animationDelay: '300ms' }}
+      {/* Features Container - Full bleed carousel on mobile */}
+      <div 
+        className="flex space-x-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory md:container md:mx-auto py-8 scroll-px-4"
+        style={{ animationDelay: '300ms' }}
+      >
+        <FeatureCard 
+          icon={<ClockIcon className="w-10 h-10" />}
+          title="Contador Preciso"
+          description="Celebre cada segundo, minuto, dia e ano juntos com um contador que nunca para."
+        />
+        <FeatureCard 
+          icon={<ImageIcon className="w-10 h-10" />}
+          title="Galeria de Fotos"
+          description="Conte sua história com uma galeria de fotos que transita suavemente, como suas melhores memórias."
+        />
+        <FeatureCard 
+          icon={<MusicNoteIcon className="w-10 h-10" />}
+          title="Trilha Sonora"
+          description="Adicione a música de vocês via YouTube e crie a atmosfera perfeita para a sua cápsula do tempo."
+        />
+      </div>
+
+      {/* CTA Button */}
+      <div className="container mx-auto px-4 text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
+        <button 
+          onClick={handleScrollToPricing}
+          className="font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-white/10 border border-white/20 text-white hover:bg-white/20"
         >
-          <FeatureCard 
-            icon={<ClockIcon className="w-10 h-10" />}
-            title="Contador Preciso"
-            description="Celebre cada segundo, minuto, dia e ano juntos com um contador que nunca para."
-          />
-          <FeatureCard 
-            icon={<ImageIcon className="w-10 h-10" />}
-            title="Galeria de Fotos"
-            description="Conte sua história com uma galeria de fotos que transita suavemente, como suas melhores memórias."
-          />
-          <FeatureCard 
-            icon={<MusicNoteIcon className="w-10 h-10" />}
-            title="Trilha Sonora"
-            description="Adicione a música de vocês via YouTube e crie a atmosfera perfeita para a sua cápsula do tempo."
-          />
-        </div>
-
-        {/* CTA Button */}
-        <div className="text-center mt-16 px-4 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
-          <button 
-            onClick={handleScrollToPricing}
-            className="font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-white/10 border border-white/20 text-white hover:bg-white/20"
-          >
-            Ver Planos e Preços
-          </button>
-        </div>
-
+          Ver Planos e Preços
+        </button>
       </div>
     </section>
   );

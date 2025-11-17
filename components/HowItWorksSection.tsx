@@ -50,10 +50,9 @@ const HowItWorksSection: React.FC = () => {
 
   return (
     <section id="how-it-works" className="py-16 sm:py-20 overflow-hidden">
-      <div className="container mx-auto">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 px-4 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
+      {/* Section Header */}
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
             Como <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Funciona?</span>
           </h2>
@@ -61,42 +60,41 @@ const HowItWorksSection: React.FC = () => {
             Crie sua cápsula do tempo digital em apenas 3 passos simples e eternize seus momentos.
           </p>
         </div>
+      </div>
 
-        {/* Steps Container - Flex for mobile, Grid for desktop */}
-        <div 
-          className="relative flex space-x-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 px-8 md:px-0 pb-4 pt-8 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory scroll-pl-8 scroll-pr-8"
-          style={{ animationDelay: '300ms' }}
+      {/* Steps Container - Full bleed carousel on mobile */}
+      <div 
+        className="relative flex space-x-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 pt-8 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory md:container md:mx-auto py-8 scroll-px-4"
+        style={{ animationDelay: '300ms' }}
+      >
+        <StepCard 
+          step={1}
+          icon={<PlusCircleIcon className="w-10 h-10" />}
+          title="Crie sua História"
+          description="Comece inserindo a data especial e uma mensagem que vem do coração."
+        />
+        <StepCard 
+          step={2}
+          icon={<SparklesIcon className="w-10 h-10" />}
+          title="Personalize"
+          description="Adicione fotos, escolha a posição do contador e até uma música do YouTube."
+        />
+        <StepCard 
+          step={3}
+          icon={<ShareIcon className="w-10 h-10" />}
+          title="Compartilhe"
+          description="Envie o link exclusivo ou imprima o QR Code para colocar em um presente físico e surpreenda quem você ama."
+        />
+      </div>
+
+      {/* CTA Button */}
+      <div className="container mx-auto px-4 text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
+        <button 
+          onClick={handleScrollToDemo}
+          className="font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-purple-500/30"
         >
-          <StepCard 
-            step={1}
-            icon={<PlusCircleIcon className="w-10 h-10" />}
-            title="Crie sua História"
-            description="Comece inserindo a data especial e uma mensagem que vem do coração."
-          />
-          <StepCard 
-            step={2}
-            icon={<SparklesIcon className="w-10 h-10" />}
-            title="Personalize"
-            description="Adicione fotos, escolha a posição do contador e até uma música do YouTube."
-          />
-          <StepCard 
-            step={3}
-            icon={<ShareIcon className="w-10 h-10" />}
-            title="Compartilhe"
-            description="Envie o link exclusivo ou imprima o QR Code para colocar em um presente físico e surpreenda quem você ama."
-          />
-        </div>
-
-        {/* CTA Button */}
-        <div className="text-center mt-16 px-4 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
-          <button 
-            onClick={handleScrollToDemo}
-            className="font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-purple-500/30"
-          >
-            Criar Minha História Grátis
-          </button>
-        </div>
-
+          Criar Minha História Grátis
+        </button>
       </div>
     </section>
   );

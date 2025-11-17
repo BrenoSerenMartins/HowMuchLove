@@ -86,14 +86,12 @@ const HomePage: React.FC = () => {
       {/* New FAQ Section Added */}
       <FAQSection />
 
-      <div className="container mx-auto px-4">
-          <PricingSection 
+      <PricingSection 
           id="pricing" 
           plans={plans} 
           mpPublicKey={mpPublicKey} 
           onPlanSelect={handlePlanSelected} 
-          />
-      </div>
+      />
       
       <FinalCTASection />
     </>

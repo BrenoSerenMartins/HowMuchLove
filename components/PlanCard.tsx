@@ -87,7 +87,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
           return (
             <li key={index} className="flex items-center">
               <CheckIcon className="h-5 w-5 text-pink-400 mr-3 flex-shrink-0" />
-              <span className={`text-slate-300 ${isSpecialFeature ? 'font-bold text-pink-400' : ''}`}>
+              <span className={`text-slate-300 text-sm md:text-base ${isSpecialFeature ? 'font-bold text-pink-400' : ''}`}>
                 {feature}
               </span>
             </li>

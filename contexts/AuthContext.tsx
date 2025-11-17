@@ -17,7 +17,10 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void; // Changed to void, as it now just opens the modal
+  performLogout: () => Promise<void>; // New function for actual logout
+  showLogoutConfirm: boolean;
+  setShowLogoutConfirm: (show: boolean) => void;
   saveStory: (storyData: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]) => Promise<void>;
   loadStory: () => Promise<LoveStoryData | null>;
   refreshUser: () => Promise<void>;
@@ -29,7 +32,10 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   register: async () => {},
-  logout: async () => {},
+  logout: () => {},
+  performLogout: async () => {},
+  showLogoutConfirm: false,
+  setShowLogoutConfirm: () => {},
   saveStory: async () => {},
   loadStory: async () => null,
   refreshUser: async () => {},
@@ -58,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AuthUser | null>(null);
   const [planFeatures, setPlanFeatures] = useState<Plan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // New state for logout confirmation
 
   const processUserSession = (sessionUser: SupabaseAuthUser, profile: { name: string; plans: Plan | null }) => {
     const features = profile.plans || defaultGratisPlan;
@@ -137,11 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = async () => {
+  const performLogout = async () => { // Renamed from logout
     const { error } = await supabase.auth.signOut();
     if (error) throw new Error(error.message);
     setUser(null);
     setPlanFeatures(defaultGratisPlan);
+    setShowLogoutConfirm(false); // Close modal after logout
+  };
+
+  const logout = () => { // New logout function to open confirmation modal
+    setShowLogoutConfirm(true);
   };
 
   const saveStory = async (storyData: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]): Promise<void> => {
@@ -215,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, planFeatures, isLoading, login, register, logout, saveStory, loadStory, refreshUser: verifyAuth }}>
+    <AuthContext.Provider value={{ user, planFeatures, isLoading, login, register, logout, performLogout, showLogoutConfirm, setShowLogoutConfirm, saveStory, loadStory, refreshUser: verifyAuth }}>
       {children}
     </AuthContext.Provider>
   );

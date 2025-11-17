@@ -43,7 +43,7 @@ const Main: React.FC = () => {
     confirmNavigation,
     cancelNavigation
   } = useNavigate();
-  const { user, isLoading, logout } = useAuth(); // Use isLoading and logout from AuthContext
+  const { user, isLoading, logout, performLogout, showLogoutConfirm, setShowLogoutConfirm } = useAuth(); // Destructure new logout states and functions
 
   React.useEffect(() => {
     if (isLoading) return; // Wait for auth loading to complete
@@ -136,7 +136,7 @@ const Main: React.FC = () => {
       />
       <div className="fixed inset-0 z-[-1] lights-container"></div>
 
-      {showHeaderFooter && <Header />}
+      {showHeaderFooter && <Header onLogoutRequest={logout} />}
       
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 pb-20 md:pb-12"> {/* Added pb-20 for bottom nav */}
         <ConfirmModal
@@ -145,6 +145,13 @@ const Main: React.FC = () => {
           onCancel={cancelNavigation}
           title="Sair sem salvar?"
           message="Você tem alterações não salvas. Se sair agora, perderá todo o seu progresso. Deseja continuar?"
+        />
+        <ConfirmModal
+          isOpen={showLogoutConfirm}
+          onConfirm={performLogout}
+          onCancel={() => setShowLogoutConfirm(false)}
+          title="Confirmar Saída"
+          message="Tem certeza que deseja sair da sua conta?"
         />
         <Suspense fallback={loadingFallback}>
           {pageComponent}

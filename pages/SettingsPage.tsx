@@ -37,7 +37,7 @@ const SettingsPage: React.FC = () => {
     if (window.location.hash.includes('pricing-section')) {
       const element = document.getElementById('pricing-section');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   }, []);
@@ -103,7 +103,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">
-        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 pb-20 md:pb-12">
+        <main className="flex-grow container mx-auto py-8 md:py-12 z-10 pb-20 md:pb-12">
           <PageWrapper>
             <div className="max-w-4xl mx-auto">
               <div className="mb-8 hidden md:flex animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>

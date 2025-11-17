@@ -188,7 +188,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">
-        <main className="flex-grow container mx-auto px-8 py-8 md:py-12 z-10 pb-20 md:pb-12">
+        <main className="flex-grow container mx-auto py-8 md:py-12 z-10 pb-20 md:pb-12">
             {renderContent()}
         </main>
         {shareLink && (
