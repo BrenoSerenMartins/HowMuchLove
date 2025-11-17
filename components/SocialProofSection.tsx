@@ -28,8 +28,8 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, author, detail
 // --- Main Social Proof Section Component ---
 
 const SocialProofSection: React.FC = () => {
-  const handleScrollToPricing = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  const handleScrollToDemo = () => {
+    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -42,7 +42,7 @@ const SocialProofSection: React.FC = () => {
             Milhares de Histórias <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Eternizadas</span>
           </h2>
           <p className="text-slate-300 mt-4 text-lg">
-            Veja o que alguns dos nossos casais apaixonados estão dizendo.
+            Inspire-se com quem já transformou o amor em um legado digital.
           </p>
         </div>
 
@@ -54,27 +54,27 @@ const SocialProofSection: React.FC = () => {
           <TestimonialCard 
             quote="Foi o presente mais emocionante que já recebi. Chorei quando vi o contador e nossas fotos passando com a nossa música. Incrível!"
             author="Juliana R."
-            detail="Surpreendeu o namorado"
+            detail="Cápsula do tempo para o namorado"
           />
           <TestimonialCard 
             quote="Achei que seria complicado, mas criei tudo em menos de 10 minutos pelo celular. A interface é linda e super fácil de usar."
             author="Marcos T."
-            detail="Presente de aniversário de namoro"
+            detail="Criou em 10 minutos pelo celular"
           />
           <TestimonialCard 
             quote="O resultado final é muito mais do que eu esperava. Parece um site profissional, super premium. Minha esposa amou."
             author="Fernando P."
-            detail="Celebração de bodas de papel"
+            detail="Presente premium para a esposa"
           />
         </div>
 
         {/* CTA Button */}
         <div className="text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
           <button 
-            onClick={handleScrollToPricing}
+            onClick={handleScrollToDemo}
             className="font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-white/10 border border-white/20 text-white hover:bg-white/20"
           >
-            Comece a Sua História Agora
+            Construir Nosso Legado
           </button>
         </div>
 

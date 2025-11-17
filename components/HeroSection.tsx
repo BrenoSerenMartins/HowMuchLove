@@ -13,21 +13,19 @@ const HeroSection: React.FC = () => {
         style={{ animationDelay: '200ms' }}
       >
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-white mb-6" style={{ textShadow: '0px 3px 10px rgba(0,0,0,0.3)'}}>
-          O Presente Perfeito <br/> para quem você{' '}
+          A história de vocês <br/> merece ser{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
-            Ama.
+            eternizada.
           </span>
         </h1>
         <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-10">
-          Crie uma cápsula do tempo digital com suas fotos, uma mensagem especial e uma contagem de quanto tempo estão juntos.
-          <br/>
-          <span className="font-semibold text-slate-100">Um presente inesquecível, grátis para testar.</span>
+          Reúna os momentos mágicos do seu relacionamento em uma cápsula do tempo online, criada para celebrar o passado, o presente e o futuro de vocês.
         </p>
         <button 
           onClick={handleScrollToDemo}
           className="font-bold py-4 px-10 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-2xl hover:shadow-purple-500/30"
         >
-          Testar Agora (Grátis)
+          Construir Nosso Legado (Grátis)
         </button>
       </div>
     </section>

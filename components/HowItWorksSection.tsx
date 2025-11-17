@@ -54,10 +54,10 @@ const HowItWorksSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Como <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Funciona?</span>
+            Sua cápsula do tempo, <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">em 3 passos.</span>
           </h2>
           <p className="text-slate-300 mt-4 text-lg">
-            Crie sua cápsula do tempo digital em apenas 3 passos simples e eternize seus momentos.
+            Transformar suas memórias em um legado eterno é mais fácil do que você imagina.
           </p>
         </div>
       </div>
@@ -71,19 +71,19 @@ const HowItWorksSection: React.FC = () => {
           step={1}
           icon={<PlusCircleIcon className="w-10 h-10" />}
           title="Crie sua História"
-          description="Comece inserindo a data especial e uma mensagem que vem do coração."
+          description="Defina a data que deu início a tudo e escreva a mensagem que será o coração da sua história eternizada."
         />
         <StepCard 
           step={2}
           icon={<SparklesIcon className="w-10 h-10" />}
           title="Personalize"
-          description="Adicione fotos, escolha a posição do contador e até uma música do YouTube."
+          description="Dê vida à sua história com uma galeria de fotos, a trilha sonora de vocês e outros detalhes que a tornam única."
         />
         <StepCard 
           step={3}
           icon={<ShareIcon className="w-10 h-10" />}
           title="Compartilhe"
-          description="Envie o link exclusivo ou imprima o QR Code para colocar em um presente físico e surpreenda quem você ama."
+          description="É hora da surpresa! Compartilhe o link diretamente ou adicione um toque mágico ao seu presente físico com o QR Code exclusivo."
         />
       </div>
 
@@ -93,7 +93,7 @@ const HowItWorksSection: React.FC = () => {
           onClick={handleScrollToDemo}
           className="font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-purple-500/30"
         >
-          Criar Minha História Grátis
+          Dar o Primeiro Passo (Grátis)
         </button>
       </div>
     </section>

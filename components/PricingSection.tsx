@@ -120,7 +120,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
             Um Legado Digital para o <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Seu Amor.</span>
           </h2>
           <p className="text-slate-300 mt-4 text-lg">
-            Gostou da prévia? Agora é hora de torná-la eterna. Salve sua homenagem e compartilhe seu link mágico com o plano ideal.
+            Escolha o plano perfeito para eternizar sua história e garantir que suas memórias durem para sempre.
           </p>
         </div>
       </div>

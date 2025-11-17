@@ -41,8 +41,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
 // --- Main Features Section Component ---
 
 const FeaturesSection: React.FC = () => {
-  const handleScrollToPricing = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  const handleScrollToDemo = () => {
+    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -51,10 +51,10 @@ const FeaturesSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Uma Experiência <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Inesquecível</span>
+            O que torna sua história <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">eternizada.</span>
           </h2>
           <p className="text-slate-300 mt-4 text-lg">
-            Recursos pensados para eternizar seus momentos mais preciosos.
+            Cada detalhe, cuidadosamente pensado para transformar suas memórias em um tesouro que dura para sempre.
           </p>
         </div>
       </div>
@@ -66,28 +66,28 @@ const FeaturesSection: React.FC = () => {
       >
         <FeatureCard 
           icon={<ClockIcon className="w-10 h-10" />}
-          title="Contador Preciso"
-          description="Celebre cada segundo, minuto, dia e ano juntos com um contador que nunca para."
+          title="O Tempo do Nosso Amor"
+          description="Veja o tempo do seu amor em movimento. Um contador que parte do primeiro segundo, celebra o agora e segue contando, rumo ao infinito."
         />
         <FeatureCard 
           icon={<ImageIcon className="w-10 h-10" />}
-          title="Galeria de Fotos"
-          description="Conte sua história com uma galeria de fotos que transita suavemente, como suas melhores memórias."
+          title="Os Capítulos da Nossa História"
+          description="Cada foto, uma página do seu livro de amor. Organize e reviva os capítulos da sua jornada, dos primeiros encontros às grandes conquistas."
         />
         <FeatureCard 
           icon={<MusicNoteIcon className="w-10 h-10" />}
-          title="Trilha Sonora"
-          description="Adicione a música de vocês via YouTube e crie a atmosfera perfeita para a sua cápsula do tempo."
+          title="A Melodia da Nossa História"
+          description="Se a sua história de amor fosse uma canção, qual seria? Adicione a melodia que embala seus capítulos e dá o tom exato para cada momento."
         />
       </div>
 
       {/* CTA Button */}
       <div className="container mx-auto px-4 text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
         <button 
-          onClick={handleScrollToPricing}
+          onClick={handleScrollToDemo}
           className="font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-white/10 border border-white/20 text-white hover:bg-white/20"
         >
-          Ver Planos e Preços
+          Comece a Criar Sua História
         </button>
       </div>
     </section>
