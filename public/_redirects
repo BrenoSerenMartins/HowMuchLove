@@ -1,0 +1,6 @@
+# SPA fallback rule for Cloudflare Pages
+# This rule ensures that any request that doesn't match a static file
+# (like /sitemap.xml or /robots.txt) is served the index.html,
+# allowing the React router to handle it.
+
+/*    /index.html    200
