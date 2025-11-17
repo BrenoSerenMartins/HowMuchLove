@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -65,7 +65,7 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
 
 interface CounterDemoProps {
   initialData?: LoveStoryData | null;
-  onSave?: (data: LoveStoryData, newFiles: File[]) => void;
+  onSave?: (data: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]) => void; // Updated onSave
   onImageDelete?: (id: number) => Promise<void>;
   isDashboard?: boolean;
   saveStatus?: 'idle' | 'saving';
@@ -79,17 +79,19 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
   });
   
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [imageIdsToDelete, setImageIdsToDelete] = useState<number[]>([]); // New state
   const [openSection, setOpenSection] = useState<string | null>('content');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
-  const features = {
+  // Use useMemo to recalculate features only when planFeatures changes
+  const features = useMemo(() => ({
     imageLimit: planFeatures?.image_limit ?? 1,
     allowYoutube: planFeatures?.allow_youtube ?? false,
     allowPasswordProtection: planFeatures?.allow_password_protection ?? false,
     allowCustomButton: planFeatures?.allow_custom_button ?? false,
-  };
+  }), [planFeatures]);
   
   const limitReached = localData.images.length >= features.imageLimit;
 
@@ -101,6 +103,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
         storyPassword: initialData.storyPassword || '', entryButtonText: initialData.entryButtonText || '',
       });
       setNewImageFiles([]);
+      setImageIdsToDelete([]); // Reset on new data
     }
   }, [initialData]);
 
@@ -116,11 +119,20 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
       setNewImageFiles(prevFiles => [...prevFiles, file]);
       const localUrl = URL.createObjectURL(file);
       const tempId = Date.now();
-      updateLocalData('images', [...localData.images, { id: tempId, image_url: localUrl, display_order: localData.images.length }]);
+      // Add originalFilename to correlate in the backend
+      updateLocalData('images', [...localData.images, { id: tempId, image_url: localUrl, display_order: localData.images.length, originalFilename: file.name }]);
     }
   };
 
   const handleDeleteImage = (id: number) => {
+    // Check if the image was part of the initial data loaded from the DB
+    const isNewImage = !initialData?.images.some(initialImg => initialImg.id === id);
+    
+    // Only add pre-existing images to the deletion list
+    if (!isNewImage) {
+      setImageIdsToDelete(prev => [...prev, id]);
+    }
+    
     updateLocalData('images', localData.images.filter(img => img.id !== id));
   };
 
@@ -129,14 +141,24 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
     if (over && active.id !== over.id) {
       const oldIndex = localData.images.findIndex(item => item.id === active.id);
       const newIndex = localData.images.findIndex(item => item.id === over.id);
-      updateLocalData('images', arrayMove(localData.images, oldIndex, newIndex));
+      
+      const reorderedImages = arrayMove(localData.images, oldIndex, newIndex);
+      
+      // Update the display_order property for each image to match its new index
+      const finalImages = reorderedImages.map((image, index) => ({
+        ...image,
+        display_order: index,
+      }));
+
+      updateLocalData('images', finalImages);
     }
   };
 
   const handleSave = async () => {
     if (!onSave) return;
-    onSave(localData, newImageFiles);
+    onSave(localData, newImageFiles, imageIdsToDelete); // Pass the deletion list
     setNewImageFiles([]);
+    setImageIdsToDelete([]);
   };
   
   const handleScrollToPricing = () => {

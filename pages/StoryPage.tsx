@@ -5,6 +5,30 @@ import type { LoveStoryData } from '../types';
 import PublicStory from '../components/PublicStory';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+// Define PageWrapper outside of the StoryPage component
+const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  
+  return (
+    <div className="min-h-screen flex flex-col text-white relative">
+      <div 
+          className="fixed inset-0 z-[-2]"
+          style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(15px) brightness(0.6)',
+              transform: 'scale(1.1)',
+          }}
+      />
+      <div className="fixed inset-0 z-[-1] lights-container"></div>
+      <main className="flex-grow flex items-center justify-center p-4 z-10">
+        {children}
+      </main>
+    </div>
+  );
+};
+
 const StoryPage: React.FC = () => {
   const { route } = useNavigate();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
@@ -97,27 +121,7 @@ const StoryPage: React.FC = () => {
     return <PublicStory storyData={storyData} hasEntered={hasEntered} isMuted={isMuted} setIsMuted={setIsMuted} />;
   };
 
-  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
   const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
-
-  const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="min-h-screen flex flex-col text-white relative">
-      <div 
-          className="fixed inset-0 z-[-2]"
-          style={{
-              backgroundImage: `url(${backgroundImageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(15px) brightness(0.6)',
-              transform: 'scale(1.1)',
-          }}
-      />
-      <div className="fixed inset-0 z-[-1] lights-container"></div>
-      <main className="flex-grow flex items-center justify-center p-4 z-10">
-        {children}
-      </main>
-    </div>
-  );
 
   if (loading) {
     return (

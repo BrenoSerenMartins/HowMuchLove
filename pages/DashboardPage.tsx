@@ -90,10 +90,10 @@ const DashboardPage: React.FC = () => {
     }
   }, [loadStory, user, isPreviewing]);
 
-  const handleSaveStory = async (newData: LoveStoryData, newFiles: File[]) => {
+  const handleSaveStory = async (newData: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]) => {
     setSaveStatus('saving');
     try {
-      await saveStory(newData, newFiles, []); // Simplified call
+      await saveStory(newData, newFiles, imageIdsToDelete);
       const updatedStoryData = await loadStory();
       setStoryData(updatedStoryData || newData);
       if (updatedStoryData?.startDate && user) {
@@ -110,6 +110,15 @@ const DashboardPage: React.FC = () => {
       setSaveStatus('idle');
     }
   };
+
+  // Add a loading check for planFeatures
+  if (isLoading || !planFeatures) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   const renderContent = () => {
     if (isLoading) {

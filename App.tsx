@@ -70,32 +70,35 @@ const Main: React.FC = () => {
     return loadingFallback;
   }
 
-  let pageComponent;
-  let showHeaderFooter = true;
-  let showBottomNavBar = false;
-  let backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Default background
-
+  // Special case for StoryPage to have a completely custom layout
   if (route.startsWith('/story/')) {
-    pageComponent = <StoryPage />;
-    showHeaderFooter = false; // Story page has its own full-screen layout
-  } else {
-    switch (route) {
-      case '/login': pageComponent = <LoginPage />; break;
-      case '/register': pageComponent = <RegisterPage />; break;
-      case '/dashboard': pageComponent = user ? <DashboardPage /> : <HomePage />; break;
-      case '/settings': pageComponent = user ? <SettingsPage /> : <HomePage />; break;
-      case '/payment-success': pageComponent = <PaymentSuccessPage />; break;
-      case '/payment-failure': pageComponent = <PaymentFailurePage />; break;
-      case '/payment-pending': pageComponent = <PaymentPendingPage />; break;
-      case '/':
-      default: pageComponent = <HomePage />; break;
-    }
+    return (
+      <Suspense fallback={loadingFallback}>
+        <StoryPage />
+      </Suspense>
+    );
+  }
+
+  // Determine the page component for the main layout
+  let pageComponent;
+  switch (route) {
+    case '/login': pageComponent = <LoginPage />; break;
+    case '/register': pageComponent = <RegisterPage />; break;
+    case '/dashboard': pageComponent = user ? <DashboardPage /> : <HomePage />; break;
+    case '/settings': pageComponent = user ? <SettingsPage /> : <HomePage />; break;
+    case '/payment-success': pageComponent = <PaymentSuccessPage />; break;
+    case '/payment-failure': pageComponent = <PaymentFailurePage />; break;
+    case '/payment-pending': pageComponent = <PaymentPendingPage />; break;
+    case '/':
+    default: pageComponent = <HomePage />; break;
   }
 
   // Determine if the bottom nav should be shown
+  const showHeaderFooter = true; // Always true for the main layout
   const isProtected = user && (route === '/dashboard' || route === '/settings');
   const isPublicHome = !user && route === '/';
-  showBottomNavBar = isProtected || isPublicHome;
+  const showBottomNavBar = isProtected || isPublicHome;
+  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Default background
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">
@@ -136,7 +139,6 @@ const Main: React.FC = () => {
       {showHeaderFooter && <Header />}
       
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 pb-20 md:pb-12"> {/* Added pb-20 for bottom nav */}
-        <ToastContainer />
         <ConfirmModal
           isOpen={isConfirmationModalOpen}
           onConfirm={confirmNavigation}
@@ -151,6 +153,7 @@ const Main: React.FC = () => {
       
       {showHeaderFooter && <Footer />}
       {showBottomNavBar && <BottomNavBar onMenuOpen={() => {}} onLogoutRequest={logout} />}
+      <ToastContainer className="z-50" /> {/* Moved ToastContainer here with high z-index */}
     </div>
   );
 };

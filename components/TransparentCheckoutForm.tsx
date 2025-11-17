@@ -137,24 +137,34 @@ const TransparentCheckoutForm: React.FC<TransparentCheckoutFormProps> = ({ planN
 
     try {
       const token = await cardForm.createCardToken({ identificationType, identificationNumber });
-      const { data, error: functionError } = await supabase.functions.invoke('process-payment', {
-        body: { planName, cardToken: token?.token, paymentMethodId },
+      
+      // Pass the token and other details to the parent component to handle the API call
+      onPaymentSuccess({
+        cardToken: token.token,
+        paymentMethodId,
+        planName,
+        amount
       });
 
-      if (functionError) {
-        throw new Error(functionError.message || 'A função de pagamento falhou.');
-      }
-
-      // Handle Checkout Pro redirect
-      if (data.init_point) {
-        window.location.href = data.init_point;
-        return; // Stop further execution
-      }
-
-      // Handle Transparent Checkout success
-      onPaymentSuccess(data);
     } catch (err: any) {
-      console.error("Error during payment submission:", err);
+      console.error("Error creating card token:", err);
+      // Handle field errors from Mercado Pago SDK
+      const newFieldErrors: { [key: string]: string } = {};
+      if (err && Array.isArray(err)) {
+        err.forEach(errorDetail => {
+          const fieldMap: { [key: string]: string } = {
+            cardholderName: 'cardholderName',
+            cardNumber: 'cardNumber',
+            expirationDate: 'cardExpirationDate',
+            securityCode: 'securityCode',
+            identificationNumber: 'identificationNumber',
+          };
+          const errorField = fieldMap[errorDetail.field] || 'generic';
+          newFieldErrors[errorField] = errorDetail.message;
+        });
+      }
+      setFieldErrors(newFieldErrors);
+      setError("Alguns dados do cartão estão incorretos.");
       onPaymentError(err);
     } finally {
       setLoading(false);

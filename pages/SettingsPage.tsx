@@ -7,6 +7,7 @@ import PageWrapper from '../components/PageWrapper';
 import { getMpPublicKey, fetchAllPlans } from '../utils/api';
 import TransparentCheckoutForm from '../components/TransparentCheckoutForm';
 import { useNotification } from '../contexts/NotificationContext';
+import { supabase } from '../utils/supabase';
 import type { PlanFromDB } from '../types';
 import BottomNavBar from '../components/BottomNavBar';
 
@@ -46,16 +47,47 @@ const SettingsPage: React.FC = () => {
     navigate('/');
   };
   
-  const handlePlanSelected = (plan: { name: string; amount: number }) => {
-    setSelectedPlanDetails(plan);
-    setIsCheckoutModalOpen(true);
+  const handlePlanSelected = async (plan: { name: string; amount: number }) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('process-payment', {
+        body: { planName: plan.name }, // Initial call to determine flow
+      });
+
+      if (error) throw new Error(error.message);
+
+      if (data.init_point) {
+        addToast('Aguarde, redirecionando para o checkout...', 'info'); // Show message only for redirect
+        window.location.href = data.init_point; // Redirect for Checkout Pro
+      } else {
+        // No message needed for transparent flow, modal opens directly
+        setSelectedPlanDetails(plan); // Open modal for Transparent Checkout
+        setIsCheckoutModalOpen(true);
+      }
+    } catch (err: any) {
+      addToast(err.message, 'error');
+    }
   };
 
-  const handlePaymentSuccess = async (paymentResult: any) => {
-    addToast('Pagamento realizado com sucesso!', 'success');
-    console.log('Payment Success:', paymentResult);
-    setIsCheckoutModalOpen(false);
-    await refreshUser();
+  const handlePaymentSuccess = async (formData: any) => {
+    addToast('Processando seu pagamento...', 'info');
+    try {
+      const { data, error } = await supabase.functions.invoke('process-payment', {
+        body: { // Second call with full data for transparent checkout
+          planName: formData.planName,
+          cardToken: formData.cardToken,
+          paymentMethodId: formData.paymentMethodId,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+
+      addToast(data.message || 'Pagamento realizado com sucesso!', 'success');
+      setIsCheckoutModalOpen(false);
+      await refreshUser();
+
+    } catch (err: any) {
+      handlePaymentError(err);
+    }
   };
 
   const handlePaymentError = (error: any) => {
