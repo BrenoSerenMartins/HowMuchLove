@@ -73,14 +73,21 @@ const Main: React.FC = () => {
       {/* Render the same global background as the main layout */}
       <div 
           className="fixed inset-0 z-[-2]"
-          style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(15px) brightness(0.7)',
-              transform: 'scale(1.1)',
-          }}
-      />
+      >
+          <picture>
+              <source srcSet="/images/main-background.avif" type="image/avif" />
+              <source srcSet="/images/main-background.webp" type="image/webp" />
+              <img
+                  src="/images/main-background.jpg" // Final fallback
+                  alt="Romantic background"
+                  className="w-full h-full object-cover object-center"
+                  style={{
+                      filter: 'blur(15px) brightness(0.7)',
+                      transform: 'scale(1.1)',
+                  }}
+              />
+          </picture>
+      </div>
       <div className="fixed inset-0 z-[-1] lights-container"></div>
       <main className="flex-grow flex items-center justify-center">
         <LoadingSpinner />
@@ -120,7 +127,6 @@ const Main: React.FC = () => {
   const isProtected = user && (route === '/dashboard' || route === '/settings');
   const isPublicHome = !user && route === '/';
   const showBottomNavBar = (isProtected || isPublicHome) && !isPreviewMode; // Hide bottom nav in preview mode
-  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Default background
 
   return (
     <div className="min-h-screen flex flex-col text-white relative">
@@ -148,14 +154,21 @@ const Main: React.FC = () => {
       {/* Global Background */}
       <div 
           className="fixed inset-0 z-[-2]"
-          style={{
-              backgroundImage: `url(${backgroundImageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(15px) brightness(0.7)',
-              transform: 'scale(1.1)',
-          }}
-      />
+      >
+          <picture>
+              <source srcSet="/images/main-background.avif" type="image/avif" />
+              <source srcSet="/images/main-background.webp" type="image/webp" />
+              <img
+                  src="/images/main-background.jpg" // Final fallback
+                  alt="Romantic background"
+                  className="w-full h-full object-cover object-center"
+                  style={{
+                      filter: 'blur(15px) brightness(0.7)',
+                      transform: 'scale(1.1)',
+                  }}
+              />
+          </picture>
+      </div>
       <div className="fixed inset-0 z-[-1] lights-container"></div>
 
       {showHeaderFooter && <Header onLogoutRequest={logout} handleScrollTo={handleScrollTo} />}

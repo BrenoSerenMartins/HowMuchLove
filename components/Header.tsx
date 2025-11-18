@@ -51,7 +51,10 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo, onLogoutRequest }) => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
             <button onClick={() => navigate('/')} className="focus:outline-none">
-              <img src="/images/logo.png" alt="HowMuchLove Logo" className="max-h-5 sm:max-h-6 md:max-h-7 w-auto" />
+              <picture>
+                <source srcSet="/images/logo.avif" type="image/avif" />
+                <img src="/images/logo.png" alt="HowMuchLove Logo" className="max-h-5 sm:max-h-6 md:max-h-7 w-auto" />
+              </picture>
             </button>
             {user && <PlanBadge planName={user.plan} />}
         </div>
