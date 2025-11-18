@@ -1,3 +1,3 @@
  to avif:
- ffmpeg -i og-images.png -map 0 -map 0 -filter:v:1 alphaextract -frames:v 1 -c:v libaom-av1 -still-picture 1 -crf 24 og-images.avif
+ ffmpeg -i logo.png -map 0 -map 0 -filter:v:1 alphaextract -frames:v 1 -c:v libaom-av1 -still-picture 1 -crf 24 logo.avif
 

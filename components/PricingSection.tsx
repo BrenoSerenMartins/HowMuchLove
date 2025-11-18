@@ -40,29 +40,31 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
     useEffect(() => {
       if (!carouselRef.current || formattedPlans.length === 0) return;
   
-      let targetIndex = -1;
-  
-      // Prioritize current plan if user is logged in
-      if (user && currentPlan) {
-        targetIndex = formattedPlans.findIndex(p => p.name === currentPlan);
-      }
-  
-      // Fallback to featured plan if no current plan or user not logged in
-      if (targetIndex === -1) {
-        targetIndex = formattedPlans.findIndex(p => p.isFeatured);
-      }
-      
-      if (targetIndex !== -1) {
-        const targetElement = carouselRef.current.children[targetIndex] as HTMLElement;
-        if (targetElement && carouselRef.current) {
-          // Calculate scrollLeft to center the target element
-          const scrollLeft = targetElement.offsetLeft - 
-                             (carouselRef.current.offsetWidth / 2) + 
-                             (targetElement.offsetWidth / 2);
-          
-          carouselRef.current.scrollLeft = scrollLeft;
+      requestAnimationFrame(() => {
+        let targetIndex = -1;
+    
+        // Prioritize current plan if user is logged in
+        if (user && currentPlan) {
+          targetIndex = formattedPlans.findIndex(p => p.name === currentPlan);
         }
-      }
+    
+        // Fallback to featured plan if no current plan or user not logged in
+        if (targetIndex === -1) {
+          targetIndex = formattedPlans.findIndex(p => p.isFeatured);
+        }
+        
+        if (targetIndex !== -1) {
+          const targetElement = carouselRef.current.children[targetIndex] as HTMLElement;
+          if (targetElement && carouselRef.current) {
+            // Calculate scrollLeft to center the target element
+            const scrollLeft = targetElement.offsetLeft - 
+                               (carouselRef.current.offsetWidth / 2) + 
+                               (targetElement.offsetWidth / 2);
+            
+            carouselRef.current.scrollLeft = scrollLeft;
+          }
+        }
+      });
     }, [dbPlans, user, currentPlan]); // Re-run if these change
   const getPlanStatus = (planName: string) => {
     if (!currentPlan || typeof currentPlan !== 'string' || !planRank[currentPlan]) {
