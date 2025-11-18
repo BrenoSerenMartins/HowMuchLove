@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo, onLogoutRequest }) => {
             <button onClick={() => navigate('/')} className="focus:outline-none">
               <picture>
                 <source srcSet="/images/logo.avif" type="image/avif" />
-                <img src="/images/logo.png" alt="HowMuchLove Logo" className="max-h-5 sm:max-h-6 md:max-h-7 w-auto" />
+                <img src="/images/logo.png" alt="HowMuchLove Logo" className="max-h-5 sm:max-h-6 md:max-h-7 w-auto" fetchpriority="high" />
               </picture>
             </button>
             {user && <PlanBadge planName={user.plan} />}
