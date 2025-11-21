@@ -65,7 +65,8 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
 
 interface CounterDemoProps {
   initialData?: LoveStoryData | null;
-  onSave?: (data: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]) => void; // Updated onSave
+  onSave?: (data: LoveStoryData, newFiles: File[], imageIdsToDelete: number[]) => void;
+  onCancel?: () => void;
   onImageDelete?: (id: number) => Promise<void>;
   isDashboard?: boolean;
   saveStatus?: 'idle' | 'saving';
@@ -73,7 +74,7 @@ interface CounterDemoProps {
   planFeatures: Partial<Plan> | null;
 }
 
-const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageDelete, isDashboard, saveStatus, onDirty, planFeatures }) => {
+const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel, onImageDelete, isDashboard, saveStatus, onDirty, planFeatures }) => {
   const [localData, setLocalData] = useState<LoveStoryData>({
     startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', entryButtonText: '',
   });
@@ -256,9 +257,16 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onImageD
             </AccordionSection>
           </div>
           {isDashboard && (
-            <button onClick={handleSave} disabled={saveStatus === 'saving'} className="w-full font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 !mt-8 bg-pink-500 text-white hover:bg-pink-600 disabled:bg-pink-300">
-              {saveStatus === 'saving' ? 'Salvando...' : 'Salvar História'}
-            </button>
+            <div className="flex flex-col sm:flex-row-reverse gap-4 mt-8">
+              <button onClick={handleSave} disabled={saveStatus === 'saving'} className="w-full font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 bg-pink-500 text-white hover:bg-pink-600 disabled:bg-pink-300">
+                {saveStatus === 'saving' ? 'Salvando...' : 'Salvar História'}
+              </button>
+              {onCancel && (
+                <button onClick={onCancel} disabled={saveStatus === 'saving'} className="w-full sm:w-auto font-semibold py-3 px-8 rounded-lg transition-colors duration-300 bg-black/20 hover:bg-black/40 text-slate-200">
+                  Cancelar
+                </button>
+              )}
+            </div>
           )}
         </div>
 

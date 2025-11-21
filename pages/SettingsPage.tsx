@@ -52,6 +52,12 @@ const SettingsPage: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (mpPublicKey) {
+      console.log('Using Mercado Pago Public Key on Frontend:', mpPublicKey);
+    }
+  }, [mpPublicKey]);
+
   const handleLogout = () => {
     logout();
     navigate('/');

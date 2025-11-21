@@ -9,6 +9,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import QRCodeModal from '../components/QRCodeModal';
 import PublicStory from '../components/PublicStory';
 import BottomNavBar from '../components/BottomNavBar';
+import DashboardSummary from '../components/DashboardSummary';
 
 // --- Styled ShareSection ---
 const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<Plan> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
@@ -53,6 +54,9 @@ const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare:
   );
 };
 
+// --- Styled ShareSection ---
+// ... (ShareSection component remains the same)
+
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
   const { user, logout, saveStory, loadStory, planFeatures } = useAuth();
@@ -64,6 +68,7 @@ const DashboardPage: React.FC = () => {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
   const generateShareLink = (email: string) => {
       const storyId = btoa(email);
@@ -115,6 +120,7 @@ const DashboardPage: React.FC = () => {
       }
       setIsDirty(false);
       addToast('Sua história foi salva com sucesso!', 'success');
+      setIsEditing(false); // Return to summary view
     } catch (error) {
       console.error("Failed to save story", error);
       addToast('Ocorreu um erro ao salvar. Tente novamente.', 'error');
@@ -125,8 +131,6 @@ const DashboardPage: React.FC = () => {
 
   // This is the single source of truth for what this page should render.
   const renderContent = () => {
-    // The global loader in App.tsx handles the initial auth load.
-    // This loader handles the subsequent story data load.
     if (isLoading || !planFeatures) {
       return (
         <PageWrapper>
@@ -137,40 +141,53 @@ const DashboardPage: React.FC = () => {
       );
     }
     
-    const WelcomeHeader = (
-        <div className="text-center mb-10 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white" style={{ textShadow: '0px 2px 5px rgba(0,0,0,0.3)'}}>
-                {storyData?.startDate ? 'Bem-vindo(a) de volta,' : 'Seja bem-vindo(a),'} <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{user?.name}!</span>
-            </h1>
-            <p className="text-slate-300 mt-3 text-base sm:text-lg max-w-2xl mx-auto">
-                {storyData?.startDate 
-                    ? 'Esta é a sua história. Personalize, salve, reviva e compartilhe seus momentos.'
-                    : 'Sua história de amor ainda não foi contada. Preencha os detalhes abaixo para começar a celebrar cada momento.'
-                }
-            </p>
-        </div>
-    );
+    // User has an existing story and is NOT in editing mode -> Show Summary
+    if (storyData?.startDate && !isEditing) {
+      return (
+        <PageWrapper>
+          <div className="animate-fade-in-slide-up">
+            <DashboardSummary storyData={storyData} onEdit={() => setIsEditing(true)} />
+          </div>
+          {shareLink && <div className="animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}><ShareSection 
+            shareUrl={shareLink} 
+            onPreview={() => setIsPreviewing(true)} 
+            onShare={() => setIsQrModalOpen(true)}
+            planFeatures={planFeatures}
+            navigate={navigate}
+          /></div>}
+        </PageWrapper>
+      );
+    }
+
+    // User is a NEW user OR is in editing mode -> Show Editor
+    const welcomeText = isEditing 
+      ? 'Modo de Edição' 
+      : 'Seja bem-vindo(a),';
+    const subText = isEditing
+      ? 'Faça as alterações que desejar na sua história.'
+      : 'Sua história de amor ainda não foi contada. Preencha os detalhes abaixo para começar a celebrar cada momento.';
 
     return (
       <PageWrapper>
-        {WelcomeHeader}
-        <div className="transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-3xl animate-fade-in-slide-up" style={{ animationDelay: '200ms' }}>
+        <div className="text-center mb-10 animate-fade-in-slide-up">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white" style={{ textShadow: '0px 2px 5px rgba(0,0,0,0.3)'}}>
+                {welcomeText} {!isEditing && <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{user?.name}!</span>}
+            </h1>
+            <p className="text-slate-300 mt-3 text-base sm:text-lg max-w-2xl mx-auto">
+                {subText}
+            </p>
+        </div>
+        <div className="transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-3xl animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
             <CounterDemo 
               initialData={storyData} 
-              onSave={handleSaveStory} 
+              onSave={handleSaveStory}
+              onCancel={() => setIsEditing(false)}
               saveStatus={saveStatus}
               isDashboard 
               onDirty={() => setIsDirty(true)}
               planFeatures={planFeatures}
             />
         </div>
-        {shareLink && <div className="animate-fade-in-slide-up" style={{ animationDelay: '300ms' }}><ShareSection 
-          shareUrl={shareLink} 
-          onPreview={() => setIsPreviewing(true)} 
-          onShare={() => setIsQrModalOpen(true)}
-          planFeatures={planFeatures}
-          navigate={navigate}
-        /></div>}
       </PageWrapper>
     );
   };

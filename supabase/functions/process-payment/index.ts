@@ -48,7 +48,10 @@ serve(async (req) => {
     const testUserEmail = (getConfigValue('MP_TEST_USER_EMAIL') || 'test_user_123456@testuser.com').trim();
 
     if (!accessToken) throw new Error('Mercado Pago Access Token not configured');
-    log('Configuration loaded:', { checkoutType, frontendUrl, testUserEmail, accessTokenIsSet: !!accessToken });
+    
+    const tokenPreview = `${accessToken.substring(0, 10)}...${accessToken.substring(accessToken.length - 4)}`;
+    log('Using Mercado Pago Access Token on Backend (preview):', tokenPreview);
+    log('Configuration loaded:', { checkoutType, frontendUrl, testUserEmail });
 
     const { data: planDetails, error: planError } = await supabaseAdmin.from('plans').select('id, name, price, type, external_id').eq('name', planName).single();
     if (planError) throw new Error(`Plan '${planName}' not found: ${planError.message}`);
