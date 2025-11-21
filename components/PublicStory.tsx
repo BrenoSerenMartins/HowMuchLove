@@ -120,6 +120,7 @@ interface PublicStoryProps {
     hasEntered?: boolean;
     isMuted?: boolean;
     setIsMuted?: (isMuted: boolean) => void;
+    isPreview?: boolean;
 }
 
 // --- Custom Hook for Intersection Observer ---
@@ -149,7 +150,7 @@ const useOnScreen = (ref: React.RefObject<HTMLElement>, rootMargin = "0px") => {
     return isIntersecting;
 };
 
-const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMuted, setIsMuted }) => {
+const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMuted, setIsMuted, isPreview = false }) => {
     if (!storyData) {
         return (
             <div className="min-h-screen w-full flex flex-col justify-center items-center bg-slate-900 text-white">
@@ -190,7 +191,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
 
     return (
         <div 
-            className="min-h-screen w-full flex flex-col pt-4 relative overflow-hidden"
+            className={`w-full flex flex-col relative ${isPreview ? 'h-full overflow-y-auto' : 'min-h-screen pt-4 overflow-hidden'}`}
         >
             <style>
                 {`
@@ -236,7 +237,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             {/* Image and Counter Section */}
             <div className="px-4 w-full max-w-screen-2xl mx-auto">
                 <section 
-                  className={`relative w-full h-[calc(100vh-5rem)] flex flex-col rounded-3xl shadow-2xl overflow-hidden ${getLayoutContainerClasses(layoutPosition)}`}
+                  className={`relative w-full ${isPreview ? '' : 'h-[calc(100vh-5rem)]'} flex flex-col rounded-3xl shadow-2xl overflow-hidden ${getLayoutContainerClasses(layoutPosition)}`}
                   style={{ 
                     ...(!images || images.length === 0 ? { background: 'linear-gradient(135deg, #4a0e29, #2d0b1d)' } : {}),
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.3)' // Custom outer shadow

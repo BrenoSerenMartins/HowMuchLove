@@ -26,10 +26,10 @@ const getLayoutPanelClasses = (position: LayoutPosition) => {
 
 const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
     <div className="flex flex-col items-center">
-      <span className="text-4xl md:text-5xl font-bold text-white tracking-tighter" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.5)' }}>
+      <span className="text-3xl font-bold text-white tracking-tighter" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.5)' }}>
         {String(value).padStart(2, '0')}
       </span>
-      <span className="text-[10px] sm:text-xs font-light text-white/80 uppercase tracking-widest" style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.5)' }}>
+      <span className="text-[10px] sm:text-[10px] font-light text-white/80 uppercase tracking-widest" style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.5)' }}>
         {label}
       </span>
     </div>
@@ -123,47 +123,46 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData }) => {
                 </style>
             </div>
 
-            <div className="p-4 w-full max-w-screen-2xl mx-auto flex-shrink-0">
-                <section className={`relative w-full min-h-[400px] flex flex-col rounded-2xl shadow-xl overflow-hidden ${getLayoutContainerClasses(layoutPosition)}`}>
-                    {images && images.map((image, index) => (
-                        <div 
-                            key={image.id || index} 
-                            className="absolute inset-0 bg-cover bg-center rounded-2xl transition-all duration-1000 ease-in-out" 
-                            style={{ 
-                                backgroundImage: `url(${image.image_url})`, 
-                                opacity: index === topImageIndex ? 1 : 0,
-                                transform: index === topImageIndex ? 'scale(1)' : 'scale(1.05)',
-                                filter: index === topImageIndex ? 'blur(0px)' : 'blur(4px)',
-                                zIndex: index === topImageIndex ? 1 : 0,
-                            }}
-                        >
-                            <div className="absolute inset-0 bg-black/40 z-0 rounded-2xl"></div>
-                            <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none z-20"></div>
+                                                            <div className="p-4 w-full max-w-screen-2xl mx-auto flex-shrink-0">
+
+                                                                <section className={`relative w-full min-h-[470px] flex flex-col rounded-2xl shadow-xl overflow-hidden ${getLayoutContainerClasses(layoutPosition)}`}>                                {images && images.map((image, index) => (
+                                    <div 
+                                        key={image.id || index} 
+                                        className="absolute inset-0 bg-cover bg-center rounded-2xl transition-all duration-1000 ease-in-out" 
+                                        style={{
+                                            backgroundImage: `url(${image.image_url})`, 
+                                            opacity: index === topImageIndex ? 1 : 0,
+                                            transform: index === topImageIndex ? 'scale(1)' : 'scale(1.05)',
+                                            filter: index === topImageIndex ? 'blur(0px)' : 'blur(4px)',
+                                            zIndex: index === topImageIndex ? 1 : 0,
+                                        }}
+                                    >
+                                        <div className="absolute inset-0 bg-black/40 z-0 rounded-2xl"></div>
+                                        <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none z-20"></div>
+                                    </div>
+                                ))}
+                                <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 65%, rgba(0,0,0,0.5) 100%)' }}></div>
+                                <div className={`relative z-10 ${getLayoutPanelClasses(layoutPosition)}`}>
+                                    <div className="max-w-4xl mx-auto space-y-4">
+                                        <DurationCounter startDate={date} />
+                                    </div>
+                                </div>
+                                {(!images || images.length === 0) && !message && <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"><p className="text-white/50 text-center">Adicione conteúdo à sua história.</p></div>}
+                            </section>
                         </div>
-                    ))}
-                    <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 65%, rgba(0,0,0,0.5) 100%)' }}></div>
-                    <div className={`relative z-10 ${getLayoutPanelClasses(layoutPosition)}`}>
-                        <div className="max-w-4xl mx-auto space-y-4">
-                            <DurationCounter startDate={date} />
-                        </div>
-                    </div>
-                    {(!images || images.length === 0) && !message && <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"><p className="text-white/50 text-center">Adicione conteúdo à sua história.</p></div>}
-                </section>
-            </div>
-
-
-
-            {message && (
-                <section className={`flex-grow flex items-center justify-center w-full py-12 px-4`}>
-                    <div className="bg-slate-800/60 backdrop-blur-md rounded-xl shadow-lg p-6 max-w-sm w-full">
-                        <p className="font-cursive text-slate-200 text-xl md:text-2xl leading-relaxed break-words text-center">
-                            <QuoteStartIcon className="text-slate-600" />
-                            {message}
-                        </p>
-                    </div>
-                </section>
-            )}
-        </div>
+            
+            
+            
+                        {message && (
+                            <section className={`flex-grow flex items-center justify-center w-full py-8 px-4`}>
+                                <div className="bg-slate-800/60 backdrop-blur-md rounded-xl shadow-lg p-6 max-w-sm w-full">
+                                    <p className="font-cursive text-slate-200 text-xl leading-relaxed break-words text-center">
+                                        <QuoteStartIcon className="text-slate-600" />
+                                        {message}
+                                    </p>
+                                </div>
+                            </section>
+                        )}        </div>
     );
 };
 
