@@ -26,3 +26,10 @@ dist-ssr
 var/database/*
 var/database/
 var/uploads/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
