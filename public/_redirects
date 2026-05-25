@@ -3,4 +3,4 @@
 # (like /sitemap.xml or /robots.txt) is served the index.html,
 # allowing the React router to handle it.
 
-/*    /index.html    200
+/*    /    200
