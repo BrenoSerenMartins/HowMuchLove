@@ -2,6 +2,9 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.44.0';
+import { getSupabaseSecretKey, getSupabaseUrl } from '../_shared/env.ts';
+import { resolvePublicStoryUserId } from '../_shared/public-story.ts';
+import { createErrorResponse } from '../_shared/errors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,8 +17,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = getSupabaseUrl();
+    const serviceRoleKey = getSupabaseSecretKey();
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error('Missing Supabase environment variables.');
     }
@@ -37,22 +40,16 @@ Deno.serve(async (req) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    const userEmail = atob(storyId);
+    const userId = resolvePublicStoryUserId(storyId);
 
-    // 1. Get user from email
-    const { data: { users }, error: userListError } = await supabaseAdmin.auth.admin.listUsers();
-    if (userListError) throw userListError;
-
-    const targetUser = users.find((u) => u.email === userEmail);
-    if (!targetUser) {
-      return new Response(JSON.stringify({ message: 'Usuário não encontrado.' }), {
+    if (!userId) {
+      return new Response(JSON.stringify({ message: 'História não encontrada.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404
       });
     }
-    const userId = targetUser.id;
 
-    // 2. Get story and plan from user_id by querying profiles
+    // Get story and plan from the resolved public user_id by querying profiles.
     const { data: profileData, error: storyError } = await supabaseAdmin
       .from('profiles')
       .select(`
@@ -112,10 +109,6 @@ Deno.serve(async (req) => {
       });
     }
   } catch (error) {
-    console.error('Edge Function error:', error);
-    return new Response(JSON.stringify({ error: error.message, details: error }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500
-    });
+    return createErrorResponse('get-public-story', error, corsHeaders, 500);
   }
 });

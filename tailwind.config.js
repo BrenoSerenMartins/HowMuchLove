@@ -4,10 +4,12 @@ module.exports = {
     "./index.html",
     "./App.tsx",
     "./index.tsx",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./contexts/**/*.{js,ts,jsx,tsx}",
-    "./hooks/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./auth/**/*.{js,ts,jsx,tsx}",
+    "./customer/**/*.{js,ts,jsx,tsx}",
+    "./marketing/**/*.{js,ts,jsx,tsx}",
+    "./shared/**/*.{js,ts,jsx,tsx}",
+    "./story/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

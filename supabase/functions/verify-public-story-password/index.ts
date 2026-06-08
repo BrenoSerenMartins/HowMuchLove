@@ -3,6 +3,9 @@
 // This enables autocomplete, go to definition, etc.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.44.0';
 import * as scrypt from "https://deno.land/x/scrypt@v2.1.1/mod.ts";
+import { getSupabaseSecretKey, getSupabaseUrl } from '../_shared/env.ts';
+import { resolvePublicStoryUserId } from '../_shared/public-story.ts';
+import { createErrorResponse } from '../_shared/errors.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +18,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = getSupabaseUrl();
+    const serviceRoleKey = getSupabaseSecretKey();
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error('Missing Supabase environment variables.');
     }
@@ -30,22 +33,16 @@ Deno.serve(async (req) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    const userEmail = atob(storyId);
+    const userId = resolvePublicStoryUserId(storyId);
 
-    // 1. Get user from email
-    const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers();
-    if (userError) throw userError;
-    
-    const targetUser = users.find((u) => u.email === userEmail);
-    if (!targetUser) {
-      return new Response(JSON.stringify({ message: 'Usuário não encontrado.' }), {
+    if (!userId) {
+      return new Response(JSON.stringify({ message: 'História não encontrada.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404
       });
     }
-    const userId = targetUser.id;
 
-    // 2. Get story and related plan from user_id
+    // Get story and related plan from the resolved public user_id.
     const { data: storyData, error: storyError } = await supabaseAdmin
       .from('love_stories')
       .select(`
@@ -110,10 +107,6 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Edge Function error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500
-    });
+    return createErrorResponse('verify-public-story-password', error, corsHeaders, 500);
   }
 });
