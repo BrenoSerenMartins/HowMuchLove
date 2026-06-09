@@ -3,6 +3,7 @@ import type { LoveStoryData } from '@/types';
 import YouTubePlayer from './YouTubePlayer';
 import DurationCounter from './DurationCounter';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import { isFreePlan } from '@/shared/lib/plans';
 
 // --- Helper Functions ---
 
@@ -14,23 +15,6 @@ const extractYouTubeID = (url: string): string | null => {
         return match[2];
     }
     return null;
-};
-
-const getPlanName = (plan: LoveStoryData['plan']): string => {
-    if (!plan) return 'Gratis';
-    if (typeof plan === 'string') return plan;
-    if (Array.isArray(plan)) {
-        return getPlanName(plan[0] as LoveStoryData['plan']);
-    }
-    if (typeof plan === 'object') {
-        if ('name' in plan && typeof plan.name === 'string') {
-            return plan.name;
-        }
-        if ('plan_name' in plan && typeof plan.plan_name === 'string') {
-            return plan.plan_name;
-        }
-    }
-    return 'Gratis';
 };
 
 type LayoutPosition = 'top' | 'center' | 'bottom';
@@ -119,7 +103,6 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
     }
 
     const { startDate, message, images, layoutPosition = 'bottom', youtubeUrl, plan } = storyData;
-    const planName = getPlanName(plan);
     const date = startDate ? new Date(startDate) : null;
     const videoId = youtubeUrl ? extractYouTubeID(youtubeUrl) : null;
     const backgroundImageUrl = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -139,6 +122,17 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
 
     const messageRef = React.useRef<HTMLDivElement>(null);
     const isMessageOnScreen = useOnScreen(messageRef, "-100px");
+
+    useEffect(() => {
+        console.log('[story/public/PublicStory]', {
+            isPreview,
+            hasEntered: !!hasEntered,
+            youtubeUrl,
+            videoId,
+            startDate,
+            imageCount: images?.length ?? 0,
+        });
+    }, [isPreview, hasEntered, youtubeUrl, videoId, startDate, images?.length]);
 
     useEffect(() => {
         if (isMessageOnScreen) {
@@ -177,7 +171,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                 `}
             </style>
             <div className="blurry-background">
-                {planName === 'Gratis' && <Watermark />} {/* Render watermark if plan is Gratis */}
+                {isFreePlan(plan) && <Watermark />} {/* Render watermark if plan is free */}
             </div>
             {/* Mute/Unmute Button */}
             {videoId && hasEntered && (
@@ -281,8 +275,8 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                     </div>
                 </section>
             )}
-            {videoId && hasEntered && <YouTubePlayer videoId={videoId} isMuted={isMuted ?? true} />}
-            {planName === 'Gratis' && (
+            {videoId && <YouTubePlayer videoId={videoId} isMuted={isMuted ?? true} hasEntered={!!hasEntered} />}
+            {isFreePlan(plan) && (
                 <a 
                     href="/#/settings#pricing-section"
                     className="fixed bottom-4 left-4 z-50 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:scale-105 transition-all duration-300"

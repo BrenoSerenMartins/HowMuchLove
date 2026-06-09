@@ -7,18 +7,19 @@ import PageWrapper from '@/shared/ui/PageWrapper';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import QRCodeModal from './components/QRCodeModal';
-import PublicStory from '@/story/public/components/PublicStory';
 import BottomNavBar from '@/shared/ui/BottomNavBar';
 import DashboardSummary from './components/DashboardSummary';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import { canShareStory } from '@/shared/lib/plans';
+import StoryPreview from '@/shared/story-editor/StoryPreview';
 
 // --- Styled ShareSection ---
-  const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<PlanFeatures> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
-  const isGratis = planFeatures?.name === 'Gratis';
+const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<PlanFeatures> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
+  const isFreePlan = !canShareStory(planFeatures);
 
   const handleShareClick = () => {
-    if (isGratis) {
+    if (isFreePlan) {
       navigate('/settings#pricing-section');
     } else {
       onShare();
@@ -31,7 +32,7 @@ import { uiCopy } from '@/shared/lib/ui-copy';
           <div>
           <h3 className="font-bold text-lg text-white">{uiCopy.dashboard.shareReadyTitle}</h3>
           <p className="text-slate-300 mt-1 text-sm">
-            {isGratis 
+            {isFreePlan 
               ? uiCopy.dashboard.shareUpgradeDescription
               : uiCopy.dashboard.shareReadyDescription
             }
@@ -48,7 +49,7 @@ import { uiCopy } from '@/shared/lib/ui-copy';
             onClick={handleShareClick}
             className="w-full font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white"
           >
-            {isGratis ? uiCopy.dashboard.upgrade : uiCopy.dashboard.share}
+            {isFreePlan ? uiCopy.dashboard.upgrade : uiCopy.dashboard.share}
           </button>
         </div>
       </div>
@@ -193,16 +194,20 @@ const DashboardPage: React.FC = () => {
   };
   
   if (isPreviewing) {
-    const previewData = { ...storyData, plan: planFeatures?.name };
+    const previewData = { ...storyData, plan: planFeatures };
     return (
-      <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900">
-        <PublicStory storyData={previewData} hasEntered isMuted={false} setIsMuted={() => {}} />
-            <button
-            onClick={() => setIsPreviewing(false)}
-            className="fixed top-4 left-4 z-50 bg-black/30 backdrop-blur-xl text-white font-semibold py-2 px-4 rounded-lg border border-white/10 shadow-lg hover:bg-black/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 group"
+      <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950 p-3 md:p-6">
+        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-center">
+          <div className="h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-black/30 backdrop-blur-xl shadow-2xl">
+            <StoryPreview storyData={previewData} plan={planFeatures} />
+          </div>
+        </div>
+        <button
+          onClick={() => setIsPreviewing(false)}
+          className="fixed top-4 left-4 z-50 bg-black/30 backdrop-blur-xl text-white font-semibold py-2 px-4 rounded-lg border border-white/10 shadow-lg hover:bg-black/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 group"
         >
-            <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            {uiCopy.story.backToEditor}
+          <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          {uiCopy.story.backToEditor}
         </button>
       </div>
     );

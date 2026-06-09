@@ -22,12 +22,13 @@
 - The free tier is synthetic (`Gratis`) and is not part of the public pricing catalog.
 - Plan features gate image count, YouTube embedding, password protection, and custom entry button text in the editor.
 - The UI uses plan names to determine rank and upgrade/downgrade copy.
+- Free-plan detection is normalized in code and treats the synthetic free record and `Gratis` name variants as the same free tier.
 
 ## Sharing rules
 - Public sharing uses a link derived from the authenticated user's `id`, which is opaque and stable.
 - The public story functions accept only UUID-based identifiers; old base64 email links are no longer supported.
 - If the story has a password, the public page asks for it before returning the full story payload.
-- Free-plan stories show a watermark in the public view when the plan name is `Gratis`.
+- Free-plan stories show a watermark in the public view when the plan resolves to the normalized free tier.
 
 ## Payment rules
 - Payment mode is controlled by `app_config.CHECKOUT_TYPE`.

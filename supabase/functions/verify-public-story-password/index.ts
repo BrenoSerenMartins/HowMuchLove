@@ -42,19 +42,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get story and related plan from the resolved public user_id.
+    // Get story from the resolved public user_id.
     const { data: storyData, error: storyError } = await supabaseAdmin
       .from('love_stories')
-      .select(`
-        id,
-        story_password,
-        start_date,
-        story_text,
-        youtube_url,
-        entry_button_text,
-        layout_position,
-        profiles!inner(plans(*))
-      `)
+      .select('id, story_password, start_date, story_text, youtube_url, entry_button_text, layout_position, user_id')
       .eq('user_id', userId)
       .single();
 
@@ -83,6 +74,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('plan_id')
+      .eq('id', userId)
+      .maybeSingle();
+    if (profileError) throw profileError;
+
+    let plan = null;
+    const planId = typeof profileData?.plan_id === 'number' ? profileData.plan_id : Number(profileData?.plan_id);
+    if (Number.isFinite(planId) && planId > 0) {
+      const { data: planData, error: planError } = await supabaseAdmin
+        .from('plans')
+        .select('id, name, external_id, type, created_at, image_limit, allow_youtube, allow_password_protection, allow_custom_button, is_active, is_featured')
+        .eq('id', planId)
+        .maybeSingle();
+      if (planError) throw planError;
+      plan = planData ?? null;
+    }
+
     // Password is correct, fetch images and return full story data
     const { data: images, error: imagesError } = await supabaseAdmin
       .from('story_images')
@@ -98,7 +108,7 @@ Deno.serve(async (req) => {
       layoutPosition: storyData.layout_position,
       youtubeUrl: storyData.youtube_url,
       entryButtonText: storyData.entry_button_text,
-      plan: storyData.profiles.plans, // Correctly access the nested plans object
+      plan: plan,
     };
 
     return new Response(JSON.stringify(responseData), {

@@ -9,7 +9,7 @@
 
 ## Current status
 - `shared/lib/supabase.ts` is the active Supabase client used everywhere.
-- `shared/lib/story-api.ts` contains the active public story fetch and password verification calls.
+- `shared/lib/story-api.ts` contains the active public story fetch and password verification calls and now uses direct `fetch` against the Edge Function endpoints so it can interpret non-2xx responses and not-found payloads explicitly.
 - `shared/lib/pricing.ts` contains the plan catalog and Mercado Pago public key lookups.
 - `shared/lib/storage.ts` contains storage URL normalization and payload normalization helpers.
 - `shared/lib/validators.ts` contains the string validators used by auth forms.
@@ -24,4 +24,4 @@
 
 ## Service risks
 - Type typing for `import.meta.env` is still runtime-backed in the Vite app.
-- The public story helpers still depend on the Edge Function contract staying stable.
+- The public story helpers still depend on the Edge Function contract staying stable and on the `message`/`error` payload convention used by the Edge Functions.

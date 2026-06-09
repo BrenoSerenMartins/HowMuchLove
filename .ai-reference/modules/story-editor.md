@@ -25,7 +25,7 @@ Allow authenticated users to create, preview, edit, save, and share their love s
 - Image edits are optimistic and local until saved.
 - Existing images are identified by `story_id`; new images are matched by `originalFilename`.
 - The save function fully replaces the image list to preserve order through a database-side atomic function.
-- Preview mode renders the public story view with the current unsaved data.
+- Preview mode renders a dedicated compact story preview with the current unsaved data and the current plan so the dashboard stays readable without reusing the full public page layout.
 - Existing passwords are not loaded back into the editor as raw hashes.
 - Leaving the password input blank preserves the current hash; an explicit removal control clears it.
 

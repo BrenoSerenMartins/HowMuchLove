@@ -4,6 +4,7 @@ import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import type { LoveStoryData, PlanFeatures } from '@/types';
 import { normalizeLoveStoryData } from '@/shared/lib/storage';
 import { errorMessages, getErrorMessage, getPayloadErrorMessage, logError } from '@/shared/lib/errors';
+import { defaultGratisPlan, resolvePlanById } from '@/shared/lib/plans';
 
 // Define a new type for the authenticated user, combining Supabase's user with our profile data
 interface AuthUser {
@@ -43,46 +44,21 @@ export const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {},
 });
 
-// Define a default "Gratis" plan for users without a plan or for initial state
-const defaultGratisPlan: PlanFeatures = {
-  id: 0,
-  name: 'Gratis',
-  external_id: 'gratis',
-  created_at: new Date().toISOString(),
-  type: 'subscription',
-  image_limit: 1,
-  allow_youtube: false,
-  allow_password_protection: false,
-  allow_custom_button: false,
-  is_featured: false,
-  is_active: true,
-};
-
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [planFeatures, setPlanFeatures] = useState<PlanFeatures | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // New state for logout confirmation
 
-  const resolvePlanFeatures = (plans: PlanFeatures | PlanFeatures[] | null | undefined): PlanFeatures => {
-    if (Array.isArray(plans)) {
-      return plans[0] || defaultGratisPlan;
-    }
-
-    return plans || defaultGratisPlan;
-  };
-
-  const processUserSession = (sessionUser: SupabaseAuthUser, profile: { name: string; plans: PlanFeatures | PlanFeatures[] | null }) => {
-    const features = resolvePlanFeatures(profile.plans);
+  const processUserSession = (sessionUser: SupabaseAuthUser, profile: { name: string; plan: PlanFeatures }) => {
     const authUser: AuthUser = {
       id: sessionUser.id,
       email: sessionUser.email || '',
       name: profile.name,
-      plan: features.name as AuthUser['plan'],
+      plan: profile.plan.name as AuthUser['plan'],
     };
     setUser(authUser);
-    setPlanFeatures(features);
+    setPlanFeatures(profile.plan);
   };
 
   const verifyAuth = async () => {
@@ -90,15 +66,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Fetch profile and the related plan data in one go
+        // Fetch profile and resolve the plan explicitly by plan_id.
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('name, plans (*)') // Assumes a 'plans' relationship exists
+          .select('name, plan_id')
           .eq('id', session.user.id)
           .single();
 
         if (profileError) throw profileError;
-        processUserSession(session.user, profile as unknown as { name: string; plans: PlanFeatures | PlanFeatures[] | null });
+
+        const resolvedPlan = await resolvePlanById((profile as { name: string; plan_id: number | null }).plan_id);
+        processUserSession(session.user, { name: profile.name, plan: resolvedPlan });
       } else {
         setUser(null);
         setPlanFeatures(defaultGratisPlan);
@@ -123,12 +101,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (data.user) {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('name, plans (*)')
+        .select('name, plan_id')
         .eq('id', data.user.id)
         .single();
 
       if (profileError) throw new Error(getErrorMessage(profileError, errorMessages.auth));
-      processUserSession(data.user, profile as unknown as { name: string; plans: PlanFeatures | PlanFeatures[] | null });
+
+      const resolvedPlan = await resolvePlanById((profile as { name: string; plan_id: number | null }).plan_id);
+      processUserSession(data.user, { name: profile.name, plan: resolvedPlan });
     }
   };
 
@@ -147,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (data.user) {
       // After successful registration, set user with the default 'Gratis' plan
-      processUserSession(data.user, { name, plans: defaultGratisPlan });
+      processUserSession(data.user, { name, plan: defaultGratisPlan });
     }
   };
 

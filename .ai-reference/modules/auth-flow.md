@@ -20,7 +20,7 @@ Create and rehydrate authenticated users and route them into the protected area 
 
 ## Data dependencies
 - Login and register both assume the Supabase auth backend is reachable.
-- Login additionally assumes the profile row and plan relation exist.
+- Login additionally assumes the profile row exists and exposes `plan_id`, which is then resolved to a plan record.
 - Register assumes some external bootstrap path will create the profile row later if needed.
 
 ## Risks

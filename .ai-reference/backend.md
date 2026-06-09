@@ -16,21 +16,21 @@ There is no conventional Express backend in the current source tree. The active 
 - Purpose: return a public story by an opaque public identifier.
 - Inputs: `storyId` in body or query string.
 - Output: story payload or `requiresPassword: true`.
-- Dependencies: `profiles`, `love_stories`, `story_images`, `plans`, and the UUID-only public identifier resolver.
+- Dependencies: `profiles.plan_id`, `love_stories`, `story_images`, `plans`, and the UUID-only public identifier resolver.
 - Risk: invalid or stale share identifiers now fail immediately instead of attempting backward compatibility.
 
 ### `verify-public-story-password`
 - Purpose: verify the password for a public story and return the full payload.
 - Inputs: `storyId`, `password`.
 - Output: full story payload after successful scrypt verification.
-- Dependencies: `love_stories`, `story_images`, `plans`, and the UUID-only public identifier resolver.
+- Dependencies: `profiles.plan_id`, `love_stories`, `story_images`, `plans`, and the UUID-only public identifier resolver.
 - Risk: no rate limiting on password attempts in the codebase.
 
 ### `save-story`
 - Purpose: persist the authenticated user story and images.
 - Inputs: multipart form with `storyData`, `imageIdsToDelete`, and `newFiles`.
 - Output: story ID.
-- Dependencies: auth bearer token, service role key, `profiles`, `plans`, `love_stories`, `story_images`, storage bucket `story-images`.
+- Dependencies: auth bearer token, service role key, `profiles.plan_id`, `plans`, `love_stories`, `story_images`, storage bucket `story-images`.
 - Important: the function now calls a database-side atomic save routine to keep story and image updates consistent.
 - Important: storage cleanup for replaced images happens only after the database commit succeeds.
 - Important: existing story passwords are preserved unless explicitly cleared; the function no longer re-hashes a stored hash on save.

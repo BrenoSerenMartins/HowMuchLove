@@ -36,7 +36,7 @@ Confirmed from code:
 
 Behavior:
 - `id` matches the Supabase auth user ID.
-- `plan_id` is joined as `plans (*)`.
+- `plan_id` is the authoritative plan pointer and is resolved explicitly by code when loading the current user plan.
 
 ### `love_stories`
 Confirmed from code:
@@ -78,6 +78,11 @@ Used for:
 
 ## Migrations present in repo
 - `20251117024849_add_show_on_pricing_to_plans.sql` adds `show_on_pricing_page` to `plans`.
+- `20260608000000_save_story_atomic.sql` creates the `public.save_story_with_images(...)` RPC used by `save-story` to persist the story and its ordered images atomically.
+
+## Migration notes
+- The `show_on_pricing_page` migration is written defensively so it can be applied to a restored database that already contains the column.
+- The atomic story-save RPC is part of the server contract; if it is missing from the remote database, `save-story` fails at runtime even when the edge function itself is deployed.
 
 ## Constraints and assumptions
 - The repository does not contain the full schema, RLS policies, or trigger definitions.
@@ -87,6 +92,5 @@ Used for:
 
 ## Database risks
 - Plan enforcement is not duplicated in `save-story`.
-- Public story lookup depends on email rather than a random public token.
+- Public story lookup now depends on UUID-only story identifiers and fails closed when the story cannot be resolved.
 - The schema is only partially documented in repository files, so some constraints are inferred.
-

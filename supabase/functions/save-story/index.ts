@@ -93,12 +93,22 @@ Deno.serve(async (req) => {
 
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('plans (*)')
+      .select('plan_id')
       .eq('id', user.id)
       .maybeSingle();
     if (profileError) throw profileError;
 
-    const plan = normalizePlanFeatures(profileData?.plans);
+    let plan = DEFAULT_PLAN;
+    const planId = typeof profileData?.plan_id === 'number' ? profileData.plan_id : Number(profileData?.plan_id);
+    if (Number.isFinite(planId) && planId > 0) {
+      const { data: planData, error: planError } = await supabaseAdmin
+        .from('plans')
+        .select('id, name, image_limit, allow_youtube, allow_password_protection, allow_custom_button')
+        .eq('id', planId)
+        .maybeSingle();
+      if (planError) throw planError;
+      plan = normalizePlanFeatures(planData);
+    }
 
     const incomingPassword = typeof storyData.storyPassword === 'string' ? storyData.storyPassword.trim() : '';
     const shouldRemovePassword = !!storyData.removePassword;

@@ -298,18 +298,8 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
 
         {/* --- Preview "Monitor" --- */}
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <div className="w-full h-full min-h-[600px] bg-black/40 rounded-xl shadow-2xl p-2 border-2 border-white/30">
-            <div className="px-2 pb-2 text-sm font-semibold text-slate-300">
-              {uiCopy.editor.previewPanelTitle}
-            </div>
-            <div className="flex items-center gap-1.5 px-2 mb-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            <div className="bg-slate-900 h-[550px] overflow-y-scroll rounded-md relative">
-              <StoryPreview storyData={localData} />
-            </div>
+          <div className="h-[620px] lg:h-[760px] w-full overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
+            <StoryPreview storyData={localData} plan={planFeatures} />
           </div>
           {!isDashboard && (
             <button 

@@ -7,7 +7,7 @@
 - Owns the Supabase session and user profile data through the provider wrapper.
 - Exposes `login`, `register`, `logout`, `performLogout`, `saveStory`, `loadStory`, and `refreshUser`.
 - Keeps a synthetic `Gratis` plan as the default fallback.
-- Depends on a `profiles` row with a `plans` relation.
+- Depends on a `profiles` row with `plan_id`, which is resolved into the current plan record.
 - Hard requirement: if profile data is missing or malformed, the context falls back to anonymous state.
 
 ## NavigationProvider

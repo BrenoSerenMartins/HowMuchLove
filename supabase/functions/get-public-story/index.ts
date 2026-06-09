@@ -49,20 +49,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get story and plan from the resolved public user_id by querying profiles.
-    const { data: profileData, error: storyError } = await supabaseAdmin
-      .from('profiles')
-      .select(`
-        *,
-        plans (*),
-        love_stories!inner(*)
-      `)
-      .eq('id', userId)
+    const { data: storyData, error: storyError } = await supabaseAdmin
+      .from('love_stories')
+      .select('id, story_password, start_date, story_text, youtube_url, entry_button_text, layout_position, user_id')
+      .eq('user_id', userId)
       .single();
 
     if (storyError) {
       if (storyError.code === 'PGRST116') {
-        return new Response(JSON.stringify({ message: 'História ou perfil não encontrado.' }), {
+        return new Response(JSON.stringify({ message: 'História não encontrada.' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404
         });
@@ -70,15 +65,31 @@ Deno.serve(async (req) => {
       throw storyError;
     }
 
-    if (!profileData || !profileData.love_stories) {
+    if (!storyData) {
       return new Response(JSON.stringify({ message: 'História não encontrada.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 404
       });
     }
 
-    const storyData = profileData.love_stories;
-    const plan = profileData.plans; // Use the 'plans' object
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('plan_id')
+      .eq('id', userId)
+      .maybeSingle();
+    if (profileError) throw profileError;
+
+    let plan = null;
+    const planId = typeof profileData?.plan_id === 'number' ? profileData.plan_id : Number(profileData?.plan_id);
+    if (Number.isFinite(planId) && planId > 0) {
+      const { data: planData, error: planError } = await supabaseAdmin
+        .from('plans')
+        .select('id, name, external_id, type, created_at, image_limit, allow_youtube, allow_password_protection, allow_custom_button, is_active, is_featured')
+        .eq('id', planId)
+        .maybeSingle();
+      if (planError) throw planError;
+      plan = planData ?? null;
+    }
 
     if (storyData.story_password) {
       return new Response(JSON.stringify({ requiresPassword: true, plan: plan }), {

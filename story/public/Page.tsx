@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import { fetchPublicStory, verifyStoryPassword } from '@/shared/lib/story-api';
 import type { LoveStoryData } from '@/types';
@@ -31,6 +31,8 @@ const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
+const ENTRY_TRANSITION_MS = 2400;
+
 const StoryPage: React.FC = () => {
   const { route } = useNavigate();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
@@ -43,11 +45,38 @@ const StoryPage: React.FC = () => {
   const [hasEntered, setHasEntered] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [errorKind, setErrorKind] = useState<'notFound' | 'loadError' | null>(null);
+  const [entryTransitionState, setEntryTransitionState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
+  const entryTransitionTimeoutRef = useRef<number | null>(null);
 
   const storyId = route.split('/')[2];
 
+  const clearEntryTransitionTimeout = () => {
+    if (entryTransitionTimeoutRef.current) {
+      window.clearTimeout(entryTransitionTimeoutRef.current);
+      entryTransitionTimeoutRef.current = null;
+    }
+  };
+
+  const startEntryTransition = () => {
+    if (!storyData?.youtubeUrl || hasEntered) return;
+
+    clearEntryTransitionTimeout();
+    setHasEntered(true);
+    setIsMuted(false);
+    setEntryTransitionState('fading');
+    entryTransitionTimeoutRef.current = window.setTimeout(() => {
+      setEntryTransitionState('hidden');
+      entryTransitionTimeoutRef.current = null;
+    }, ENTRY_TRANSITION_MS);
+  };
+
   useEffect(() => {
     const loadStory = async () => {
+      clearEntryTransitionTimeout();
+      setHasEntered(false);
+      setIsMuted(true);
+      setEntryTransitionState('hidden');
+
       if (!storyId) {
         setErrorKind('notFound');
         setError(uiCopy.story.notFoundDescription);
@@ -57,6 +86,12 @@ const StoryPage: React.FC = () => {
 
       try {
         const data = await fetchPublicStory(storyId);
+        console.log('[story/public/Page]', {
+          storyId,
+          loaded: Boolean(data),
+          requiresPassword: Boolean(data?.requiresPassword),
+          youtubeUrl: data?.youtubeUrl,
+        });
         if (data && data.requiresPassword) {
           setIsPasswordProtected(true);
         } else if (data && data.startDate) {
@@ -75,7 +110,19 @@ const StoryPage: React.FC = () => {
     };
     
     loadStory();
+    return clearEntryTransitionTimeout;
   }, [storyId]);
+
+  useEffect(() => {
+    if (!storyData?.youtubeUrl) {
+      setEntryTransitionState('hidden');
+      return;
+    }
+
+    if (!hasEntered) {
+      setEntryTransitionState('visible');
+    }
+  }, [storyData?.youtubeUrl, hasEntered]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +135,9 @@ const StoryPage: React.FC = () => {
 
     try {
       const fullStoryData = await verifyStoryPassword(storyId, password);
+      setHasEntered(false);
+      setIsMuted(true);
+      setEntryTransitionState('hidden');
       setStoryData(fullStoryData);
       setIsPasswordVerified(true);
     } catch (e) {
@@ -98,31 +148,55 @@ const StoryPage: React.FC = () => {
   const renderContent = () => {
     if (!storyData) return null;
 
-    const needsEntryScreen = storyData.youtubeUrl && !hasEntered;
+    const needsEntryScreen = storyData.youtubeUrl && entryTransitionState !== 'hidden';
+    const storyOpacity = storyData.youtubeUrl ? (hasEntered ? 1 : 0) : 1;
+    console.log('[story/public/Page]', {
+      storyId,
+      needsEntryScreen,
+      hasEntered,
+      entryTransitionState,
+      youtubeUrl: storyData.youtubeUrl,
+    });
 
-    if (needsEntryScreen) {
-      return (
-        <div 
-          className="fixed inset-0 w-full h-full bg-cover bg-center flex justify-center items-center"
-          style={{ backgroundImage: storyData.images && storyData.images.length > 0 ? `url(${storyData.images[0].image_url})` : 'linear-gradient(to bottom, #4c51bf, #6b46c1)' }}
+    return (
+      <>
+        <div
+          className="transition-opacity ease-out"
+          style={{
+            opacity: storyOpacity,
+            transitionDuration: `${ENTRY_TRANSITION_MS}ms`,
+          }}
         >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-md"></div>
-          <div className="relative z-10 text-center">
-            <button
-              onClick={() => {
-                setHasEntered(true);
-                setIsMuted(false); // Unmute on entry
-              }}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-4 px-10 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 will-change-transform"
-            >
-      {storyData.entryButtonText || uiCopy.story.enterButton}
-            </button>
-          </div>
+          <PublicStory
+            storyData={storyData}
+            hasEntered={hasEntered}
+            isMuted={isMuted}
+            setIsMuted={setIsMuted}
+          />
         </div>
-      );
-    }
-
-    return <PublicStory storyData={storyData} hasEntered={hasEntered} isMuted={isMuted} setIsMuted={setIsMuted} />;
+        {needsEntryScreen && (
+          <div
+            className="fixed inset-0 z-50 w-full h-full bg-cover bg-center flex justify-center items-center transition-opacity ease-out"
+            style={{
+              backgroundImage: storyData.images && storyData.images.length > 0 ? `url(${storyData.images[0].image_url})` : 'linear-gradient(to bottom, #4c51bf, #6b46c1)',
+              opacity: entryTransitionState === 'visible' ? 1 : 0,
+              pointerEvents: entryTransitionState === 'visible' ? 'auto' : 'none',
+              transitionDuration: `${ENTRY_TRANSITION_MS}ms`,
+            }}
+          >
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-md transition-all ease-out" style={{ transitionDuration: `${ENTRY_TRANSITION_MS}ms` }}></div>
+            <div className="relative z-10 text-center">
+              <button
+                onClick={startEntryTransition}
+                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-4 px-10 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 will-change-transform"
+              >
+                {storyData.entryButtonText || uiCopy.story.enterButton}
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    );
   };
 
   const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
