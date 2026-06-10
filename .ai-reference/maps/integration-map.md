@@ -1,13 +1,23 @@
 # Integration Map
 
-| Integration | Caller | Purpose | Auth / secret source | Failure mode |
-|---|---|---|---|---|
-| Supabase Auth | `AuthProvider` | Login, register, session, signout | Supabase anon key in client | Routes fall back to public/home state. |
-| Supabase Postgres | UI + Edge Functions | Load plans, profiles, stories, config | Client anon or service role in Edge Functions | Empty state, toasts, or hard errors. |
-| Supabase Storage | `save-story` | Upload and delete story images | Service role key | Images fail to persist or remove. |
-| Mercado Pago SDK | `index.html`, `TransparentCheckoutForm` | Tokenize card data | Public key from `app_config` | Checkout modal cannot render or submit. |
-| Mercado Pago APIs | `process-payment` | Checkout Pro or payment execution | Access token from `app_config` | Payment cannot start or complete. |
-| YouTube IFrame API | `YouTubePlayer` | Background music playback | Public script load | Music player never initializes. |
-| Google Analytics | `index.html` | Site analytics | GA measurement ID in HTML | No analytics collection. |
-| Google Fonts | `index.html` | Typography | Public stylesheet | Fallback fonts render. |
-| Browser share / clipboard | `QRCodeModal` | Share public link | User permission / browser support | Share falls back or fails. |
+## Supabase
+- **Authentication**: Used for user sign-in/sign-up and session management.
+- **PostgreSQL**: Primary data store for profiles, stories, images, and plans.
+- **Storage**: `story-images` bucket for user-uploaded assets.
+- **Edge Functions**: Serverless logic for payments, webhooks, and complex story operations.
+
+## Stripe
+- **Checkout**: Hosted payment pages for plan upgrades.
+- **Webhooks**: Async notification of payment success, failures, and subscription lifecycle changes.
+- **API**: Used by `process-payment` to create checkout sessions.
+
+## YouTube
+- **Embedding**: Used to play background music on public story pages.
+- **URL Resolution**: Logic in `shared/lib/validators.ts` to extract video IDs.
+
+## Cloudflare (Optional/Deployment)
+- **Wrangler**: Configuration in `wrangler.jsonc` suggests potential use for static site hosting or proxying, though Vite/Vercel/Netlify are more common for this stack.
+
+## Google
+- **Analytics (GA4)**: Basic tracking injected via `index.html`.
+- **Fonts**: `Poppins` and `Dancing Script` loaded from Google Fonts.

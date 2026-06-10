@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Lock, Sparkles } from 'lucide-react';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import { useAuth } from '@/app/hooks/useAuth';
 import { uiCopy } from '@/shared/lib/ui-copy';
@@ -11,7 +13,7 @@ interface UpgradeToUnlockProps {
 
 const UpgradeToUnlock: React.FC<UpgradeToUnlockProps> = ({ children, isFeatureAllowed, message }) => {
   const { navigate } = useNavigate();
-  const { user } = useAuth(); // Get user from AuthContext
+  const { user } = useAuth();
 
   if (isFeatureAllowed) {
     return <>{children}</>;
@@ -29,19 +31,33 @@ const UpgradeToUnlock: React.FC<UpgradeToUnlockProps> = ({ children, isFeatureAl
 
   return (
     <div className="relative group">
-      <div className="opacity-50 pointer-events-none">
+      <div className="opacity-30 pointer-events-none grayscale blur-[1px] transition-all duration-500 group-hover:opacity-20">
         {children}
       </div>
-      <div 
-        className="absolute inset-0 flex items-center justify-end pr-4 z-10 cursor-pointer"
+      
+      <motion.div 
         onClick={handleUpgradeClick}
+        className="absolute inset-0 flex items-center justify-end pr-4 z-10 cursor-pointer"
         title={message || uiCopy.editor.upgradeTitle}
       >
-        <div className="p-2 bg-pink-100/80 backdrop-blur-sm rounded-full shadow-md group-hover:bg-pink-200/90 transition-all duration-200">
-          <svg className="w-5 h-5 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a5 5 0 00-5 5v2H3a1 1 0 00-1 1v7a1 1 0 001 1h14a1 1 0 001-1V10a1 1 0 00-1-1h-2V7a5 5 0 00-5-5zm-3 5a3 3 0 016 0v2H7V7z"></path>
-          </svg>
-        </div>
+        <motion.div 
+          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 45, 85, 0.2)' }}
+          whileTap={{ scale: 0.9 }}
+          className="p-3 bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3 transition-colors group-hover:border-primary/30"
+        >
+          <div className="flex flex-col items-end mr-1">
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary leading-none mb-1">Premium</span>
+            <span className="text-[10px] font-bold text-white/90 leading-none">Desbloquear</span>
+          </div>
+          <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-[0_0_15px_rgba(255,45,85,0.3)]">
+            <Lock className="w-4 h-4" />
+          </div>
+        </motion.div>
+      </motion.div>
+      
+      {/* Decorative Sparkle for locked features */}
+      <div className="absolute top-2 right-2 pointer-events-none">
+        <Sparkles className="w-3 h-3 text-primary/20 group-hover:text-primary transition-colors duration-500" />
       </div>
     </div>
   );

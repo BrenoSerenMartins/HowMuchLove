@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
-const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
-    <div className="flex flex-col items-center">
-      <span 
-        className="text-4xl md:text-6xl font-bold text-white tracking-tighter" 
-        style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.4)' }}
-      >
-        {String(value).padStart(2, '0')}
-      </span>
-      <span className="text-[10px] sm:text-xs md:text-sm font-light text-white/80 uppercase tracking-widest" style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.4)' }}>
+const TimeUnit: React.FC<{ value: number; label: string; index: number }> = ({ value, label, index }) => (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.1, duration: 0.5 }}
+      className="flex flex-col items-center group"
+    >
+      <div className="relative">
+        <span className="text-[clamp(2.5rem,8vw,8rem)] font-black text-white tracking-tighter leading-none block">
+          {String(value).padStart(2, '0')}
+        </span>
+        <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      </div>
+      <span className="text-[clamp(8px,1vw,12px)] font-black text-primary uppercase tracking-[0.4em] mt-6 font-mono">
         {label}
       </span>
-    </div>
+    </motion.div>
 );
   
 const DurationCounter: React.FC<{ startDate: Date | null }> = ({ startDate }) => {
@@ -49,13 +55,13 @@ const DurationCounter: React.FC<{ startDate: Date | null }> = ({ startDate }) =>
     if (!duration) return null;
   
     return (
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 md:gap-6 text-center">
-        <TimeUnit value={duration.years} label="Anos" />
-        <TimeUnit value={duration.months} label="Meses" />
-        <TimeUnit value={duration.days} label="Dias" />
-        <TimeUnit value={duration.hours} label="Horas" />
-        <TimeUnit value={duration.minutes} label="Minutos" />
-        <TimeUnit value={duration.seconds} label="Segundos" />
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 md:gap-10 text-center">
+        <TimeUnit index={0} value={duration.years} label="Anos" />
+        <TimeUnit index={1} value={duration.months} label="Meses" />
+        <TimeUnit index={2} value={duration.days} label="Dias" />
+        <TimeUnit index={3} value={duration.hours} label="Horas" />
+        <TimeUnit index={4} value={duration.minutes} label="Minutos" />
+        <TimeUnit index={5} value={duration.seconds} label="Segundos" />
       </div>
     );
 };

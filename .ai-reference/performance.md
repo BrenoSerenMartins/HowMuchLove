@@ -10,10 +10,10 @@
 - `DurationCounter` updates every second and rerenders its display continuously.
 - `PublicStory` can animate multiple layered images and a YouTube player.
 - The dashboard reloads story data after every save.
-- `process-payment` makes multiple remote calls to Mercado Pago and Supabase config.
+- `process-payment` makes a remote call to Stripe plus a small number of Supabase lookups.
 
 ## Caching opportunities
-- Plan data and Mercado Pago public key are fetched on page mount without client caching.
+- Plan data is fetched on page mount without client caching.
 - The public story payload is now keyed by a stable opaque UUID and could be cached by story ID if future requirements allow it.
 - The plan catalog is effectively public and could be cached at the edge.
 

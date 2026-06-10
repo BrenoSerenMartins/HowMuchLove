@@ -1,48 +1,38 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { UserPlus, Wand2, Share2, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
-
-// --- SVG Icons (as functional components for easy use) ---
-
-const PlusCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const SparklesIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z" />
-  </svg>
-);
-
-const ShareIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-  </svg>
-);
-
-
-// --- Step Card Component ---
 
 interface StepCardProps {
   step: number;
   icon: React.ReactNode;
   title: string;
   description: string;
+  index: number;
 }
 
-const StepCard: React.FC<StepCardProps> = ({ step, icon, title, description }) => (
-  <div className="relative w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 text-center flex flex-col items-center transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform snap-center">
-    <div className="absolute -top-5 bg-pink-500 text-white w-10 h-10 flex items-center justify-center rounded-full font-bold text-xl border-4 border-slate-900">{step}</div>
-    <div className="mt-8 mb-4 text-pink-400">
-      {icon}
+const StepCard: React.FC<StepCardProps> = ({ step, icon, title, description, index }) => (
+  <motion.div 
+    variants={{
+      initial: { opacity: 0, y: 30 },
+      whileInView: { opacity: 1, y: 0 }
+    }}
+    transition={{ duration: 0.6, delay: index * 0.1 }}
+    viewport={{ once: true }}
+    className="relative group"
+  >
+    <div className="card-elite p-10 pt-16 flex flex-col items-center text-center h-full relative">
+      <div className="absolute top-8 left-10 text-5xl font-black text-white/5 group-hover:text-primary/10 transition-colors duration-500">
+        0{step}
+      </div>
+      <div className="mb-8 p-5 rounded-3xl bg-primary/10 text-primary transition-transform duration-700 group-hover:scale-110">
+        {icon}
+      </div>
+      <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{title}</h3>
+      <p className="text-slate-400 text-sm font-medium leading-relaxed">{description}</p>
     </div>
-    <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-    <p className="text-slate-300 text-sm flex-grow">{description}</p>
-  </div>
+  </motion.div>
 );
-
-// --- Main How It Works Section Component ---
 
 const HowItWorksSection: React.FC = () => {
   const handleScrollToDemo = () => {
@@ -50,44 +40,67 @@ const HowItWorksSection: React.FC = () => {
   };
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-20 overflow-hidden">
-      {/* Section Header */}
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+    <section id="how-it-works" className="section-fluid relative overflow-visible">
+      {/* Background Decorative Element */}
+      <div className="absolute bottom-1/2 right-0 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full translate-x-1/2 translate-y-1/2 pointer-events-none" />
+
+      <div className="relative z-10 container-fluid overflow-visible">
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center max-w-4xl mx-auto mb-20"
+        >
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6 block">
+            Jornada Mágica
+          </span>
+          <h2 className="font-black text-white leading-[0.9] tracking-tighter mb-8">
             {uiCopy.marketing.howItWorks.titleLead}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{uiCopy.marketing.howItWorks.titleHighlight}</span>
+            <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+              {uiCopy.marketing.howItWorks.titleHighlight}
+            </span>
           </h2>
-          <p className="text-slate-300 mt-4 text-lg">
+          <p className="text-slate-400 text-fluid-body font-medium max-w-2xl mx-auto">
             {uiCopy.marketing.howItWorks.description}
           </p>
+        </motion.div>
+
+        {/* Steps Grid - Horizontal scroll on mobile, Grid on desktop */}
+        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible">
+          {uiCopy.marketing.howItWorks.steps.map((step, index) => (
+            <div key={step.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center">
+              <StepCard
+                index={index}
+                step={index + 1}
+                icon={
+                  index === 0 ? <UserPlus className="w-6 h-6 md:w-8 md:h-8" /> : 
+                  index === 1 ? <Wand2 className="w-6 h-6 md:w-8 md:h-8" /> : 
+                  <Share2 className="w-6 h-6 md:w-8 md:h-8" />
+                }
+                title={step.title}
+                description={step.description}
+              />
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* Steps Container - Full bleed carousel on mobile */}
-      <div 
-        className="relative flex space-x-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 pt-8 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory md:container md:mx-auto py-8 scroll-px-4"
-        style={{ animationDelay: '300ms' }}
-      >
-        {uiCopy.marketing.howItWorks.steps.map((step, index) => (
-          <StepCard
-            key={step.title}
-            step={index + 1}
-            icon={index === 0 ? <PlusCircleIcon className="w-10 h-10" /> : index === 1 ? <SparklesIcon className="w-10 h-10" /> : <ShareIcon className="w-10 h-10" />}
-            title={step.title}
-            description={step.description}
-          />
-        ))}
-      </div>
-
-      {/* CTA Button */}
-      <div className="container mx-auto px-4 text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
-        <button 
-          onClick={handleScrollToDemo}
-          className="font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-purple-500/30"
+        {/* CTA Button */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          viewport={{ once: true }}
+          className="text-center mt-20"
         >
-          {uiCopy.marketing.howItWorks.cta}
-        </button>
+          <button 
+            onClick={handleScrollToDemo}
+            className="btn-primary group !py-5 !px-12"
+          >
+            {uiCopy.marketing.howItWorks.cta}
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </motion.div>
       </div>
     </section>
   );

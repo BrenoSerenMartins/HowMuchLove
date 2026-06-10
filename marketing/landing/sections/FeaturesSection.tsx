@@ -1,45 +1,32 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Clock, Image, Music, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
-
-// --- SVG Icons (as functional components for easy use) ---
-
-const ClockIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const ImageIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
-);
-
-const MusicNoteIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3" />
-  </svg>
-);
-
-// --- Feature Card Component ---
 
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
+  index: number;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
-  <div className="w-5/6 md:w-full flex-shrink-0 bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-6 text-center flex flex-col items-center transition-all duration-300 hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform snap-center">
-    <div className="mb-4 text-pink-400">
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => (
+  <motion.div 
+    variants={{
+      initial: { opacity: 0, y: 30 },
+      whileInView: { opacity: 1, y: 0 }
+    }}
+    transition={{ duration: 0.6, delay: index * 0.1 }}
+    viewport={{ once: true }}
+    className="card-elite p-8 flex flex-col items-center text-center group h-full"
+  >
+    <div className="mb-6 p-4 rounded-2xl bg-primary/10 text-primary transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
       {icon}
     </div>
-    <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-    <p className="text-slate-300 text-sm flex-grow">{description}</p>
-  </div>
+    <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{title}</h3>
+    <p className="text-slate-400 text-sm font-medium leading-relaxed">{description}</p>
+  </motion.div>
 );
-
-// --- Main Features Section Component ---
 
 const FeaturesSection: React.FC = () => {
   const handleScrollToDemo = () => {
@@ -47,43 +34,66 @@ const FeaturesSection: React.FC = () => {
   };
 
   return (
-    <section id="features" className="py-16 sm:py-20 overflow-hidden">
-      {/* Section Header */}
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+    <section id="features" className="section-fluid relative overflow-visible">
+      {/* Background Decorative Element */}
+      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -translate-x-1/2 pointer-events-none" />
+
+      <div className="relative z-10 overflow-visible container-fluid">
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center max-w-4xl mx-auto mb-20"
+        >
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6 block">
+            Recursos Premium
+          </span>
+          <h2 className="font-black text-white leading-[0.9] tracking-tighter mb-8">
             {uiCopy.marketing.features.titleLead}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{uiCopy.marketing.features.titleHighlight}</span>
+            <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+              {uiCopy.marketing.features.titleHighlight}
+            </span>
           </h2>
-          <p className="text-slate-300 mt-4 text-lg">
+          <p className="text-slate-400 text-fluid-body font-medium max-w-2xl mx-auto">
             {uiCopy.marketing.features.description}
           </p>
+        </motion.div>
+
+        {/* Features Grid - Horizontal scroll on mobile, Grid on desktop */}
+        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible">
+          {uiCopy.marketing.features.cards.map((card, index) => (
+            <div key={card.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center">
+              <FeatureCard 
+                index={index}
+                icon={
+                  index === 0 ? <Clock className="w-6 h-6 md:w-8 md:h-8" /> : 
+                  index === 1 ? <Image className="w-6 h-6 md:w-8 md:h-8" /> : 
+                  <Music className="w-6 h-6 md:w-8 md:h-8" />
+                }
+                title={card.title}
+                description={card.description}
+              />
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* Features Container - Full bleed carousel on mobile */}
-      <div 
-        className="flex space-x-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory md:container md:mx-auto py-8 scroll-px-4"
-        style={{ animationDelay: '300ms' }}
-      >
-        {uiCopy.marketing.features.cards.map((card, index) => (
-          <FeatureCard 
-            key={card.title}
-            icon={index === 0 ? <ClockIcon className="w-10 h-10" /> : index === 1 ? <ImageIcon className="w-10 h-10" /> : <MusicNoteIcon className="w-10 h-10" />}
-            title={card.title}
-            description={card.description}
-          />
-        ))}
-      </div>
-
-      {/* CTA Button */}
-      <div className="container mx-auto px-4 text-center mt-16 animate-fade-in-slide-up" style={{ animationDelay: '600ms' }}>
-        <button 
-          onClick={handleScrollToDemo}
-          className="font-semibold py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 bg-white/10 border border-white/20 text-white hover:bg-white/20"
+        {/* CTA Button */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          viewport={{ once: true }}
+          className="text-center mt-20"
         >
-          {uiCopy.marketing.features.cta}
-        </button>
+          <button 
+            onClick={handleScrollToDemo}
+            className="btn-secondary group"
+          >
+            {uiCopy.marketing.features.cta}
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </button>
+        </motion.div>
       </div>
     </section>
   );

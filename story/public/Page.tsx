@@ -1,29 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, Heart, ShieldAlert, Sparkles, Play } from 'lucide-react';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import { fetchPublicStory, verifyStoryPassword } from '@/shared/lib/story-api';
 import type { LoveStoryData } from '@/types';
-import PublicStory from './components/PublicStory';
+import PublicStory from '@/shared/ui/story-view/PublicStory';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
-import { errorMessages, getErrorMessage } from '@/shared/lib/errors';
+import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
-// Define PageWrapper outside of the StoryPage component
 const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-  
   return (
-    <div className="min-h-screen flex flex-col text-white relative">
-      <div 
-          className="fixed inset-0 z-[-2]"
-          style={{
-              backgroundImage: `url(${backgroundImageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(15px) brightness(0.6)',
-              transform: 'scale(1.1)',
-          }}
-      />
-      <div className="fixed inset-0 z-[-1] lights-container"></div>
+    <div className="min-h-screen flex flex-col text-white relative bg-[#050505]">
+      <div className="fixed inset-0 z-[-1] lights-container opacity-40"></div>
+      <div className="bg-grain" />
       <main className="flex-grow flex items-center justify-center p-4 z-10">
         {children}
       </main>
@@ -31,7 +21,7 @@ const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const ENTRY_TRANSITION_MS = 2400;
+const ENTRY_TRANSITION_MS = 2000;
 
 const StoryPage: React.FC = () => {
   const { route } = useNavigate();
@@ -86,17 +76,11 @@ const StoryPage: React.FC = () => {
 
       try {
         const data = await fetchPublicStory(storyId);
-        console.log('[story/public/Page]', {
-          storyId,
-          loaded: Boolean(data),
-          requiresPassword: Boolean(data?.requiresPassword),
-          youtubeUrl: data?.youtubeUrl,
-        });
         if (data && data.requiresPassword) {
           setIsPasswordProtected(true);
         } else if (data && data.startDate) {
           setStoryData(data);
-          setIsPasswordVerified(true); // No password needed, so it's "verified"
+          setIsPasswordVerified(true);
         } else {
           setErrorKind('notFound');
           setError(uiCopy.story.notFoundDescription);
@@ -150,13 +134,6 @@ const StoryPage: React.FC = () => {
 
     const needsEntryScreen = storyData.youtubeUrl && entryTransitionState !== 'hidden';
     const storyOpacity = storyData.youtubeUrl ? (hasEntered ? 1 : 0) : 1;
-    console.log('[story/public/Page]', {
-      storyId,
-      needsEntryScreen,
-      hasEntered,
-      entryTransitionState,
-      youtubeUrl: storyData.youtubeUrl,
-    });
 
     return (
       <>
@@ -174,32 +151,53 @@ const StoryPage: React.FC = () => {
             setIsMuted={setIsMuted}
           />
         </div>
-        {needsEntryScreen && (
-          <div
-            className="fixed inset-0 z-50 w-full h-full bg-cover bg-center flex justify-center items-center transition-opacity ease-out"
-            style={{
-              backgroundImage: storyData.images && storyData.images.length > 0 ? `url(${storyData.images[0].image_url})` : 'linear-gradient(to bottom, #4c51bf, #6b46c1)',
-              opacity: entryTransitionState === 'visible' ? 1 : 0,
-              pointerEvents: entryTransitionState === 'visible' ? 'auto' : 'none',
-              transitionDuration: `${ENTRY_TRANSITION_MS}ms`,
-            }}
-          >
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-md transition-all ease-out" style={{ transitionDuration: `${ENTRY_TRANSITION_MS}ms` }}></div>
-            <div className="relative z-10 text-center">
-              <button
-                onClick={startEntryTransition}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-4 px-10 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 will-change-transform"
+        
+        <AnimatePresence>
+          {needsEntryScreen && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: ENTRY_TRANSITION_MS / 1000 }}
+              className="fixed inset-0 z-50 w-full h-full flex justify-center items-center overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-[#050505]">
+                <img 
+                  src={storyData.images?.[0]?.image_url} 
+                  alt="" 
+                  className="w-full h-full object-cover opacity-30 blur-2xl scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-3xl" />
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative z-10 text-center px-4"
               >
-                {storyData.entryButtonText || uiCopy.story.enterButton}
-              </button>
-            </div>
-          </div>
-        )}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 font-mono">Uma Nova História</span>
+                </div>
+                
+                <h1 className="text-4xl sm:text-7xl font-black text-white leading-none tracking-tighter mb-12">
+                  Pronto para <br/>
+                  <span className="text-primary italic font-cursive lowercase tracking-normal">se emocionar?</span>
+                </h1>
+
+                <button
+                  onClick={startEntryTransition}
+                  className="btn-primary !py-6 !px-16 !text-xs group"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  {storyData.entryButtonText || uiCopy.story.enterButton}
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </>
     );
   };
-
-  const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
 
   if (loading) {
     return (
@@ -213,12 +211,20 @@ const StoryPage: React.FC = () => {
     const isNotFound = errorKind === 'notFound';
     return (
       <PageWrapper>
-        <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 border border-white/20 text-center max-w-md w-full">
-          <h1 className="text-4xl font-bold mb-4 text-red-400">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="card-elite p-12 text-center max-w-lg w-full relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-red-500/10 text-red-500 mb-8 border border-red-500/20">
+            <ShieldAlert className="w-10 h-10" />
+          </div>
+          <h1 className="text-4xl font-black text-white leading-none tracking-tighter mb-4 uppercase">
             {isNotFound ? uiCopy.story.notFoundTitle : uiCopy.story.loadErrorTitle}
           </h1>
-          <p className="text-xl text-slate-300">{error}</p>
-        </div>
+          <p className="text-lg text-slate-400 font-medium">{error}</p>
+        </motion.div>
       </PageWrapper>
     );
   }
@@ -226,26 +232,43 @@ const StoryPage: React.FC = () => {
   if (isPasswordProtected && !isPasswordVerified) {
     return (
       <PageWrapper>
-        <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 border border-white/20 text-center max-w-md w-full">
-          <h2 className="text-2xl font-bold text-white mb-4">{uiCopy.story.privateTitle}</h2>
-          <p className="text-slate-300 mb-6">{uiCopy.story.privateDescription}</p>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={uiCopy.story.passwordPlaceholder}
-              className={`${inputClasses} ${passwordError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-pink-500'}`}
-            />
-            {passwordError && <p className="text-red-400 text-sm">{passwordError}</p>}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="card-elite p-12 text-center max-w-lg w-full relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full -mr-16 -mt-16" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary/10 text-primary mb-8 border border-primary/20">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-3xl font-black text-white leading-none tracking-tighter mb-4 uppercase">{uiCopy.story.privateTitle}</h2>
+          <p className="text-slate-400 mb-10 font-medium leading-relaxed">{uiCopy.story.privateDescription}</p>
+          
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            <div className="relative group">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={uiCopy.story.passwordPlaceholder}
+                className={`input-elite pr-12 ${passwordError ? '!border-red-500/50' : ''}`}
+              />
+              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+            </div>
+            
+            {passwordError && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-[11px] font-black uppercase tracking-widest">{passwordError}</motion.p>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              className="btn-primary w-full !py-5"
             >
               {uiCopy.story.enterButton}
+              <Heart className="w-4 h-4 fill-current" />
             </button>
           </form>
-        </div>
+        </motion.div>
       </PageWrapper>
     );
   }

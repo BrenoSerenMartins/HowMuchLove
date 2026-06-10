@@ -16,3 +16,9 @@ export const getSupabasePublishableKey = (): string =>
 
 export const getSupabaseSecretKey = (): string =>
   readEnv('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY');
+
+export const getStripeSecretKey = (): string =>
+  readEnv('STRIPE_SECRET_KEY');
+
+export const getStripeWebhookSecret = (): string =>
+  readEnv('STRIPE_WEBHOOK_SECRET');

@@ -22,7 +22,7 @@ const PaymentFailurePage: React.FC = () => {
             {uiCopy.payment.failureDescription}
           </p>
           <button
-            onClick={() => navigate('/dashboard')} // Or navigate to pricing page
+            onClick={() => navigate('/settings#pricing-section')}
             className="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition-colors"
           >
             {uiCopy.payment.failureButton}

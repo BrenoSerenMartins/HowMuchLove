@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Edit3, Calendar, Camera } from 'lucide-react';
 import type { LoveStoryData } from '@/types';
-import DurationCounter from '@/story/public/components/DurationCounter';
+import DurationCounter from '@/shared/ui/story-view/DurationCounter';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
 interface DashboardSummaryProps {
@@ -11,34 +13,65 @@ interface DashboardSummaryProps {
 const DashboardSummary: React.FC<DashboardSummaryProps> = ({ storyData, onEdit }) => {
   const { startDate, images } = storyData;
   const date = startDate ? new Date(startDate) : null;
-  const mainImage = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  const mainImage = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=2070&auto=format&fit=crop';
 
   return (
-    <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl shadow-lg p-6 text-white text-center">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="card-elite p-8 md:p-12 text-white relative overflow-hidden"
+    >
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48" />
       
-      <div 
-        className="relative w-full h-72 rounded-xl shadow-lg overflow-hidden mb-6"
-      >
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${mainImage})` }}
-        ></div>
-        <div className="absolute inset-0 bg-black/30"></div>
-      </div>
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="relative w-full max-w-lg aspect-video rounded-3xl overflow-hidden shadow-2xl mb-12 ring-1 ring-white/10">
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5 }}
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${mainImage})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
+          <div className="absolute bottom-6 left-8 flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
+              <Camera className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/90">
+              {images.length} {images.length === 1 ? 'Momento' : 'Momentos'}
+            </span>
+          </div>
+        </div>
 
-      <h2 className="text-2xl font-bold mb-4">{uiCopy.dashboard.summaryTitle}</h2>
-      
-      <div className="mb-6">
-        <DurationCounter startDate={date} />
-      </div>
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-2">
+            <Calendar className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 font-mono">
+              Sua História Ativa
+            </span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">
+            {uiCopy.dashboard.summaryTitle}
+          </h2>
+          
+          <div className="py-8 transform scale-110 sm:scale-125">
+            <DurationCounter startDate={date} />
+          </div>
 
-      <button
-        onClick={onEdit}
-        className="w-full sm:w-auto bg-white/20 text-center border border-white/20 text-white font-semibold py-2 px-6 rounded-lg shadow-sm hover:bg-white/30 hover:-translate-y-0.5 transition-all duration-200"
-      >
-        {uiCopy.dashboard.editStory}
-      </button>
-    </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onEdit}
+            className="btn-secondary !py-4 !px-10 group"
+          >
+            <Edit3 className="w-4 h-4 text-primary transition-transform group-hover:rotate-12" />
+            {uiCopy.dashboard.editStory}
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

@@ -16,20 +16,20 @@ HowMuchLove is a single-page React application for creating and sharing a "love 
 - Semantic route entrypoints: `marketing/landing/Page.tsx`, `auth/*/Page.tsx`, `customer/*/Page.tsx`, `story/public/Page.tsx`.
 - Shared shell and providers: `app/providers/*`, `app/hooks/*`, `shared/ui/*`.
 - Feature implementation layer: `marketing/landing/sections/*`, `shared/pricing/*`, `shared/story-editor/*`, `customer/dashboard/components/*`, `customer/settings/components/*`, `story/public/components/*`, `shared/lib/*`.
-- Public data/services: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/supabase.ts`, `shared/lib/storage.ts`, `shared/lib/validators.ts`.
+- Public data/services: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/plans.ts`, `shared/lib/supabase.ts`, `shared/lib/storage.ts`, `shared/lib/validators.ts`, `shared/lib/errors.ts`.
 - Serverless endpoints: `supabase/functions/*`.
 
 ## Product surface
-- Public landing page with marketing sections and pricing.
+- Public landing page with marketing sections and a demo-led CTA flow.
 - Auth pages for login and register.
 - Authenticated customer area for editing the story and managing settings/billing.
 - Public story page for shared links.
-- Payment result pages for checkout redirects.
+- Payment result pages for Stripe checkout redirects.
 
 ## Copy and messaging
 - User-facing copy is centralized in `shared/lib/ui-copy.ts`.
 - Error parsing and technical fallback messages remain in `shared/lib/errors.ts`, which should be treated as a contract layer rather than a general text source.
-- The landing page marketing sections, auth screens, dashboard/account flows, pricing cards, and checkout messaging all read from `uiCopy` where possible.
+- The landing page marketing sections, auth screens, dashboard/account flows, and checkout messaging all read from `uiCopy` where possible. Pricing UI still reads from `uiCopy`, but it now lives in the authenticated account flow rather than on the landing page.
 
 ## Structural note
 - The codebase is being migrated toward a semantic, domain-first tree.
@@ -41,6 +41,7 @@ HowMuchLove is a single-page React application for creating and sharing a "love 
 - There is effectively one love story per authenticated user.
 - The story share link is derived from the Supabase auth `user.id` and only UUID-based links are accepted.
 - Plan restrictions are enforced in the UI for UX and revalidated on the backend for `save-story` and payment processing.
+- `plans` rows are integration-aware: the active billing provider and external product/price ids live alongside a JSON `feature_rules` payload that can override limits and feature flags without changing the editor code.
 - Free-plan behavior depends on a synthetic `Gratis` plan object that does not come from the pricing catalog.
 
 ## High-risk findings already confirmed

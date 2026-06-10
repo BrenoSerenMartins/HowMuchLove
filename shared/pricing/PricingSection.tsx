@@ -6,10 +6,10 @@ import { useAuth } from '@/app/hooks/useAuth';
 import type { PlanFromDB, FormattedPlan } from '@/types';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
-const planRank: { [key: string]: number } = {
-  'Sonho': 1,
-  'Eterno': 2,
-  'Infinito': 3,
+type DisplayPlan = FormattedPlan & {
+  priceValue: number;
+  billing_provider?: string | null;
+  billing_price_id?: string | null;
 };
 
 interface PricingSectionProps {
@@ -17,20 +17,22 @@ interface PricingSectionProps {
   plans: PlanFromDB[]; // Receives raw DB plans
   currentPlan?: string | null;
   onPlanSelect: (plan: { id: number; name: string; amount: number }) => void;
-  mpPublicKey: string | null;
 }
 
-const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect, mpPublicKey }) => {
+const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect }) => {
   const { addToast } = useNotification();
   const { navigate } = useNavigate();
   const { user } = useAuth();
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // Format the raw DB plans into the structure the PlanCard expects
-  const formattedPlans: FormattedPlan[] = (dbPlans || []).map(p => ({
+  const formattedPlans: DisplayPlan[] = (dbPlans || []).map((p) => ({
     id: p.id,
     name: p.name,
     price: p.price.toFixed(2).replace('.', ','), // Ensure 2 decimal places and comma
+    priceValue: p.price,
+    billing_provider: p.billing_provider,
+    billing_price_id: p.billing_price_id,
     billingCycle: p.billing_cycle,
     features: p.features,
     isFeatured: p.is_featured,
@@ -66,22 +68,27 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
         }
       });
     }, [dbPlans, user, currentPlan]); // Re-run if these change
-  const getPlanStatus = (planName: string) => {
-    if (!currentPlan || typeof currentPlan !== 'string' || !planRank[currentPlan]) {
+  const currentPlanDetails = currentPlan
+    ? formattedPlans.find((plan) => plan.name === currentPlan)
+    : null;
+
+  const getPlanStatus = (plan: DisplayPlan) => {
+    if (!currentPlanDetails) {
       return undefined;
     }
-    const currentRank = planRank[currentPlan];
-    const newRank = planRank[planName];
 
-    if (newRank === currentRank) {
+    if (plan.id === currentPlanDetails.id) {
       return 'current';
     }
-    if (newRank > currentRank) {
+
+    if (plan.priceValue > currentPlanDetails.priceValue) {
       return 'upgrade';
     }
-    if (newRank < currentRank) {
+
+    if (plan.priceValue < currentPlanDetails.priceValue) {
       return 'downgrade';
     }
+
     return undefined;
   };
 
@@ -96,14 +103,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
       return;
     }
 
-    if (!mpPublicKey) {
-      addToast(uiCopy.payment.checkoutUnavailable, 'error');
-      return;
-    }
-
     const selectedPlan = formattedPlans.find(p => p.id === planId);
     if (!selectedPlan) {
       addToast(uiCopy.payment.planNotFound, 'error');
+      return;
+    }
+
+    if (!selectedPlan.billing_price_id || selectedPlan.billing_provider !== 'stripe') {
+      addToast(uiCopy.payment.checkoutUnavailable, 'error');
       return;
     }
 
@@ -143,7 +150,12 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
               ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
             `}
           >
-            <PlanCard plan={plan} status={getPlanStatus(plan.name)} onSelect={handleSelectPlan} disabled={!mpPublicKey} />
+            <PlanCard
+              plan={plan}
+              status={getPlanStatus(plan)}
+              onSelect={handleSelectPlan}
+              disabled={!plan.billing_price_id || plan.billing_provider !== 'stripe'}
+            />
           </div>
         ))}
       </div>

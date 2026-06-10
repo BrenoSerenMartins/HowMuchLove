@@ -15,28 +15,21 @@ interface PlanCardProps {
 const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = false }) => {
   const isCurrentPlan = status === 'current';
 
-  let cardClasses = '';
+  const cardClasses = [
+    'bg-gradient-to-br border shadow-lg transition-all duration-300 transform hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform',
+    plan.isFeatured
+      ? 'from-fuchsia-950 via-pink-950/90 to-slate-950 border-pink-400/50'
+      : 'from-slate-900 to-slate-950 border-slate-700/70',
+    isCurrentPlan ? 'ring-2 ring-pink-400/70' : '',
+    status === 'upgrade' ? 'border-pink-300/50' : '',
+    status === 'downgrade' ? 'opacity-95' : '',
+  ].filter(Boolean).join(' ');
+
   let buttonClasses = '';
   let buttonText = plan.cta;
-
-  // Define styles based on the plan name
-  switch (plan.name) {
-    case 'Sonho':
-      cardClasses = 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 border';
-      buttonClasses = 'bg-slate-700 text-slate-200 hover:bg-slate-600';
-      break;
-    case 'Eterno': // Featured plan
-      cardClasses = 'bg-gradient-to-br from-purple-900 via-pink-800/80 to-rose-900 border-pink-500 border-2';
-      buttonClasses = 'bg-pink-500 text-white hover:bg-pink-600 shadow-pink-500/30';
-      break;
-    case 'Infinito':
-      cardClasses = 'bg-gradient-to-br from-slate-900 to-indigo-900 border-indigo-700 border';
-      buttonClasses = 'bg-indigo-700 text-white hover:bg-indigo-600';
-      break;
-    default:
-      cardClasses = 'bg-slate-900 border-slate-700 border';
-      buttonClasses = 'bg-slate-700 text-slate-200 hover:bg-slate-600';
-  }
+  buttonClasses = plan.isFeatured
+    ? 'bg-pink-500 text-white hover:bg-pink-600 shadow-pink-500/30'
+    : 'bg-slate-700 text-slate-200 hover:bg-slate-600';
 
   // Override button styles for special states
   if (disabled) {

@@ -14,13 +14,24 @@ const PaymentSuccessPage: React.FC = () => {
   const { refreshUser } = useAuth();
 
   useEffect(() => {
+    let cancelled = false;
     addToast(uiCopy.payment.successToast, 'success');
-    refreshUser(); // Refresh user data to show updated plan
-    // Optionally, redirect to dashboard after a short delay
+    const syncProfile = async () => {
+      if (cancelled) return;
+      await refreshUser();
+    };
+
+    const syncTimer = setInterval(syncProfile, 1000);
+    syncProfile();
+
     const timer = setTimeout(() => {
       navigate('/dashboard');
     }, 5000); // Redirect after 5 seconds
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      clearInterval(syncTimer);
+    };
   }, [addToast, navigate, refreshUser]);
 
   return (

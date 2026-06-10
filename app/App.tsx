@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NavigationProvider } from './providers/NavigationProvider';
 import { AuthProvider } from './providers/AuthProvider';
 import { NotificationProvider } from './providers/NotificationProvider';
@@ -29,6 +30,7 @@ const App: React.FC = () => {
     <NavigationProvider>
       <AuthProvider>
         <NotificationProvider>
+          <div className="bg-grain" />
           <Main />
         </NotificationProvider>
       </AuthProvider>
@@ -46,6 +48,26 @@ const Main: React.FC = () => {
     isPreviewMode,
   } = useNavigate();
   const { user, isLoading, logout, performLogout, showLogoutConfirm, setShowLogoutConfirm } = useAuth();
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    if (route !== '/') {
+        setScrolled(true);
+        return;
+    }
+
+    const handleScroll = () => {
+      const shouldBeScrolled = window.scrollY > 50; // Reveal very early but not at top
+      if (shouldBeScrolled !== scrolled) {
+        setScrolled(shouldBeScrolled);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [route, scrolled]);
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -70,20 +92,20 @@ const Main: React.FC = () => {
   }, [route, user, isLoading, navigate]);
 
   const loadingFallback = (
-    <div className="min-h-screen flex flex-col text-white relative">
-      <div className="fixed inset-0 z-[-2]">
+    <div className="min-h-screen flex flex-col text-white relative bg-[#050505]">
+      <div className="fixed inset-0 z-[-2] bg-[#050505]">
         <img
           src={shellBackgroundImage}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-center opacity-20"
           style={{
-            filter: 'blur(15px) brightness(0.7)',
-            transform: 'scale(1.1)',
+            filter: 'blur(40px) brightness(0.3)',
+            transform: 'scale(1.2)',
           }}
         />
       </div>
-      <div className="fixed inset-0 z-[-1] lights-container"></div>
+      <div className="fixed inset-0 z-[-1] lights-container opacity-40"></div>
       <main className="flex-grow flex items-center justify-center">
         <LoadingSpinner />
       </main>
@@ -119,44 +141,39 @@ const Main: React.FC = () => {
   const isProtected = user && (route === '/dashboard' || route === '/settings');
   const isPublicHome = !user && route === '/';
   const showBottomNavBar = (isProtected || isPublicHome) && !isPreviewMode;
+  const isHomePage = route === '/';
 
   return (
-    <div className="min-h-screen flex flex-col text-white relative">
-      <style>{`
-          @keyframes fade-in-slide-up {
-              from { opacity: 0; transform: translateY(20px); }
-              to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in-slide-up {
-              animation: fade-in-slide-up 0.7s ease-out forwards;
-              opacity: 0;
-          }
-          .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-          }
-          .hide-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-          }
-      `}</style>
-
-      <div className="fixed inset-0 z-[-2]">
+    <div className="min-h-screen flex flex-col text-white relative selection:bg-primary selection:text-white overflow-x-hidden">
+      <div className="fixed inset-0 z-[-2] bg-[#050505]">
         <img
           src={shellBackgroundImage}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-center opacity-30"
           style={{
-            filter: 'blur(15px) brightness(0.7)',
-            transform: 'scale(1.1)',
+            filter: 'blur(50px) brightness(0.4)',
+            transform: 'scale(1.3)',
           }}
         />
       </div>
-      <div className="fixed inset-0 z-[-1] lights-container"></div>
+      <div className="fixed inset-0 z-[-1] lights-container opacity-50"></div>
 
-      {showHeaderFooter && <Header onLogoutRequest={logout} handleScrollTo={handleScrollTo} />}
+      <AnimatePresence>
+        {showHeaderFooter && (isHomePage ? scrolled : true) && (
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed top-0 left-0 right-0 z-[100]"
+            >
+                <Header onLogoutRequest={logout} handleScrollTo={handleScrollTo} />
+            </motion.div>
+        )}
+      </AnimatePresence>
 
-      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 pb-20 md:pb-12">
+      <main className={`flex-grow container-fluid relative z-10 ${isHomePage ? '' : 'py-fluid-py'}`}>
         <ConfirmModal
           isOpen={isConfirmationModalOpen}
           onConfirm={confirmNavigation}
@@ -171,9 +188,20 @@ const Main: React.FC = () => {
           title="Confirmar Saída"
           message="Tem certeza que deseja sair da sua conta?"
         />
-        <Suspense fallback={loadingFallback}>
-          {pageComponent}
-        </Suspense>
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={route}
+            initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(10px)' }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Suspense fallback={loadingFallback}>
+              {pageComponent}
+            </Suspense>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {showHeaderFooter && <Footer />}

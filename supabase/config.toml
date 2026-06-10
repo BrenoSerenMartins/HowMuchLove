@@ -374,6 +374,12 @@ verify_jwt = true
 import_map = "./functions/process-payment/deno.json"
 entrypoint = "./functions/process-payment/index.ts"
 
+[functions.stripe-webhook]
+enabled = true
+verify_jwt = false
+import_map = "./functions/stripe-webhook/deno.json"
+entrypoint = "./functions/stripe-webhook/index.ts"
+
 [functions.save-story]
 enabled = true
 verify_jwt = true

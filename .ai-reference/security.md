@@ -8,7 +8,8 @@
 
 ## Security-sensitive dependencies
 - `save-story` uses the service role to write tables and storage.
-- `process-payment` reads secret configuration from `app_config`.
+- `process-payment` uses the Stripe secret key from the Edge Function environment.
+- `stripe-webhook` validates the Stripe webhook signature before mutating billing state.
 
 ## Main risks
 - Public story links are UUID-only; old base64 email links are no longer accepted.
@@ -24,4 +25,4 @@
 ## Secret handling notes
 - Supabase anon key is embedded in the frontend by design.
 - Supabase service role key stays server-side in Edge Functions.
-- Mercado Pago keys are stored in `app_config`, not in the frontend bundle.
+- Stripe secret and webhook keys stay server-side in Edge Functions.

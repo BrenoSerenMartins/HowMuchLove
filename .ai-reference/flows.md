@@ -22,10 +22,9 @@
 5. The app navigates to `/dashboard`.
 
 ## Landing page flow
-1. `marketing/landing/Page.tsx` fetches the Mercado Pago public key and visible plans in parallel.
-2. The hero and marketing sections render.
-3. The demo editor is shown with no authenticated plan features.
-4. Pricing cards call `navigate('/register')` for unauthenticated users.
+1. `marketing/landing/Page.tsx` renders the hero and marketing sections.
+2. The demo editor is shown with no authenticated plan features.
+3. The primary CTAs call `navigate('/register')` for unauthenticated users.
 
 ## Dashboard edit flow
 1. `customer/dashboard/Page.tsx` loads the current story with `loadStory()`.
@@ -50,12 +49,18 @@
 6. `PublicStory` renders the story with the counter, images, watermark, and music player.
 
 ## Settings and payment flow
-1. `customer/settings/Page.tsx` loads the plan catalog and Mercado Pago key.
-2. Clicking a plan sends `planId` and `planName` to `process-payment` to detect the flow and validate the plan server-side.
-3. For Checkout Pro, the response contains `init_point` and the browser is redirected.
-4. For transparent checkout, the modal opens.
-5. The card form creates a token and calls `process-payment` again with payment data and the selected `planId`.
-6. On success, the UI refreshes the profile and closes the modal.
+1. `customer/settings/Page.tsx` loads the plan catalog.
+2. Clicking a plan sends `planId` to `process-payment`.
+3. The Edge Function validates the plan server-side, creates a Stripe Checkout session, and returns a hosted checkout URL.
+4. The browser is redirected to Stripe Checkout.
+5. Stripe sends webhook events to `stripe-webhook`, which updates `profiles.plan_id` and billing metadata.
+6. The success page refreshes the profile state and returns the user to the dashboard.
+
+## Plan model flow
+1. Plan rows are loaded from `get-all-plans`.
+2. The UI treats `billing_provider`, `billing_product_id`, `billing_price_id`, and `feature_rules` as integration metadata rather than presentation data.
+3. `shared/lib/plans.ts` resolves feature capabilities from the same row so the editor and server can read the same source of truth.
+4. `save-story` revalidates the resolved capability set before persisting story changes.
 
 ## Password edit flow
 1. `customer/dashboard/Page.tsx` loads the story without exposing the stored password hash.

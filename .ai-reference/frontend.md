@@ -24,9 +24,13 @@ The semantic route tree now owns the page layer. The remaining implementation de
 - Modals: `shared/ui/ConfirmModal.tsx` and `customer/dashboard/components/QRCodeModal.tsx`.
 - Feedback: `shared/ui/Toast.tsx`, `shared/ui/LoadingSpinner.tsx`.
 - Story UI: `shared/story-editor/CounterDemo.tsx`, `shared/story-editor/StoryPreview.tsx`, `story/public/components/PublicStory.tsx`, `customer/dashboard/components/DashboardSummary.tsx`, `story/public/components/DurationCounter.tsx`.
-- Commerce UI: `shared/pricing/PricingSection.tsx`, `shared/pricing/PlanCard.tsx`, `customer/settings/components/TransparentCheckoutForm.tsx`, `shared/story-editor/UpgradeToUnlock.tsx`.
+- Commerce UI: `shared/pricing/PricingSection.tsx`, `shared/pricing/PlanCard.tsx`, `shared/story-editor/UpgradeToUnlock.tsx`.
+- Plan capability resolution is centralized in `shared/lib/plans.ts`. UI code should prefer that helper over re-deriving image limits or feature flags from raw plan names, because it supports `feature_rules` overrides and integration metadata.
+- Plan cards no longer depend on hardcoded names like `Sonho` or `Eterno` for their visual state; featured state and relative price drive the upgrade/current/downgrade treatment.
+- The checkout path is Stripe-hosted. The frontend only requests a session URL and redirects the browser; no card form lives in the app bundle anymore.
 - UI copy is centralized in `shared/lib/ui-copy.ts`. Route and feature components should prefer that file for user-facing labels, button text, empty states, marketing copy, and success/error copy instead of scattering ad-hoc strings.
 - `shared/lib/errors.ts` remains the technical fallback/contract layer for parsing backend and client errors; it is not the source of truth for general UI wording.
+- The landing page no longer renders the pricing ladder; pricing and checkout are now concentrated in the authenticated account flow.
 
 ## State model
 - Global auth state comes from `app/providers/AuthProvider.tsx` and `app/hooks/useAuth.ts`.
@@ -52,5 +56,6 @@ The semantic route tree now owns the page layer. The remaining implementation de
 - The shell background is fixed and shared across routes.
 
 ## Frontend risks
-- Client-side feature gating still exists for UX, but the server now revalidates plan limits on story save and payment processing.
+- Client-side feature gating still exists for UX, but the server now revalidates plan limits on story save and plan checkout.
+- Plan rows can carry provider metadata (`billing_provider`, `billing_product_id`, `billing_price_id`) and `feature_rules` JSON overrides, so future billing changes should extend the data model before touching the editor gate logic.
 - The migration still has two visible layers in the component/service surface, so file ownership must be read carefully: semantic route/shell files first, domain feature folders and `shared/lib` second.

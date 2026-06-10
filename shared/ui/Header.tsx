@@ -9,21 +9,21 @@ const PlanBadge: React.FC<{ planName: string }> = ({ planName }) => {
 
   switch (planName) {
     case 'Sonho':
-      styles = 'bg-rose-500/20 text-rose-300 ring-1 ring-inset ring-rose-400/30';
+      styles = 'bg-primary/20 text-primary ring-1 ring-inset ring-primary/30';
       break;
     case 'Eterno':
-      styles = 'bg-pink-500 text-white shadow shadow-pink-500/30';
+      styles = 'bg-primary text-white shadow-[0_0_15px_rgba(255,45,85,0.4)]';
       break;
     case 'Infinito':
-      styles = 'bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-500/40';
+      styles = 'bg-gradient-to-r from-purple-500 to-primary text-white font-black shadow-[0_0_20px_rgba(255,45,85,0.5)]';
       break;
     default:
-      styles = 'bg-slate-700 text-slate-300 ring-1 ring-inset ring-slate-600';
+      styles = 'bg-white/10 text-slate-300 ring-1 ring-inset ring-white/10';
       break;
   }
 
   return (
-    <span className={`ml-2 sm:ml-3 px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold leading-none ${styles}`}>
+    <span className={`ml-2 sm:ml-3 px-2 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest leading-none ${styles} font-mono`}>
       {planName || 'Gratis'}
     </span>
   );
@@ -50,15 +50,15 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
   ];
 
   return (
-    <header className="bg-black/50 backdrop-blur-xl shadow-lg sticky top-0 z-30 border-b border-white/10">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <header className="bg-black/40 backdrop-blur-2xl sticky top-0 z-30 border-b border-white/[0.05]">
+      <div className="container-fluid py-6 flex justify-between items-center">
         <div className="flex items-center">
-            <button onClick={() => navigate('/')} className="focus:outline-none">
+            <button onClick={() => navigate('/')} className="focus:outline-none transition-transform hover:scale-105 active:scale-95">
               <img
                 src="/images/logo.avif"
                 alt="HowMuchLove Logo"
-                className="max-h-5 sm:max-h-6 md:max-h-7 w-auto"
-                fetchPriority="high"
+                className="max-h-5 sm:max-h-6 md:max-h-7 w-auto brightness-110"
+                fetchpriority="high"
                 width="400"
                 height="66"
               />
@@ -67,27 +67,31 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-8">
           {isHomePage && navLinks.map(link => (
-            <button key={link.id} onClick={() => handleScrollTo(link.id)} className="text-slate-300 hover:text-white transition-colors text-sm font-medium">
+            <button 
+              key={link.id} 
+              onClick={() => handleScrollTo(link.id)} 
+              className="text-slate-400 hover:text-white transition-all text-[11px] font-black uppercase tracking-[0.2em]"
+            >
               {link.label}
             </button>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-2 sm:gap-3">
+        <div className="hidden md:flex items-center gap-2 sm:gap-4">
           {user ? (
             <>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="text-slate-300 hover:text-white transition-colors duration-300 p-2 rounded-full hover:bg-white/10"
+                  className="text-slate-400 hover:text-white transition-colors duration-300 p-2 rounded-full hover:bg-white/5"
                 aria-label={uiCopy.navigation.settingsAriaLabel}
                 >
                   <GearIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               <button
                 onClick={handleLogout}
-                className="border border-slate-600 text-slate-300 font-semibold py-1.5 px-4 text-sm sm:py-2 sm:px-5 rounded-lg hover:bg-slate-700/50 hover:text-white hover:border-slate-500 transition-colors duration-300"
+                className="btn-secondary !py-2.5 !px-6"
               >
                 {uiCopy.navigation.logout}
               </button>
@@ -96,13 +100,13 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
             <>
               <button
                 onClick={() => navigate('/login')}
-                className="border border-slate-600 text-slate-300 font-semibold py-1.5 px-4 text-sm sm:py-2 sm:px-5 rounded-lg hover:bg-slate-700/50 hover:text-white hover:border-slate-500 transition-colors duration-300"
+                className="btn-secondary !py-2.5 !px-6"
               >
                 {uiCopy.navigation.login}
               </button>
               <button
                 onClick={() => handleScrollTo('pricing')}
-                className="bg-pink-500 text-white font-semibold py-1.5 px-4 text-sm sm:py-2 sm:px-5 rounded-lg shadow-md hover:bg-pink-600 transition-transform transition-colors duration-300 transform hover:scale-105"
+                className="btn-primary !py-2.5 !px-6"
               >
                 {uiCopy.navigation.viewPlans}
               </button>

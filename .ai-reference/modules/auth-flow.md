@@ -1,29 +1,34 @@
-# Auth Flow
+# Auth Flow Module
 
-## Scope
-`auth/login/Page.tsx`, `auth/register/Page.tsx`, `app/providers/AuthProvider.tsx`, `app/hooks/useAuth.ts`, `app/hooks/useFormValidator.ts`, `shared/lib/validators.ts`.
+## Responsibility
+Manages user identity, registration, login, and session persistence.
 
-## Objective
-Create and rehydrate authenticated users and route them into the protected area of the app.
+## Key Files
+- `app/providers/AuthProvider.tsx`: The primary state container for authentication.
+- `app/hooks/useAuth.ts`: Hook for consuming auth state and actions.
+- `auth/login/Page.tsx`: Login form page.
+- `auth/register/Page.tsx`: Registration form page.
+- `shared/lib/supabase.ts`: Supabase client used for auth operations.
 
-## Flow
-1. Login/register pages build local form state with `useFormValidator`.
-2. Validation runs before submission.
-3. `AuthProvider` calls Supabase Auth.
-4. On success, the profile and plan are loaded or a provisional `Gratis` user is created.
-5. The UI navigates to `/dashboard`.
+## Registration Process
+1. User provides name, email, and password.
+2. `supabase.auth.signUp` is called.
+3. On success, a `profiles` row is automatically created (usually via Supabase DB trigger, though not visible in migrations).
+4. The user is assigned the default `Gratis` plan.
+5. The session is established, and the user is redirected to the dashboard.
 
-## Validation rules
-- Required fields cannot be blank.
-- Email must match a simple regex.
-- Password must be at least six characters.
+## Login Process
+1. User provides email and password.
+2. `supabase.auth.signInWithPassword` is called.
+3. Profile and current plan information are fetched.
+4. The user is redirected to the dashboard.
 
-## Data dependencies
-- Login and register both assume the Supabase auth backend is reachable.
-- Login additionally assumes the profile row exists and exposes `plan_id`, which is then resolved to a plan record.
-- Register assumes some external bootstrap path will create the profile row later if needed.
+## Session Management
+- `supabase.auth.onAuthStateChange` is used to listen for session updates.
+- Sessions are persisted in `localStorage` by the Supabase client.
+- The `App` component waits for the initial session rehydration before rendering protected content.
 
-## Risks
-- Form-level error handling depends on exceptions being thrown by the auth methods.
-- The validation hook is generic but only supports string fields.
-- Password validation is minimal and does not enforce complexity beyond length.
+## Profile Sync
+- The `profiles` table stores the relationship between the Auth User and their assigned Plan.
+- `profiles.plan_id` is the source of truth for feature gating.
+- Billing updates from Stripe (via webhooks) modify the `profiles` table to reflect new plans or expiration dates.

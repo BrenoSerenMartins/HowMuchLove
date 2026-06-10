@@ -7,7 +7,7 @@ This project is a client-heavy SPA with serverless backends. The UI owns most of
 - Shell and route entrypoints: `app/App.tsx` plus the semantic route folders under `marketing/`, `auth/`, `customer/`, and `story/`.
 - Shared UI layer: `shared/ui/*`.
 - Client state layer: `app/providers/*`, `app/hooks/*`.
-- Service layer: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/storage.ts`, `shared/lib/supabase.ts`, `shared/lib/validators.ts`.
+- Service layer: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/plans.ts`, `shared/lib/storage.ts`, `shared/lib/supabase.ts`, `shared/lib/validators.ts`.
 - Backend layer: `supabase/functions/*`.
 - Data layer: Supabase Postgres tables, auth users, and storage bucket `story-images`.
 
@@ -35,10 +35,10 @@ This project is a client-heavy SPA with serverless backends. The UI owns most of
 - Strong coupling exists between UI types and Supabase row shapes.
 - Strong coupling exists between public story links and the auth `user.id`; the public identifier is UUID-only.
 - Strong coupling exists between plan names and feature rank logic.
-- Strong coupling exists between payment flow mode and `app_config.CHECKOUT_TYPE`.
+- Strong coupling exists between payment behavior and the Stripe plan metadata (`billing_provider`, `billing_price_id`) plus the webhook sync path.
 
 ## Boot sequence
-1. `index.html` loads fonts, Mercado Pago SDK, GA4, and the Vite bundle.
+1. `index.html` loads fonts, GA4, and the Vite bundle.
 2. `index.tsx` mounts `App` into `#root`.
 3. `AuthProvider` rehydrates the session with `supabase.auth.getSession()`.
 4. `app/App.tsx` blocks rendering until auth loading completes.

@@ -1,20 +1,38 @@
 # Database Map
 
-## Tables and read/write paths
+## Core Tables
 
-| Table | Read paths | Write paths | Notes |
-|---|---|---|---|
-| `plans` | `get-all-plans`, `process-payment`, `AuthProvider` via join | Not written by app code | Plan catalog and feature flags. |
-| `profiles` | `AuthProvider`, `get-public-story`, `verify-public-story-password`, `process-payment` | `process-payment` | User name and plan membership. |
-| `love_stories` | `AuthProvider.loadStory`, `get-public-story`, `verify-public-story-password` | `save-story` | Main story payload. |
-| `story_images` | `AuthProvider.loadStory`, `get-public-story`, `verify-public-story-password`, `save-story` | `save-story` | Ordered image list. |
-| `app_config` | `shared/lib/pricing.ts`, `process-payment` | Not written by app code | Payment and frontend configuration. |
+### `plans`
+- **Purpose**: Defines available product tiers and their capabilities.
+- **Key Columns**: `id`, `name`, `type`, `price`, `image_limit`, `allow_youtube`, `allow_password_protection`, `allow_custom_button`, `feature_rules`.
+- **Integration**: `billing_provider`, `billing_product_id`, `billing_price_id`.
 
-## Relationship map
-- `profiles.plan_id -> plans.id`
-- `love_stories.user_id -> auth user id`
-- `story_images.story_id -> love_stories.id`
+### `profiles`
+- **Purpose**: Extends auth user data with application-specific state.
+- **Key Columns**: `id` (FK to auth.users), `name`, `plan_id` (FK to plans.id).
+- **Billing Sync**: `billing_status`, `billing_subscription_id`, `billing_customer_id`, `billing_current_period_end`.
 
-## Storage map
-- Bucket `story-images` stores uploaded story photos.
-- Public URLs are generated after upload and stored in `story_images.image_url`.
+### `love_stories`
+- **Purpose**: Main content for the user's love story.
+- **Key Columns**: `id`, `user_id` (FK to profiles.id), `start_date`, `story_text`, `layout_position`, `youtube_url`, `entry_button_text`, `story_password` (hashed).
+
+### `story_images`
+- **Purpose**: Ordered gallery for a specific love story.
+- **Key Columns**: `id`, `story_id` (FK to love_stories.id), `image_url`, `display_order`.
+
+### `app_config`
+- **Purpose**: Global application settings.
+- **Key Columns**: `id`, `key`, `value`.
+- **Main Keys**: `FRONTEND_URL`.
+
+## Relationships
+- `profiles.id` -> `auth.users.id` (1:1)
+- `profiles.plan_id` -> `plans.id` (N:1)
+- `love_stories.user_id` -> `profiles.id` (1:1)
+- `story_images.story_id` -> `love_stories.id` (N:1)
+
+## Storage Buckets
+- `story-images`: Public bucket for user-uploaded photos. Filenames are typically UUID-based or prefixed with user/story identifiers.
+
+## RPC / Functions
+- `public.save_story_with_images`: Atomic update function for stories and their associated image records.

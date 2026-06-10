@@ -35,7 +35,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/images/web/icon-512.png">
     <link rel="apple-touch-icon" href="/images/web/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#ec4899" /> <!-- Pink-500 -->
+    <meta name="theme-color" content="#050505" />
 
     <!-- Google Analytics 4 (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-THDC5T7C7T"></script>
@@ -49,10 +49,10 @@
     <!-- Fonts and External CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
     <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500;600;700;800&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap">
     </noscript>
     
     <script src="https://sdk.mercadopago.com/js/v2" defer></script>
@@ -61,22 +61,15 @@
       html {
         overscroll-behavior: none;
       }
-      html, body, #root {
-        /* height: 100%; */ /* Removing this to simplify the scroll container model */
-      }
       body {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
         scroll-behavior: smooth;
         overflow-x: hidden;
         overscroll-behavior: none;
+        background-color: #050505;
       }
       .font-cursive {
         font-family: 'Dancing Script', cursive;
-      }
-      .bg-animated-lights {
-        background-color: #fff1f5;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f9a8d4' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        position: relative;
       }
       .lights-container {
         position: relative;
@@ -93,7 +86,7 @@
       .lights-container::before {
         width: 300px;
         height: 300px;
-        background: rgba(236, 72, 153, 0.15);
+        background: rgba(255, 45, 85, 0.1);
         top: -50px;
         left: -100px;
         animation: moveLight1 15s infinite alternate;
@@ -101,7 +94,7 @@
       .lights-container::after {
         width: 400px;
         height: 400px;
-        background: rgba(244, 114, 182, 0.15);
+        background: rgba(255, 45, 85, 0.08);
         bottom: -100px;
         right: -150px;
         animation: moveLight2 20s infinite alternate;
@@ -116,10 +109,6 @@
         from { transform: translate(-100px, 50px) scale(1.2); }
         to { transform: translate(100px, -100px) scale(1); }
       }
-      
-      .bg-romantic-gradient {
-        background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
-      }
 
       #root {
         position: relative;
@@ -131,21 +120,17 @@
       .react-datepicker__month-select {
           padding: 5px;
           border-radius: 8px;
-          border: 1px solid #e2e8f0; /* slate-200 */
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: #0a0a0a;
+          color: white;
           font-size: 0.9rem;
           cursor: pointer;
           margin: 0 4px;
       }
-      .react-datepicker__year-select:focus,
-      .react-datepicker__month-select:focus {
-          outline: none;
-          border-color: #ec4899; /* pink-500 */
-          box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
-      }
     </style>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-slate-900 text-slate-200">
+  <body class="bg-[#050505] text-white">
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

@@ -14,10 +14,14 @@ Confirmed from code:
 - `price`
 - `type`
 - `external_id`
+- `billing_provider`
+- `billing_product_id`
+- `billing_price_id`
 - `image_limit`
 - `allow_youtube`
 - `allow_password_protection`
 - `allow_custom_button`
+- `feature_rules`
 - `features`
 - `billing_cycle`
 - `is_featured`
@@ -33,6 +37,13 @@ Confirmed from code:
 - `id`
 - `name`
 - `plan_id`
+- `billing_provider`
+- `billing_customer_id`
+- `billing_subscription_id`
+- `billing_price_id`
+- `billing_status`
+- `billing_current_period_end`
+- `billing_cancel_at_period_end`
 
 Behavior:
 - `id` matches the Supabase auth user ID.
@@ -70,18 +81,17 @@ Confirmed from code:
 - `value`
 
 Used for:
-- `MERCADO_PAGO_PUBLIC_KEY`
-- `MERCADO_PAGO_ACCESS_TOKEN`
-- `CHECKOUT_TYPE`
 - `FRONTEND_URL`
-- `MP_TEST_USER_EMAIL`
 
 ## Migrations present in repo
 - `20251117024849_add_show_on_pricing_to_plans.sql` adds `show_on_pricing_page` to `plans`.
+- `20260609000000_add_plan_integration_metadata_and_feature_rules.sql` adds `billing_provider`, `billing_product_id`, `billing_price_id`, and `feature_rules` to `plans`.
+- `20260609010000_add_stripe_billing_fields_to_profiles.sql` adds Stripe billing sync fields to `profiles`.
 - `20260608000000_save_story_atomic.sql` creates the `public.save_story_with_images(...)` RPC used by `save-story` to persist the story and its ordered images atomically.
 
 ## Migration notes
 - The `show_on_pricing_page` migration is written defensively so it can be applied to a restored database that already contains the column.
+- `plans.feature_rules` is intentionally JSON-based so future billing integrations can override limits and feature flags without schema churn.
 - The atomic story-save RPC is part of the server contract; if it is missing from the remote database, `save-story` fails at runtime even when the edge function itself is deployed.
 
 ## Constraints and assumptions

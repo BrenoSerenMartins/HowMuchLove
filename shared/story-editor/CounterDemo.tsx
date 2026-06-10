@@ -1,4 +1,22 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChevronDown, 
+  Calendar, 
+  MessageSquare, 
+  Image as ImageIcon, 
+  Music, 
+  Lock, 
+  Layout, 
+  Plus, 
+  Trash2, 
+  GripVertical,
+  MousePointer2,
+  Save,
+  X,
+  Sparkles,
+  ArrowRight
+} from 'lucide-react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -7,6 +25,7 @@ import { CSS } from '@dnd-kit/utilities';
 import UpgradeToUnlock from './UpgradeToUnlock';
 import StoryPreview from './StoryPreview';
 import type { LoveStoryData, StoryImage, PlanFeatures } from '@/types';
+import { resolvePlanCapabilities } from '@/shared/lib/plans';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
 registerLocale('pt-BR', ptBR);
@@ -15,30 +34,52 @@ registerLocale('pt-BR', ptBR);
 
 const AccordionSection: React.FC<{
   title: string;
+  icon: React.ReactNode;
   sectionId: string;
   openSection: string | null;
   setOpenSection: (sectionId: string | null) => void;
   children: React.ReactNode;
-}> = ({ title, sectionId, openSection, setOpenSection, children }) => {
+}> = ({ title, icon, sectionId, openSection, setOpenSection, children }) => {
   const isOpen = openSection === sectionId;
   const handleToggle = () => {
     setOpenSection(isOpen ? null : sectionId);
   };
 
   return (
-    <div className="border-b border-white/20">
+    <div className="border-b border-white/5 last:border-0">
       <button
         onClick={handleToggle}
-        className="w-full flex justify-between items-center py-4 text-left font-semibold text-white hover:bg-white/10 px-2 rounded-t-md"
+        className={`w-full flex justify-between items-center py-6 text-left font-black uppercase tracking-[0.15em] text-[10px] transition-all px-4 rounded-xl ${
+          isOpen ? 'bg-white/5 text-primary' : 'text-slate-400 hover:text-white hover:bg-white/[0.02]'
+        }`}
       >
-        <span>{title}</span>
-        <svg className={`w-5 h-5 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-      </button>
-      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'}`}>
-        <div className="p-4 space-y-6">
-          {children}
+        <div className="flex items-center gap-4">
+          <div className={`${isOpen ? 'text-primary' : 'text-slate-500'}`}>
+            {icon}
+          </div>
+          <span>{title}</span>
         </div>
-      </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <ChevronDown className={`w-4 h-4 ${isOpen ? 'text-primary' : 'text-slate-600'}`} />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="p-6 pt-2 space-y-6">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -48,14 +89,20 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
     const style = { transform: CSS.Transform.toString(transform), transition };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} className="relative group flex items-center bg-black/20 p-2 rounded-lg">
-            <button {...listeners} className="cursor-grab touch-none p-2 text-slate-400 hover:bg-white/20 rounded-md">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <div ref={setNodeRef} style={style} {...attributes} className="relative group flex items-center bg-white/[0.03] border border-white/5 p-3 rounded-2xl mb-2 hover:bg-white/[0.05] transition-colors">
+            <button {...listeners} className="cursor-grab touch-none p-2 text-slate-500 hover:text-white transition-colors">
+                <GripVertical className="w-4 h-4" />
             </button>
-            <img src={image.image_url} alt="Thumbnail" className="w-12 h-12 rounded-md object-cover mx-4" />
-            <span className="flex-grow text-sm text-slate-300 truncate">{uiCopy.editor.imageItem}</span>
-            <button onClick={() => onDelete(image.id)} className="absolute top-1 right-1 p-1 text-pink-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 mx-4">
+                <img src={image.image_url} alt="Thumbnail" className="w-full h-full object-cover" />
+            </div>
+            <span className="flex-grow text-[11px] font-black uppercase tracking-widest text-slate-400 truncate">{uiCopy.editor.imageItem}</span>
+            <button 
+              onClick={() => onDelete(image.id)} 
+              className="p-2 text-slate-500 hover:text-primary transition-colors"
+              title="Excluir imagem"
+            >
+                <Trash2 className="w-4 h-4" />
             </button>
         </div>
     );
@@ -81,19 +128,13 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
   });
   
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-  const [imageIdsToDelete, setImageIdsToDelete] = useState<number[]>([]); // New state
+  const [imageIdsToDelete, setImageIdsToDelete] = useState<number[]>([]); 
   const [openSection, setOpenSection] = useState<string | null>('content');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
 
-  // Use useMemo to recalculate features only when planFeatures changes
-  const features = useMemo(() => ({
-    imageLimit: planFeatures?.image_limit ?? 1,
-    allowYoutube: planFeatures?.allow_youtube ?? false,
-    allowPasswordProtection: planFeatures?.allow_password_protection ?? false,
-    allowCustomButton: planFeatures?.allow_custom_button ?? false,
-  }), [planFeatures]);
+  const features = useMemo(() => resolvePlanCapabilities(planFeatures), [planFeatures]);
   
   const limitReached = localData.images.length >= features.imageLimit;
 
@@ -105,7 +146,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
         storyPassword: initialData.storyPassword || '', removePassword: false, requiresPassword: initialData.requiresPassword || false, entryButtonText: initialData.entryButtonText || '',
       });
       setNewImageFiles([]);
-      setImageIdsToDelete([]); // Reset on new data
+      setImageIdsToDelete([]);
     }
   }, [initialData]);
 
@@ -121,20 +162,15 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
       setNewImageFiles(prevFiles => [...prevFiles, file]);
       const localUrl = URL.createObjectURL(file);
       const tempId = Date.now();
-      // Add originalFilename to correlate in the backend
       updateLocalData('images', [...localData.images, { id: tempId, image_url: localUrl, display_order: localData.images.length, originalFilename: file.name }]);
     }
   };
 
   const handleDeleteImage = (id: number) => {
-    // Check if the image was part of the initial data loaded from the DB
     const isNewImage = !initialData?.images.some(initialImg => initialImg.id === id);
-    
-    // Only add pre-existing images to the deletion list
     if (!isNewImage) {
       setImageIdsToDelete(prev => [...prev, id]);
     }
-    
     updateLocalData('images', localData.images.filter(img => img.id !== id));
   };
 
@@ -145,8 +181,6 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
       const newIndex = localData.images.findIndex(item => item.id === over.id);
       
       const reorderedImages = arrayMove<StoryImage>(localData.images, oldIndex, newIndex);
-      
-      // Update the display_order property for each image to match its new index
       const finalImages: StoryImage[] = reorderedImages.map((image, index) => ({
         ...image,
         display_order: index,
@@ -158,7 +192,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
 
   const handleSave = async () => {
     if (!onSave) return;
-    await onSave(localData, newImageFiles, imageIdsToDelete); // Pass the deletion list
+    await onSave(localData, newImageFiles, imageIdsToDelete);
     setNewImageFiles([]);
     setImageIdsToDelete([]);
   };
@@ -176,119 +210,208 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const inputClasses = "w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 focus:bg-black/30 text-white placeholder-slate-400 transition-colors";
-
   return (
-    <div className="bg-black/30 backdrop-blur-2xl p-4 md:p-8 rounded-2xl shadow-lg border border-white/20">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+    <div className="relative">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[clamp(2rem,6vw,6rem)] items-start">
         {/* --- Editor Panel --- */}
-        <div className="lg:col-span-2">
-          <h3 className="font-bold text-xl mb-4 text-white px-2">{uiCopy.editor.title}</h3>
-          <div className="border-t border-white/20">
-            <AccordionSection title={uiCopy.editor.contentSection} sectionId="content" openSection={openSection} setOpenSection={setOpenSection}>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.startedWhen}</label>
-                <DatePicker
-                  selected={localData.startDate ? new Date(localData.startDate) : null}
-                  onChange={(d: Date | null) => updateLocalData('startDate', d ? d.toISOString() : null)}
-                  dateFormat="dd/MM/yyyy" placeholderText="dd/mm/aaaa" maxDate={new Date()} locale="pt-BR"
-                  className={inputClasses}
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.messageLabel}</label>
-                <textarea
-                  id="message" value={localData.message} onChange={(e) => updateLocalData('message', e.target.value)}
-                  placeholder={uiCopy.editor.messagePlaceholder} rows={3}
-                  className={`${inputClasses} resize-none`}
-                ></textarea>
+        <div className="lg:col-span-5 order-2 lg:order-1">
+          <div className="flex items-center gap-4 mb-12 px-2">
+            <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
+              <Layout className="w-6 h-6" />
+            </div>
+            <div>
+                <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Painel de Criação</h3>
+                <p className="text-[clamp(9px,0.7vw,11px)] font-bold text-slate-500 uppercase tracking-widest mt-1 font-mono">Personalize sua História</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <AccordionSection 
+              title={uiCopy.editor.contentSection} 
+              icon={<Calendar className="w-5 h-5" />}
+              sectionId="content" 
+              openSection={openSection} 
+              setOpenSection={setOpenSection}
+            >
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.startedWhen}</label>
+                  <div className="relative group">
+                    <DatePicker
+                      selected={localData.startDate ? new Date(localData.startDate) : null}
+                      onChange={(d: Date | null) => updateLocalData('startDate', d ? d.toISOString() : null)}
+                      dateFormat="dd/MM/yyyy" placeholderText="dd/mm/aaaa" maxDate={new Date()} locale="pt-BR"
+                      className="input-elite !py-5"
+                    />
+                    <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.messageLabel}</label>
+                  <div className="relative group">
+                    <textarea
+                      id="message" value={localData.message} onChange={(e) => updateLocalData('message', e.target.value)}
+                      placeholder={uiCopy.editor.messagePlaceholder} rows={5}
+                      className="input-elite resize-none !py-5"
+                    ></textarea>
+                    <MessageSquare className="absolute right-5 top-5 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                  </div>
+                </div>
               </div>
             </AccordionSection>
 
-            <AccordionSection title={uiCopy.editor.mediaSection} sectionId="media" openSection={openSection} setOpenSection={setOpenSection}>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.photosLabel} ({isDashboard ? `${localData.images.length}/${features.imageLimit}` : '1/1'})</label>
-                {isDashboard && (
-                  <div className="space-y-2 max-h-72 overflow-y-auto p-2 bg-black/20 border border-white/10 rounded-lg">
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                      <SortableContext items={localData.images.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                        {localData.images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
-                      </SortableContext>
-                    </DndContext>
+            <AccordionSection 
+              title={uiCopy.editor.mediaSection} 
+              icon={<ImageIcon className="w-5 h-5" />}
+              sectionId="media" 
+              openSection={openSection} 
+              setOpenSection={setOpenSection}
+            >
+              <div className="space-y-8">
+                <div>
+                  <div className="flex justify-between items-center mb-4 ml-1">
+                    <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500">{uiCopy.editor.photosLabel}</label>
+                    <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                      {isDashboard ? `${localData.images.length}/${features.imageLimit}` : '1/1'}
+                    </span>
                   </div>
-                )}
-                <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={isDashboard && limitReached} />
-                <UpgradeToUnlock isFeatureAllowed={!isDashboard || !limitReached} message={uiCopy.editor.imageLimitMessage(features.imageLimit)}>
-                  <button onClick={() => fileInputRef.current?.click()} disabled={isDashboard && limitReached} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-black/20 text-slate-200 font-semibold rounded-lg shadow-sm hover:bg-black/30 transition-colors text-sm mt-3 disabled:bg-slate-700/50 disabled:text-slate-400 disabled:cursor-not-allowed">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                      {uiCopy.editor.addPhoto}
-                  </button>
+                  
+                  {isDashboard && localData.images.length > 0 && (
+                    <div className="space-y-2 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={localData.images.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                          {localData.images.map(image => <SortableImage key={image.id} image={image} onDelete={handleDeleteImage} />)}
+                        </SortableContext>
+                      </DndContext>
+                    </div>
+                  )}
+                  
+                  <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={isDashboard && limitReached} />
+                  <UpgradeToUnlock isFeatureAllowed={!isDashboard || !limitReached} message={uiCopy.editor.imageLimitMessage(features.imageLimit)}>
+                    <button 
+                      onClick={() => fileInputRef.current?.click()} 
+                      disabled={isDashboard && limitReached} 
+                      className="w-full btn-secondary !py-5 group border-dashed"
+                    >
+                        <Plus className="w-5 h-5 text-primary transition-transform group-hover:rotate-90" />
+                        {uiCopy.editor.addPhoto}
+                    </button>
+                  </UpgradeToUnlock>
+                </div>
+                <div>
+                  <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.positionLabel}</label>
+                  <div className="grid grid-cols-3 gap-3 p-2 bg-white/[0.03] rounded-2xl border border-white/5 shadow-inner">
+                      {(['top', 'center', 'bottom'] as const).map(pos => (
+                          <button
+                            key={pos} onClick={() => updateLocalData('layoutPosition', pos)}
+                            className={`py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                              localData.layoutPosition === pos 
+                                ? 'bg-primary text-white shadow-[0_8px_20px_rgba(255,45,85,0.4)] scale-[1.02]' 
+                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            {pos === 'top' ? uiCopy.editor.top : pos === 'center' ? uiCopy.editor.center : uiCopy.editor.bottom}
+                          </button>
+                      ))}
+                  </div>
+                </div>
+                <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message={uiCopy.editor.youtubeUpgradeMessage}>
+                  <div>
+                    <label htmlFor="youtubeUrl" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.youtubeLabel}</label>
+                    <div className="relative group">
+                      <input type="text" id="youtubeUrl" value={localData.youtubeUrl} onChange={(e) => updateLocalData('youtubeUrl', e.target.value)} placeholder={uiCopy.editor.youtubePlaceholder}
+                        className="input-elite pr-14 !py-5" disabled={!features.allowYoutube}
+                      />
+                      <Music className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    </div>
+                  </div>
                 </UpgradeToUnlock>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.positionLabel}</label>
-                <div className="grid grid-cols-3 gap-2 p-1 bg-black/20 rounded-lg">
-                    {(['top', 'center', 'bottom'] as const).map(pos => (
-                        <button
-                          key={pos} onClick={() => updateLocalData('layoutPosition', pos)}
-                          className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-pink-400 ${localData.layoutPosition === pos ? 'bg-black/20 text-pink-400 shadow' : 'text-slate-300 hover:bg-black/10'}`}>
-                          {pos === 'top' ? uiCopy.editor.top : pos === 'center' ? uiCopy.editor.center : uiCopy.editor.bottom}
-                        </button>
-                    ))}
-                </div>
-              </div>
-              <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message={uiCopy.editor.youtubeUpgradeMessage}>
-                <div>
-                  <label htmlFor="youtubeUrl" className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.youtubeLabel}</label>
-                  <input type="text" id="youtubeUrl" value={localData.youtubeUrl} onChange={(e) => updateLocalData('youtubeUrl', e.target.value)} placeholder={uiCopy.editor.youtubePlaceholder}
-                    className={`${inputClasses} pr-10`} disabled={!features.allowYoutube}
-                  />
-                </div>
-              </UpgradeToUnlock>
             </AccordionSection>
 
-            <AccordionSection title={uiCopy.editor.accessSection} sectionId="access" openSection={openSection} setOpenSection={setOpenSection}>
-              <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message={uiCopy.editor.passwordUpgradeMessage}>
-                <div>
-                  <label htmlFor="storyPassword" className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.passwordLabel}</label>
-                  <input type="password" id="storyPassword" value={localData.storyPassword} onChange={(e) => updateLocalData('storyPassword', e.target.value)}
-                    placeholder={localData.requiresPassword ? uiCopy.editor.passwordPlaceholderKeep : uiCopy.editor.passwordPlaceholderSet} className={inputClasses} disabled={!features.allowPasswordProtection || localData.removePassword}
-                  />
-                  {localData.requiresPassword && (
-                    <p className="mt-2 text-xs text-slate-400">
-                      {uiCopy.editor.passwordHelper}
-                    </p>
-                  )}
-                  {localData.requiresPassword && (
-                    <label className="mt-3 flex items-center gap-2 text-sm text-slate-300">
-                      <input
-                        type="checkbox"
-                        checked={!!localData.removePassword}
-                        onChange={(e) => handleRemovePasswordToggle(e.target.checked)}
-                        className="rounded border-white/20 bg-black/20 text-pink-500 focus:ring-pink-400"
+            <AccordionSection 
+              title={uiCopy.editor.accessSection} 
+              icon={<Lock className="w-5 h-5" />}
+              sectionId="access" 
+              openSection={openSection} 
+              setOpenSection={setOpenSection}
+            >
+              <div className="space-y-6">
+                <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message={uiCopy.editor.passwordUpgradeMessage}>
+                  <div>
+                    <label htmlFor="storyPassword" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.passwordLabel}</label>
+                    <div className="relative group">
+                      <input type="password" id="storyPassword" value={localData.storyPassword} onChange={(e) => updateLocalData('storyPassword', e.target.value)}
+                        placeholder={localData.requiresPassword ? uiCopy.editor.passwordPlaceholderKeep : uiCopy.editor.passwordPlaceholderSet} 
+                        className="input-elite pr-14 !py-5" 
+                        disabled={!features.allowPasswordProtection || localData.removePassword}
                       />
-                      {uiCopy.editor.removePassword}
-                    </label>
-                  )}
-                </div>
-              </UpgradeToUnlock>
-              <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message={uiCopy.editor.customButtonUpgradeMessage}>
-                <div>
-                  <label htmlFor="entryButtonText" className="block text-sm font-medium text-slate-300 mb-2">{uiCopy.editor.entryButtonLabel}</label>
-                  <input type="text" id="entryButtonText" value={localData.entryButtonText} onChange={(e) => updateLocalData('entryButtonText', e.target.value)}
-                    placeholder={uiCopy.editor.entryButtonPlaceholder} className={inputClasses} disabled={!features.allowCustomButton}
-                  />
-                </div>
-              </UpgradeToUnlock>
+                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    </div>
+                    {localData.requiresPassword && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed mb-6">
+                          {uiCopy.editor.passwordHelper}
+                        </p>
+                        <label className="flex items-center gap-4 cursor-pointer group">
+                          <div className="relative flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={!!localData.removePassword}
+                              onChange={(e) => handleRemovePasswordToggle(e.target.checked)}
+                              className="sr-only"
+                            />
+                            <div className={`w-12 h-6 rounded-full transition-colors duration-300 ${localData.removePassword ? 'bg-primary' : 'bg-white/10'}`}>
+                              <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-300 ${localData.removePassword ? 'translate-x-6' : ''}`} />
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-black uppercase tracking-widest text-slate-300 group-hover:text-white transition-colors">{uiCopy.editor.removePassword}</span>
+                        </label>
+                      </motion.div>
+                    )}
+                  </div>
+                </UpgradeToUnlock>
+                <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message={uiCopy.editor.customButtonUpgradeMessage}>
+                  <div>
+                    <label htmlFor="entryButtonText" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.entryButtonLabel}</label>
+                    <div className="relative group">
+                      <input type="text" id="entryButtonText" value={localData.entryButtonText} onChange={(e) => updateLocalData('entryButtonText', e.target.value)}
+                        placeholder={uiCopy.editor.entryButtonPlaceholder} className="input-elite pr-14 !py-5" disabled={!features.allowCustomButton}
+                      />
+                      <MousePointer2 className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    </div>
+                  </div>
+                </UpgradeToUnlock>
+              </div>
             </AccordionSection>
           </div>
+          
           {isDashboard && (
-            <div className="flex flex-col sm:flex-row-reverse gap-4 mt-8">
-              <button onClick={handleSave} disabled={saveStatus === 'saving'} className="w-full font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105 bg-pink-500 text-white hover:bg-pink-600 disabled:bg-pink-300">
-                {saveStatus === 'saving' ? uiCopy.editor.saving : uiCopy.editor.save}
+            <div className="flex flex-col sm:flex-row gap-4 mt-12 px-2">
+              <button 
+                onClick={handleSave} 
+                disabled={saveStatus === 'saving'} 
+                className="btn-primary flex-grow !py-5"
+              >
+                {saveStatus === 'saving' ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    {uiCopy.editor.saving}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    {uiCopy.editor.save}
+                  </>
+                )}
               </button>
               {onCancel && (
-                <button onClick={onCancel} disabled={saveStatus === 'saving'} className="w-full sm:w-auto font-semibold py-3 px-8 rounded-lg transition-colors duration-300 bg-black/20 hover:bg-black/40 text-slate-200">
+                <button 
+                  onClick={onCancel} 
+                  disabled={saveStatus === 'saving'} 
+                  className="btn-secondary !py-5"
+                >
+                  <X className="w-4 h-4" />
                   {uiCopy.editor.cancel}
                 </button>
               )}
@@ -296,19 +419,35 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
           )}
         </div>
 
-        {/* --- Preview "Monitor" --- */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          <div className="h-[620px] lg:h-[760px] w-full overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
-            <StoryPreview storyData={localData} plan={planFeatures} />
+        {/* --- Preview --- */}
+        <div className="lg:col-span-7 order-1 lg:order-2">
+          <div className="sticky top-32">
+            <div className="flex items-center gap-4 mb-12 px-2">
+              <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                  <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Visualização em Tempo Real</h3>
+                  <p className="text-[clamp(9px,0.7vw,11px)] font-bold text-slate-500 uppercase tracking-widest mt-1 font-mono">Como seu Amor verá</p>
+              </div>
+            </div>
+            
+            <div className="card-elite aspect-[9/16] max-h-[85vh] w-full max-w-[500px] mx-auto relative overflow-hidden ring-1 ring-white/10 shadow-[0_100px_150px_-50px_rgba(0,0,0,1)]">
+              <StoryPreview storyData={localData} plan={planFeatures} />
+            </div>
+            
+            {!isDashboard && (
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleScrollToPricing}
+                className="btn-primary w-full max-w-[500px] mx-auto flex mt-12 !py-6 shadow-[0_30px_60px_-10px_rgba(255,45,85,0.4)] text-[11px]"
+              >
+                {uiCopy.editor.saveAndShare}
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            )}
           </div>
-          {!isDashboard && (
-            <button 
-              onClick={handleScrollToPricing}
-              className="w-full font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 !mt-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:shadow-xl"
-            >
-              {uiCopy.editor.saveAndShare}
-            </button>
-          )}
         </div>
       </div>
     </div>

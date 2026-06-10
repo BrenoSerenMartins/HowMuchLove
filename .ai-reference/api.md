@@ -18,10 +18,6 @@
 - Calls: `supabase.functions.invoke('get-all-plans')`
 - Returns: plan list or `null` on function error.
 
-### `getMpPublicKey()`
-- Source: `shared/lib/pricing.ts`
-- Reads: `app_config.value` where `key = MERCADO_PAGO_PUBLIC_KEY`.
-
 ### `normalizeSupabaseStorageUrl(url)`
 - Source: `shared/lib/storage.ts`
 - Rewrites legacy public storage URLs so restored content keeps working after the project ref changed.
@@ -43,7 +39,8 @@
 - `get-public-story`: returns either `requiresPassword`, a full story payload, or an error message.
 - `verify-public-story-password`: returns a full story payload or a password error.
 - `save-story`: accepts multipart form data, revalidates plan restrictions server-side, persists the story and its ordered images via an atomic database function, and returns `storyId`.
-- `process-payment`: returns `init_point` for Checkout Pro or payment success metadata for transparent checkout after validating `planId` or `planName`.
+- `process-payment`: validates the selected plan, creates a Stripe Checkout session for the configured `billing_price_id`, and returns a hosted checkout `url` using the request origin as the primary redirect base.
+- `stripe-webhook`: verifies Stripe webhook signatures, then synchronizes subscription state back into `profiles.plan_id` and billing metadata.
 - All frontend wrappers now prefer structured error payloads from the Edge Functions and fall back to a shared user-facing message when the payload is missing or malformed.
 
 ## Error handling conventions
@@ -51,4 +48,4 @@
 - UI components commonly show toast messages from caught exceptions.
 
 ## API risks
-- TypeScript typing for `import.meta.env` is partially declared in `vite-env.d.ts`, but the Supabase/checkout contract still relies on runtime env values.
+- Stripe and Supabase secrets for the Edge Functions live outside the frontend bundle, so the checkout contract still relies on runtime environment configuration and deployed function secrets.

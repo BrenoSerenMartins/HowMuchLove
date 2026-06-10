@@ -1,27 +1,40 @@
 # Dependency Map
 
-## High-level graph
-- `index.html` -> Vite bundle -> `index.tsx` -> `App.tsx` -> `app/App.tsx`.
-- `app/App.tsx` -> `NavigationProvider`, `AuthProvider`, `NotificationProvider`.
-- `app/App.tsx` -> semantic route entrypoints under `marketing/`, `auth/`, `customer/`, and `story/`.
-- The semantic entrypoints compose feature components from `marketing/landing/sections/`, `shared/pricing/`, `shared/story-editor/`, `customer/dashboard/components/`, `customer/settings/components/`, and `story/public/components/`, plus helper modules from `shared/lib/*`.
-- Shared UI and app hooks -> `shared/ui/*`, `app/hooks/*`, `app/providers/*`, `shared/lib/*`.
-- `shared/lib/story-api.ts` -> Supabase Edge Functions and Supabase tables.
-- `shared/lib/pricing.ts` -> `app_config` and `get-all-plans`.
-- `shared/lib/storage.ts` -> public storage URL normalization.
-- `AuthProvider` -> Supabase Auth, tables, storage via Edge Functions.
+## Frontend Dependencies
 
-## Strong dependency clusters
-| Cluster | Core files | Notes |
-|---|---|---|
-| Shell | `app/App.tsx`, `shared/ui/Header.tsx`, `shared/ui/Footer.tsx`, `shared/ui/BottomNavBar.tsx` | Shared chrome for most routes. |
-| State | `app/providers/AuthProvider.tsx`, `app/providers/NavigationProvider.tsx`, `app/providers/NotificationProvider.tsx` | Cross-page coordination. |
-| Story editor | `customer/dashboard/Page.tsx`, `shared/story-editor/CounterDemo.tsx`, `shared/story-editor/StoryPreview.tsx`, `customer/dashboard/components/DashboardSummary.tsx` | Most complex local feature. |
-| Public story | `story/public/Page.tsx`, `story/public/components/PublicStory.tsx`, `story/public/components/DurationCounter.tsx`, `story/public/components/YouTubePlayer.tsx` | Public access and rendering. |
-| Commerce | `customer/settings/Page.tsx`, `customer/settings/components/TransparentCheckoutForm.tsx`, `process-payment` | Payment orchestration. |
-| Pricing | `marketing/landing/Page.tsx`, `shared/pricing/PricingSection.tsx`, `shared/pricing/PlanCard.tsx` | Public plan catalog. |
+### Core
+- `react`: UI library.
+- `typescript`: Type safety.
+- `vite`: Build tool and dev server.
+- `tailwindcss`: Styling.
 
-## Legacy dependencies
-- The old `utils/` layer has been flattened into `shared/lib/*`.
-- The removed IndexedDB helper is no longer part of the source tree.
-- The backend helper surface now lives in `shared/lib/story-api.ts` and `shared/lib/pricing.ts`.
+### Supabase
+- `@supabase/supabase-js`: Client for DB, Auth, and Storage.
+
+### Utilities
+- `date-fns`: Date formatting and calculation for the story counter.
+- `qrcode.react`: Generates QR codes for story sharing.
+- `@dnd-kit/*`: Drag and drop for image reordering in the editor.
+- `react-datepicker`: Date selection for the story start date.
+
+## Backend Dependencies (Edge Functions)
+- `Deno` runtime.
+- `Stripe`: Payment processing API.
+- `Supabase SDK`: Database and storage access.
+
+## External Services
+- **Supabase**: Auth, DB, Storage, Edge Functions.
+- **Stripe**: Billing, Subscriptions, Checkout.
+- **Google Fonts**: `Poppins` and `Dancing Script`.
+- **GA4 (Google Analytics)**: Basic tracking in `index.html`.
+- **Cloudflare/Wrangler**: Used for project deployment/preview (per `package.json`).
+
+## Internal Shared Logic (`shared/lib/`)
+- `story-api.ts`: Frontend client for Edge Functions.
+- `pricing.ts`: Plan fetching and Stripe session initiation.
+- `plans.ts`: Plan capability and feature rule resolution.
+- `supabase.ts`: Supabase client initialization.
+- `storage.ts`: Image upload and normalization.
+- `validators.ts`: Form and data validation logic.
+- `errors.ts`: Unified error handling and messaging.
+- `ui-copy.ts`: Centralized user-facing strings.

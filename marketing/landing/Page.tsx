@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import HeroSection from './sections/HeroSection';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
 import FeaturesSection from './sections/FeaturesSection';
@@ -6,42 +7,20 @@ import HowItWorksSection from './sections/HowItWorksSection';
 import SocialProofSection from './sections/SocialProofSection';
 import FAQSection from './sections/FAQSection';
 import FinalCTASection from './sections/FinalCTASection';
-import PricingSection from '@/shared/pricing/PricingSection';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
-import { getMpPublicKey, fetchAllPlans } from '@/shared/lib/pricing';
-import type { PlanFromDB } from '@/types';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
 const HomePage: React.FC = () => {
   const { user, isLoading } = useAuth();
   const { navigate } = useNavigate();
-  const [mpPublicKey, setMpPublicKey] = useState<string | null>(null);
-  const [plans, setPlans] = useState<PlanFromDB[]>([]);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      const [key, fetchedPlans] = await Promise.all([
-        getMpPublicKey(),
-        fetchAllPlans()
-      ]);
-      setMpPublicKey(key);
-      if (fetchedPlans) {
-        setPlans(fetchedPlans);
-      }
-    };
-    fetchInitialData();
-
+  React.useEffect(() => {
     if (!isLoading && user) {
       navigate('/dashboard');
     }
   }, [user, isLoading, navigate]);
-
-  const handlePlanSelected = (_plan: { id: number; name: string; amount: number }) => {
-    // On the homepage, we always redirect to register
-    navigate('/register');
-  };
 
   if (isLoading) {
     return (
@@ -61,26 +40,43 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <div className="container mx-auto px-4">
-          <HeroSection />
-      </div>
+      <HeroSection />
       
       <FeaturesSection />
 
       <HowItWorksSection />
 
-      <section id="demo" className="relative z-10 scroll-mt-20 py-16 sm:py-20">
+      <section id="demo" className="relative z-10 scroll-mt-20 py-24">
           {/* Section Header for CounterDemo */}
-          <div className="text-center max-w-3xl mx-auto mb-12 px-4 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center max-w-3xl mx-auto mb-16 px-4"
+          >
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4 block">
+                Demonstração Ao Vivo
+              </span>
+              <h2 className="text-4xl sm:text-6xl font-black text-white leading-none tracking-tighter mb-6">
                   {uiCopy.marketing.demo.titleLead}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{uiCopy.marketing.demo.titleHighlight}</span>
+                  <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+                    {uiCopy.marketing.demo.titleHighlight}
+                  </span>
               </h2>
-              <p className="text-slate-300 mt-4 text-lg">
+              <p className="text-slate-400 mt-4 text-lg font-medium">
                   {uiCopy.marketing.demo.description}
               </p>
-          </div>
-          <CounterDemo isDashboard={false} planFeatures={null} />
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+            className="card-elite max-w-5xl mx-auto p-4 sm:p-8"
+          >
+            <CounterDemo isDashboard={false} planFeatures={null} />
+          </motion.div>
       </section>
       
       <SocialProofSection />
@@ -88,13 +84,6 @@ const HomePage: React.FC = () => {
       {/* New FAQ Section Added */}
       <FAQSection />
 
-      <PricingSection 
-          id="pricing" 
-          plans={plans} 
-          mpPublicKey={mpPublicKey} 
-          onPlanSelect={handlePlanSelected} 
-      />
-      
       <FinalCTASection />
     </>
   );

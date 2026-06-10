@@ -53,7 +53,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoId, isMuted, hasEnte
   const volumeFadeIntervalRef = useRef<number | null>(null);
   const latestStateRef = useRef({ isMuted, hasEntered });
   const logPlayer = (event: string, details: Record<string, unknown> = {}) => {
-    console.log('[story/public/YouTubePlayer]', { videoId, event, ...details });
+    console.log('[shared/ui/story-view/YouTubePlayer]', { videoId, event, ...details });
   };
 
   const describePlayerState = (state: number): string => {

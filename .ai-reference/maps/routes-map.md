@@ -1,31 +1,26 @@
 # Routes Map
 
-## Hash routes
+## Public Routes (Marketing)
+- `/`: `marketing/landing/Page.tsx` - Main landing page with hero, features, how it works, FAQ, and final CTA.
 
-| Route | Entrypoint | Auth | Notes |
-|---|---|---:|---|
-| `/` | `marketing/landing/Page.tsx` | No | Marketing page, demo, pricing, CTA funnel. |
-| `/login` | `auth/login/Page.tsx` | No | Public auth entry. |
-| `/register` | `auth/register/Page.tsx` | No | Public auth entry. |
-| `/dashboard` | `customer/dashboard/Page.tsx` | Yes | Story editor and summary. |
-| `/settings` | `customer/settings/Page.tsx` | Yes | Plan management and payment. |
-| `/story/:storyId` | `story/public/Page.tsx` | No | Public share view with optional password gate. |
-| `/payment-success` | `customer/billing/success/Page.tsx` | No | Redirect landing page. |
-| `/payment-failure` | `customer/billing/failure/Page.tsx` | No | Redirect landing page. |
-| `/payment-pending` | `customer/billing/pending/Page.tsx` | No | Redirect landing page. |
+## Auth Routes
+- `/login`: `auth/login/Page.tsx` - User authentication page.
+- `/register`: `auth/register/Page.tsx` - New user registration page.
 
-## In-page anchors
-| Anchor | Primary owners | Notes |
-|---|---|---|
-| `features` | `FeaturesSection` | Landing page marketing section. |
-| `how-it-works` | `HowItWorksSection` | Landing page marketing section. |
-| `testimonials` | `SocialProofSection` | Landing page social proof section. |
-| `faq` | `FAQSection` | Landing page FAQ section. |
-| `pricing` | `PricingSection` | Landing page pricing section. |
-| `pricing-section` | `customer/settings/Page.tsx` | Scroll target inside settings. |
-| `demo` | `CounterDemo` demo mode | Scroll target for the live demo. |
+## Protected Routes (Customer Area)
+- `/dashboard`: `customer/dashboard/Page.tsx` - Main user dashboard, contains the story editor and live preview.
+- `/settings`: `customer/settings/Page.tsx` - Account settings, billing management, and plan selection.
 
-## Route guards
-- `/dashboard` and `/settings` are protected by the auth effect in `app/App.tsx`.
-- `/login` and `/register` are public-only when a session exists.
-- `/story/:storyId` bypasses the shell chrome and uses a custom page layout.
+## Public Story Route
+- `/story/:id`: `story/public/Page.tsx` - The public shared story page. The `:id` is a UUID matching the user's ID.
+
+## Billing/Payment Redirect Routes
+- `/payment-success`: `customer/billing/success/Page.tsx` - Redirect target after successful Stripe checkout.
+- `/payment-failure`: `customer/billing/failure/Page.tsx` - Redirect target after failed or cancelled Stripe checkout.
+- `/payment-pending`: `customer/billing/pending/Page.tsx` - Redirect target after Stripe checkout when payment is still processing (e.g., async payment methods).
+
+## Technical Implementation
+- Routing is hash-based (`window.location.hash`).
+- Managed by `app/providers/NavigationProvider.tsx`.
+- Handled via `useNavigate` hook for transitions.
+- Route mapping and lazy loading are orchestrated in `app/App.tsx`.

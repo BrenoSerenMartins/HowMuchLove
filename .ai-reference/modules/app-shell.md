@@ -1,34 +1,28 @@
-# App Shell
-
-## Scope
-Shell orchestration for the whole application: `App.tsx` as a compatibility export, `app/App.tsx`, `index.tsx`, `app/providers/*`, `app/hooks/*`, and the shared shell UI in `shared/ui/*`.
+# App Shell Module
 
 ## Responsibility
-- Boot the React tree.
-- Restore auth state.
-- Resolve the active hash route.
-- Render the correct page component.
-- Apply shell chrome, global background, and shared modals.
+The App Shell is responsible for the root orchestration, global state providers, layout consistency, and top-level routing.
 
-## Flow
-1. `index.tsx` mounts `App`.
-2. `App` re-exports the real shell.
-3. `app/App.tsx` wraps providers.
-4. `AuthProvider` rehydrates the session.
-5. `NavigationProvider` tracks the hash route and dirty navigation blocking.
-6. `NotificationProvider` stores toast messages.
-7. `app/App.tsx` selects the page component and decides whether to show shell chrome.
+## Key Files
+- `app/App.tsx`: Main entrypoint that assembles the providers and handles page switching.
+- `app/providers/NavigationProvider.tsx`: Manages the hash-based routing state.
+- `app/providers/AuthProvider.tsx`: Manages Supabase authentication state and session rehydration.
+- `app/providers/NotificationProvider.tsx`: Manages global toast notifications.
+- `shared/ui/Header.tsx`: Global navigation header.
+- `shared/ui/Footer.tsx`: Global footer.
+- `shared/ui/BottomNavBar.tsx`: Mobile-specific navigation bar.
 
-## Shell rules
-- Header and footer are hidden in preview mode.
-- Bottom nav is shown on the public home page for logged out users and on protected pages for logged in users.
-- The story route gets a custom layout without the normal shell chrome.
-- Payment result pages are part of the main route switch but still rely on the shared header/footer components.
+## Boot Sequence
+1. **Providers Initialization**: The app is wrapped in `Navigation`, `Auth`, and `Notification` providers.
+2. **Session Rehydration**: `AuthProvider` checks for an existing Supabase session.
+3. **Route Resolution**: `NavigationProvider` reads the initial hash and sets the `route` state.
+4. **Shell Rendering**: `App.tsx` renders the common layout (background, lights effect) and switches the `pageComponent` based on the current `route`.
 
-## High-risk coupling
-- `NavigationProvider` state is central to dirty-route confirmation and preview mode.
+## Navigation Guarding
+- Unauthenticated users trying to access `/dashboard` or `/settings` are redirected to `/`.
+- Authenticated users trying to access `/login` or `/register` are redirected to `/dashboard`.
 
-## Change risk
-- Any change in shell route logic can affect every page.
-- A change in provider order can break auth, navigation, or toast rendering.
-- A change in shell background assets can affect all routes visually.
+## Layout Details
+- Fixed background image (`/images/main-background.avif`) with blur and brightness filters.
+- `lights-container`: An overlay for atmospheric lighting effects.
+- Responsive padding and max-width containers for the main content area.

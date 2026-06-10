@@ -1,24 +1,15 @@
 import React from 'react';
-
-// Simple fade-in animation using a custom keyframe
-const style = `
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-`;
+import { motion } from 'framer-motion';
 
 const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <>
-      <style>{style}</style>
-      <div className="animate-fadeIn">
-        {children}
-      </div>
-    </>
+    <motion.div 
+      initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 };
 

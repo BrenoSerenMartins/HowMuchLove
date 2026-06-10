@@ -4,14 +4,7 @@ BEGIN;
 -- User accounts, stories, and storage objects still need the full dump or a manual restore.
 
 INSERT INTO public.app_config (id, key, value, created_at) VALUES
-  (1, 'MERCADO_PAGO_ACCESS_TOKEN', 'REPLACE_WITH_MERCADO_PAGO_ACCESS_TOKEN', '2025-11-13 15:41:44.511539+00'),
-  (2, 'FRONTEND_URL', 'http://localhost:5173', '2025-11-13 15:41:44.511539+00'),
-  (4, 'MERCADO_PAGO_PUBLIC_KEY', 'TEST-59cb0c80-988a-4a45-ba9c-4f8f729a384c', '2025-11-13 16:38:48.09708+00'),
-  (5, 'CHECKOUT_TYPE', 'mp_transparent', '2025-11-16 17:48:39.912312+00'),
-  (6, 'MP_TEST_USER_EMAIL', 'test_user_3398812051610205098@testuser.com', '2025-11-18 23:36:17.744217+00'),
-  (8, 'STRIPE_PUBLIC_KEY', 'pk_test_51SXREbIYF6UrQ9LOS1LxKH0SHdSUEBMhT2ih8VrOLB8sDGjprwhs0U5iSOuj1UkcZtFBsl5zTSF8slbkizvjJvpL00w90arsAz', '2025-11-24 23:32:16.138206+00'),
-  (9, 'STRIPE_SECRET_KEY', 'REPLACE_WITH_STRIPE_SECRET_KEY', '2025-11-24 23:32:38.454525+00'),
-  (10, 'STRIPE_WEBHOOK_SIGNING_SECRET', 'REPLACE_WITH_STRIPE_WEBHOOK_SIGNING_SECRET', '2025-11-25 14:57:27.618172+00')
+  (2, 'FRONTEND_URL', 'http://localhost:5173', '2025-11-13 15:41:44.511539+00')
 ON CONFLICT (key) DO UPDATE
 SET value = EXCLUDED.value,
     created_at = EXCLUDED.created_at;
@@ -21,6 +14,9 @@ INSERT INTO public.plans (
   name,
   price,
   external_id,
+  billing_provider,
+  billing_product_id,
+  billing_price_id,
   created_at,
   type,
   image_limit,
@@ -41,6 +37,9 @@ INSERT INTO public.plans (
     'Sonho',
     4.90,
     '14fd680ae27c48fda772e788ce785ed9',
+    'stripe',
+    'prod_UfoQ6kohYawErc',
+    'price_1TgSncIrf94YO5NRbSVglvvV',
     '2025-11-13 16:48:45.140046+00',
     'subscription',
     1,
@@ -61,6 +60,9 @@ INSERT INTO public.plans (
     'Eterno',
     29.90,
     '4762d56ac4c5435f8e24b12a288d8c1a',
+    'stripe',
+    'prod_UfoQzU7WE2hEdS',
+    'price_1TgSndIrf94YO5NRAAfd12fN',
     '2025-11-13 16:48:45.140046+00',
     'subscription',
     5,
@@ -81,6 +83,9 @@ INSERT INTO public.plans (
     'Infinito',
     49.90,
     'howmuchlove-infinito',
+    'stripe',
+    'prod_UfoQLRmXkSUC4t',
+    'price_1TgSneIrf94YO5NR7SbKFHIL',
     '2025-11-13 16:48:45.140046+00',
     'one-time',
     10,
@@ -100,6 +105,9 @@ INSERT INTO public.plans (
     7,
     'Gratis',
     0.00,
+    NULL,
+    'manual',
+    NULL,
     NULL,
     '2025-11-16 21:09:08.198684+00',
     'one-time',
@@ -121,6 +129,9 @@ INSERT INTO public.plans (
     'Teste Produto',
     0.01,
     'price_1SXRPnIYF6UrQ9LO7sp11Ytf',
+    'stripe',
+    'REPLACE_WITH_STRIPE_PRODUCT_ID_TESTE_PRODUTO',
+    'price_1SXRPnIYF6UrQ9LO7sp11Ytf',
     '2025-11-22 22:54:50.286025+00',
     'one-time',
     1,
@@ -141,6 +152,9 @@ INSERT INTO public.plans (
     'Teste Assinatura',
     0.01,
     'prod_TU7Q0XsjZQWAA2',
+    'stripe',
+    'REPLACE_WITH_STRIPE_PRODUCT_ID_TESTE_ASSINATURA',
+    'REPLACE_WITH_STRIPE_PRICE_ID_TESTE_ASSINATURA',
     '2025-11-24 23:39:58.337363+00',
     'one-time',
     0,
@@ -157,8 +171,11 @@ INSERT INTO public.plans (
     false
   )
 ON CONFLICT (name) DO UPDATE
-SET price = EXCLUDED.price,
+  SET price = EXCLUDED.price,
     external_id = EXCLUDED.external_id,
+    billing_provider = EXCLUDED.billing_provider,
+    billing_product_id = EXCLUDED.billing_product_id,
+    billing_price_id = EXCLUDED.billing_price_id,
     created_at = EXCLUDED.created_at,
     type = EXCLUDED.type,
     image_limit = EXCLUDED.image_limit,

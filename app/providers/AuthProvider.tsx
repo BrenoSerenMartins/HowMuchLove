@@ -11,7 +11,7 @@ interface AuthUser {
   id: string; // Supabase user ID (UUID)
   email: string;
   name: string;
-  plan: 'Gratis' | 'Sonho' | 'Eterno' | 'Infinito'; // This can be derived from planFeatures now
+  plan: string;
 }
 
 interface AuthContextType {

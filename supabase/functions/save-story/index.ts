@@ -15,10 +15,12 @@ const STORY_IMAGE_BUCKET = 'story-images';
 const DEFAULT_PLAN = {
   id: 0,
   name: 'Gratis',
+  billing_provider: 'manual',
   image_limit: 1,
   allow_youtube: false,
   allow_password_protection: false,
   allow_custom_button: false,
+  feature_rules: {},
 };
 
 const sanitizeFilename = (filename) => filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
@@ -39,13 +41,34 @@ const normalizePlanFeatures = (planData) => {
     return DEFAULT_PLAN;
   }
 
+  const featureRules = plan.feature_rules && typeof plan.feature_rules === 'object' && !Array.isArray(plan.feature_rules)
+    ? plan.feature_rules
+    : {};
+
+  const imageLimit = typeof featureRules.image_limit === 'number'
+    ? featureRules.image_limit
+    : Number(plan.image_limit ?? DEFAULT_PLAN.image_limit);
+
+  const allowYoutube = typeof featureRules.allow_youtube === 'boolean'
+    ? featureRules.allow_youtube
+    : Boolean(plan.allow_youtube ?? DEFAULT_PLAN.allow_youtube);
+
+  const allowPasswordProtection = typeof featureRules.allow_password_protection === 'boolean'
+    ? featureRules.allow_password_protection
+    : Boolean(plan.allow_password_protection ?? DEFAULT_PLAN.allow_password_protection);
+
+  const allowCustomButton = typeof featureRules.allow_custom_button === 'boolean'
+    ? featureRules.allow_custom_button
+    : Boolean(plan.allow_custom_button ?? DEFAULT_PLAN.allow_custom_button);
+
   return {
     id: Number(plan.id ?? DEFAULT_PLAN.id),
     name: String(plan.name ?? DEFAULT_PLAN.name),
-    image_limit: Number(plan.image_limit ?? DEFAULT_PLAN.image_limit),
-    allow_youtube: Boolean(plan.allow_youtube ?? DEFAULT_PLAN.allow_youtube),
-    allow_password_protection: Boolean(plan.allow_password_protection ?? DEFAULT_PLAN.allow_password_protection),
-    allow_custom_button: Boolean(plan.allow_custom_button ?? DEFAULT_PLAN.allow_custom_button),
+    image_limit: Number.isFinite(imageLimit) ? imageLimit : DEFAULT_PLAN.image_limit,
+    allow_youtube: allowYoutube,
+    allow_password_protection: allowPasswordProtection,
+    allow_custom_button: allowCustomButton,
+    feature_rules: featureRules,
   };
 };
 
@@ -103,7 +126,7 @@ Deno.serve(async (req) => {
     if (Number.isFinite(planId) && planId > 0) {
       const { data: planData, error: planError } = await supabaseAdmin
         .from('plans')
-        .select('id, name, image_limit, allow_youtube, allow_password_protection, allow_custom_button')
+      .select('id, name, image_limit, allow_youtube, allow_password_protection, allow_custom_button, feature_rules')
         .eq('id', planId)
         .maybeSingle();
       if (planError) throw planError;

@@ -37,22 +37,30 @@ There is no conventional Express backend in the current source tree. The active 
 - Important: feature limits are validated server-side before saving.
 
 ### `process-payment`
-- Purpose: orchestrate Mercado Pago checkout creation and payment processing.
-- Inputs: `planId` or `planName`, and optionally `cardToken` and `paymentMethodId`.
-- Output: `init_point` for Checkout Pro, or success metadata for transparent payments.
-- Dependencies: `app_config`, `plans`, `profiles`, Mercado Pago APIs, auth bearer token.
+- Purpose: create a Stripe Checkout session for the selected paid plan.
+- Inputs: `planId`.
+- Output: hosted checkout `url` and session id metadata.
+- Dependencies: request `Origin`/`Referer` fallback plus `app_config.FRONTEND_URL`, `plans`, `profiles`, Stripe API, auth bearer token.
 - Important: validates the selected plan as active and visible before proceeding.
-- Important: validates plan existence by `planId` first and rejects plan mismatches.
-- Important: updates `profiles.plan_id` after successful transparent payment.
+- Important: validates plan existence by `planId` and rejects plans that are not Stripe-backed or are missing a Stripe price id.
+- Important: no longer writes plan membership directly; billing state is synchronized by `stripe-webhook`.
+- Important: supports both subscription and one-time Stripe Checkout sessions depending on the plan type.
+
+### `stripe-webhook`
+- Purpose: synchronize Stripe subscription and checkout events back into `profiles`.
+- Inputs: raw Stripe webhook event body.
+- Output: event acknowledgment JSON.
+- Dependencies: `profiles`, `plans`, Stripe webhook secret, Stripe API for subscription lookups.
+- Important: updates `profiles.plan_id` and billing metadata after checkout completion and subscription lifecycle events.
 
 ## Backend conventions
 - Edge Functions use CORS preflight handling.
 - The service role key is used for admin-level database access.
 - Most functions use JSON responses with plain `message` or `error` fields.
-- The payment function is the most stateful backend component.
+- The payment function and the Stripe webhook are the most stateful backend components.
 - Shared error logging and response shaping live in `supabase/functions/_shared/errors.ts`.
 
 ## Backend gaps
-- No webhook handler exists in the repository for Mercado Pago callbacks.
+- Stripe webhook handling now exists and is the canonical billing sync path.
 - No queue or cron automation exists in the repository.
 - No dedicated backend test suite exists in the repository.

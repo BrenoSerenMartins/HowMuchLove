@@ -1,31 +1,58 @@
 # Change Impact Matrix
 
-## If auth or profile loading changes
-- Affected modules: `AuthProvider`, `app/App.tsx`, `auth/login/Page.tsx`, `auth/register/Page.tsx`, `customer/dashboard/Page.tsx`, `customer/settings/Page.tsx`.
-- Possible breakage: route guards, plan detection, save-story auth, public story plan rendering.
-- Test flows: login, register, refresh, logout, dashboard load.
+## Core Data Models
 
-## If story schema changes
-- Affected modules: `AuthProvider.loadStory`, `CounterDemo`, `customer/dashboard/Page.tsx`, `PublicStory`, `StoryPreview`, `story/public/Page.tsx`, `save-story`, `save_story_with_images`, `get-public-story`, `verify-public-story-password`.
-- Possible breakage: public share, preview mode, save/reload, password gate.
-- Test flows: story edit, save, public view, password-protected view.
+### Altering `plans` table
+- **Impacts**:
+  - `shared/lib/plans.ts`: Capability resolution may break.
+  - `shared/lib/pricing.ts`: Plan fetching and checkout session creation.
+  - `supabase/functions/process-payment/`: Server-side plan validation.
+  - `customer/settings/Page.tsx`: Pricing UI and plan selection.
+  - `shared/pricing/PlanCard.tsx`: Visual representation of tiers.
 
-## If plan schema changes
-- Affected modules: `PricingSection`, `PlanCard`, `AuthProvider`, `CounterDemo`, `customer/settings/Page.tsx`, `save-story`, `save_story_with_images`, `process-payment`, `get-all-plans`.
-- Possible breakage: plan display, feature gating, payment flow, current-plan badges.
-- Test flows: pricing page, dashboard editor restrictions, settings checkout.
+### Altering `profiles` table
+- **Impacts**:
+  - `app/providers/AuthProvider.tsx`: Initial user state loading.
+  - `supabase/functions/stripe-webhook/`: Webhook synchronization logic.
+  - `customer/settings/Page.tsx`: User profile and billing info display.
 
-## If payment config changes
-- Affected modules: `customer/settings/Page.tsx`, `TransparentCheckoutForm`, `process-payment`, `customer/billing/success/Page.tsx`, `customer/billing/failure/Page.tsx`, `customer/billing/pending/Page.tsx`.
-- Possible breakage: checkout redirect, transparent payment modal, profile update.
-- Test flows: both checkout modes, redirect return, success toast, profile refresh.
+### Altering `love_stories` or `story_images`
+- **Impacts**:
+  - `shared/lib/story-api.ts`: Save and load operations.
+  - `supabase/functions/save-story/`: Atomic save logic and feature validation.
+  - `customer/dashboard/Page.tsx`: Editor state management.
+  - `story/public/Page.tsx`: Public viewer rendering.
 
-## If public story identity changes
-- Affected modules: `customer/dashboard/Page.tsx.generateShareLink`, `story/public/Page.tsx`, `get-public-story`, `verify-public-story-password`, sitemap and share-copy behavior.
-- Possible breakage: all public URLs, password gate lookup, share-copy behavior.
-- Test flows: public link generation, open shared story, password flow, invalid-link handling.
+## Shared Infrastructure
 
-## If assets or shell chrome change
-- Affected modules: `app/App.tsx`, `shared/ui/Header.tsx`, `shared/ui/Footer.tsx`, `shared/ui/BottomNavBar.tsx`, `shared/ui/PageWrapper.tsx`, `index.html`.
-- Possible breakage: background rendering, mobile nav, header CTAs, payment result pages.
-- Test flows: desktop shell, mobile shell, payment result pages, shell image/logo assets.
+### Modifying `NavigationProvider`
+- **Impacts**:
+  - `app/App.tsx`: Routing orchestration.
+  - `app/hooks/useNavigate.ts`: All programmatic transitions.
+  - `shared/ui/Header.tsx`, `shared/ui/BottomNavBar.tsx`: Navigation links.
+
+### Modifying `shared/lib/supabase.ts`
+- **Impacts**:
+  - The entire application's connectivity to the backend.
+  - Auth, Database, and Storage client initialization.
+
+## External Integrations
+
+### Updating Stripe Product/Price IDs
+- **Impacts**:
+  - `plans` table (external ID columns).
+  - `process-payment` Edge Function.
+  - Successful checkout flow and subsequent webhook processing.
+
+### Changing Supabase Storage Bucket Policies
+- **Impacts**:
+  - Image uploads in `save-story`.
+  - Image viewing in both Dashboard and Public Story pages.
+  - Image deletion logic in the backend.
+
+## Critical Paths
+1. **User Authentication**: Login/Register must work for any customer action.
+2. **Story Saving**: The core value proposition of the app.
+3. **Public Viewing**: The final "product" shared by users.
+4. **Payment Webhooks**: Ensures users get the features they paid for.
+5. **Session Rehydration**: Critical for app startup performance and UX.

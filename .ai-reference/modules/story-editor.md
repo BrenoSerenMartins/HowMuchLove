@@ -1,38 +1,34 @@
-# Story Editor
+# Story Editor Module
 
-## Scope
-`customer/dashboard/Page.tsx`, `shared/story-editor/CounterDemo.tsx`, `shared/story-editor/StoryPreview.tsx`, `shared/story-editor/UpgradeToUnlock.tsx`, `customer/dashboard/components/DashboardSummary.tsx`, `customer/dashboard/components/QRCodeModal.tsx`.
+## Responsibility
+Allows users to create and edit their "love story", including dates, text, images, music, and security settings.
 
-## Objective
-Allow authenticated users to create, preview, edit, save, and share their love story.
+## Key Files
+- `customer/dashboard/Page.tsx`: Main container for the editor experience.
+- `shared/story-editor/CounterDemo.tsx`: The heart of the editor UI, used for both editing and live preview.
+- `shared/story-editor/StoryPreview.tsx`: Renders the story content in a preview-friendly format.
+- `shared/story-editor/UpgradeToUnlock.tsx`: UI component that blocks features based on plan limits.
+- `shared/lib/story-api.ts`: Frontend client for saving and loading story data.
+- `shared/lib/storage.ts`: Handles image uploads to Supabase Storage.
 
-## Flow
-1. Dashboard route entrypoint loads the current story via `loadStory()`.
-2. If a story exists, a summary card is shown first.
-3. The user can switch into edit mode.
-4. `CounterDemo` binds editor state to the local story model.
-5. Saving posts the story and image changes to `save-story`.
-6. A successful save reloads the story and shows a toast.
+## Features
+- **Time Counter**: Select a start date and see a live-updating counter.
+- **Message Editor**: Simple text input for the story message.
+- **Image Gallery**: Support for multiple images with drag-and-drop reordering (via `@dnd-kit`).
+- **Music (YouTube)**: Option to add a background song by pasting a YouTube link.
+- **Security**: Optional password protection for the public page.
+- **Live Preview**: Real-time visualization of how the public page will look.
 
-## Editor responsibilities
-- Set the story start date.
-- Edit the message.
-- Upload, delete, and reorder images.
-- Set layout position.
-- Set YouTube URL, password, and entry button text when the plan allows it.
+## State Management
+- Local state in `CounterDemo.tsx` and `Dashboard/Page.tsx` manages form values.
+- `isDirty` flag tracks unsaved changes to prompt the user before navigation.
 
-## Important mechanics
-- Image edits are optimistic and local until saved.
-- Existing images are identified by `story_id`; new images are matched by `originalFilename`.
-- The save function fully replaces the image list to preserve order through a database-side atomic function.
-- Preview mode renders a dedicated compact story preview with the current unsaved data and the current plan so the dashboard stays readable without reusing the full public page layout.
-- Existing passwords are not loaded back into the editor as raw hashes.
-- Leaving the password input blank preserves the current hash; an explicit removal control clears it.
+## Save Process
+1. **Validation**: Checks image limits and other plan-based constraints.
+2. **Image Upload**: New images are uploaded to the `story-images` bucket.
+3. **Atomic Save**: Calls the `save-story` Edge Function with the complete payload.
+4. **Cleanup**: On success, reloads the story data and clears the dirty flag.
 
-## Feature gating
-- Free plans are limited by `UpgradeToUnlock` in the UI and revalidated again on the server when saving.
-- Image count is bounded by `planFeatures.image_limit` in the UI and in `save-story`.
-- YouTube, password, and custom button inputs are wrapped in plan gates and are rejected server-side when the plan does not allow them.
-
-## Known risks
-- The story editor depends on a one-story-per-user assumption.
+## Feature Gating
+- Gating logic is centralized in `shared/lib/plans.ts` (`resolvePlanCapabilities`).
+- The editor uses these capabilities to disable inputs or show "Upgrade" prompts.

@@ -10,7 +10,7 @@
 | `toast add/remove` | `NotificationProvider` | `Toast` | Shows transient success/error messages. |
 | `intersection observer` | `PublicStory` | Message section | Triggers message blur and reveal behavior. |
 | `youtube entry click` | `story/public/Page.tsx` | `PublicStory` / `YouTubePlayer` | Enables music playback and hides the entry gate. |
-| `payment success` | `TransparentCheckoutForm` | `customer/settings/Page.tsx` | Continues payment orchestration. |
+| `checkout success` | `customer/settings/Page.tsx` | Browser redirect to Stripe-hosted checkout return page | Continues billing flow after hosted checkout. |
 | `share/download` | `QRCodeModal` | Browser APIs | Copies link, triggers share sheet, or downloads QR code. |
 
 ## Backend and remote events
@@ -18,4 +18,5 @@
 |---|---|---|---|
 | `Supabase auth session restored` | Supabase Auth | `AuthProvider` | Hydrates user and plan. |
 | `story saved` | `save-story` | `customer/dashboard/Page.tsx` | Reloads story and updates share link. |
-| `payment processed` | `process-payment` | `customer/settings/Page.tsx` | Refreshes profile plan or redirects. |
+| `checkout session created` | `process-payment` | `customer/settings/Page.tsx` | Redirects the browser to Stripe Checkout. |
+| `stripe webhook event` | `stripe-webhook` | `profiles` / `AuthProvider` refreshes | Synchronizes plan and billing status. |

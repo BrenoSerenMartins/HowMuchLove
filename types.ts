@@ -1,14 +1,29 @@
+export type PlanIntegrationProvider = 'manual' | 'mercado_pago' | 'stripe' | string;
+
+export interface PlanFeatureRules {
+  image_limit?: number;
+  allow_youtube?: boolean;
+  allow_password_protection?: boolean;
+  allow_custom_button?: boolean;
+  can_share_story?: boolean;
+  [key: string]: unknown;
+}
+
 // Represents the raw plan data fetched from the database/edge function
 export interface PlanFeatures {
   id: number;
   name: string;
   external_id?: string | null;
+  billing_provider?: PlanIntegrationProvider | null;
+  billing_product_id?: string | null;
+  billing_price_id?: string | null;
   type?: string;
   created_at?: string;
   image_limit: number;
   allow_youtube: boolean;
   allow_password_protection: boolean;
   allow_custom_button: boolean;
+  feature_rules?: PlanFeatureRules | null;
   is_active?: boolean;
   is_featured?: boolean;
   plan_name?: string;

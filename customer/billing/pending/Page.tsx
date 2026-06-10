@@ -22,7 +22,7 @@ const PaymentPendingPage: React.FC = () => {
             {uiCopy.payment.pendingDescription}
           </p>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/settings#pricing-section')}
             className="px-8 py-3 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 transition-colors"
           >
             {uiCopy.payment.pendingButton}

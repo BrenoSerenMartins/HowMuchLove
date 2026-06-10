@@ -20,8 +20,11 @@
 ## Plan rules
 - Plans are loaded from `plans` and filtered by `is_active = true` and `show_on_pricing_page = true`.
 - The free tier is synthetic (`Gratis`) and is not part of the public pricing catalog.
-- Plan features gate image count, YouTube embedding, password protection, and custom entry button text in the editor.
-- The UI uses plan names to determine rank and upgrade/downgrade copy.
+- Plan features gate image count, YouTube embedding, password protection, custom entry button text, and sharing rules in the editor.
+- `plans.billing_provider` identifies whether a plan is manual, Stripe-backed, or another integration source.
+- `plans.billing_product_id` and `plans.billing_price_id` store the external identifiers for the billing provider.
+- `plans.feature_rules` is the extension point for per-plan overrides and may supersede the legacy scalar columns for image limits and feature flags.
+- The UI uses the resolved plan row, price, and featured state to derive upgrade/downgrade copy; it no longer depends on hardcoded plan names for plan ranking.
 - Free-plan detection is normalized in code and treats the synthetic free record and `Gratis` name variants as the same free tier.
 
 ## Sharing rules
@@ -31,16 +34,16 @@
 - Free-plan stories show a watermark in the public view when the plan resolves to the normalized free tier.
 
 ## Payment rules
-- Payment mode is controlled by `app_config.CHECKOUT_TYPE`.
-- If the mode is `mp_pro`, the first payment call returns `init_point` and the UI redirects to Mercado Pago Checkout Pro.
-- If the mode is transparent, the first call returns a marker that opens the transparent checkout modal.
-- The backend validates the selected plan by `planId` when available, and rejects inactive or hidden plans.
-- After a successful transparent payment, the backend updates `profiles.plan_id`.
-- Payment success pages assume the profile plan may already have been updated by an external process or webhook.
+- Stripe Checkout is the active payment flow.
+- The backend validates the selected plan by `planId`, rejects inactive or hidden plans, and only allows plans with `billing_provider = 'stripe'` and a valid `billing_price_id`.
+- The backend creates a hosted Stripe Checkout session and returns its redirect URL.
+- `stripe-webhook` is the source of truth for marking a profile as paid, renewing access, or downgrading it when a subscription is canceled.
+- Payment success pages assume the webhook may have already updated the profile, but they still refresh the auth state before redirecting the user back to the dashboard.
 
 ## Current enforcement gap
 - Plan limits are enforced mostly in the editor UI.
 - `save-story` now revalidates the selected plan and feature limits server-side, but the editor still performs the first layer of gating for UX.
+- There is still no admin UI for authoring plans; plan creation and integration metadata updates happen at the database level for now.
 
 ## Password rules
 - Passwords are hashed with scrypt before storage.

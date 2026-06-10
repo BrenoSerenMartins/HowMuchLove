@@ -6,8 +6,7 @@ import { useNavigate } from '@/app/hooks/useNavigate';
 import { ArrowLeftIcon } from '@/shared/ui/icons/ArrowLeftIcon';
 import PageWrapper from '@/shared/ui/PageWrapper';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner'; // Adicionado: Import do LoadingSpinner
-import { getMpPublicKey, fetchAllPlans } from '@/shared/lib/pricing';
-import TransparentCheckoutForm from './components/TransparentCheckoutForm';
+import { fetchAllPlans } from '@/shared/lib/pricing';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import { supabase } from '@/shared/lib/supabase';
 import type { PlanFromDB } from '@/types';
@@ -20,20 +19,13 @@ const SettingsPage: React.FC = () => {
   const { navigate } = useNavigate();
   const { addToast } = useNotification();
   const [isLoading, setIsLoading] = useState(true); // New loading state
-  const [mpPublicKey, setMpPublicKey] = useState<string | null>(null);
   const [plans, setPlans] = useState<PlanFromDB[]>([]);
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
-  const [selectedPlanDetails, setSelectedPlanDetails] = useState<{ id: number; name: string; amount: number } | null>(null);
   
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const [key, fetchedPlans] = await Promise.all([
-          getMpPublicKey(),
-          fetchAllPlans()
-        ]);
-        setMpPublicKey(key);
+        const fetchedPlans = await fetchAllPlans();
         if (fetchedPlans) {
           setPlans(fetchedPlans);
         }
@@ -64,7 +56,7 @@ const SettingsPage: React.FC = () => {
   const handlePlanSelected = async (plan: { id: number; name: string; amount: number }) => {
     try {
       const { data, error } = await supabase.functions.invoke('process-payment', {
-        body: { planId: plan.id, planName: plan.name }, // Initial call to determine flow
+        body: { planId: plan.id, planName: plan.name },
       });
 
       if (error) throw new Error(getApiErrorMessage(error, data, uiCopy.payment.genericError));
@@ -74,13 +66,9 @@ const SettingsPage: React.FC = () => {
         throw new Error(responseMessage);
       }
 
-      if (data?.init_point) {
-        addToast(uiCopy.payment.redirectingCheckout, 'info'); // Show message only for redirect
-        window.location.href = data.init_point; // Redirect for Checkout Pro
-      } else if (data?.flow === 'transparent') {
-        // No message needed for transparent flow, modal opens directly
-        setSelectedPlanDetails(plan); // Open modal for Transparent Checkout
-        setIsCheckoutModalOpen(true);
+      if (data?.url) {
+        addToast(uiCopy.payment.redirectingCheckout, 'info');
+        window.location.href = data.url;
       } else {
         throw new Error(uiCopy.payment.genericError);
       }
@@ -89,39 +77,6 @@ const SettingsPage: React.FC = () => {
       addToast(message, 'error');
       logError('customer/settings/Page.handlePlanSelected', err, { planId: plan.id, planName: plan.name });
     }
-  };
-
-  const handlePaymentSuccess = async (formData: any) => {
-    addToast(uiCopy.payment.processing, 'info');
-    try {
-      const { data, error } = await supabase.functions.invoke('process-payment', {
-        body: { // Second call with full data for transparent checkout
-          planId: formData.planId,
-          planName: formData.planName,
-          cardToken: formData.cardToken,
-          paymentMethodId: formData.paymentMethodId,
-        },
-      });
-
-      if (error) throw new Error(getApiErrorMessage(error, data, uiCopy.payment.genericError));
-
-      const responseMessage = getPayloadErrorMessage(data, '');
-      if (responseMessage) {
-        throw new Error(responseMessage);
-      }
-
-      addToast(data?.message || uiCopy.payment.successToast, 'success');
-      setIsCheckoutModalOpen(false);
-      await refreshUser();
-
-    } catch (err: any) {
-      handlePaymentError(err);
-    }
-  };
-
-  const handlePaymentError = (error: any) => {
-    const message = getErrorMessage(error, uiCopy.payment.genericError);
-    addToast(message, 'error');
   };
 
   if (!user) {
@@ -194,8 +149,7 @@ const SettingsPage: React.FC = () => {
                   id="pricing-section" 
                   plans={plans}
                   currentPlan={user?.plan} 
-                  onPlanSelect={handlePlanSelected} 
-                  mpPublicKey={mpPublicKey} 
+                  onPlanSelect={handlePlanSelected}
                 />
               </div>
 
@@ -203,27 +157,6 @@ const SettingsPage: React.FC = () => {
           </PageWrapper>
         </main>
         <BottomNavBar onMenuOpen={() => {}} onLogoutRequest={logout} />
-
-        {isCheckoutModalOpen && selectedPlanDetails && mpPublicKey && (
-          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-            <div className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <button
-                onClick={() => setIsCheckoutModalOpen(false)}
-                className="absolute top-4 right-4 text-slate-300 hover:text-white text-3xl"
-              >
-                &times;
-              </button>
-              <TransparentCheckoutForm
-                publicKey={mpPublicKey}
-                planId={selectedPlanDetails.id}
-                planName={selectedPlanDetails.name}
-                amount={selectedPlanDetails.amount}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-              />
-            </div>
-          </div>
-        )}
     </div>
   );
 };
