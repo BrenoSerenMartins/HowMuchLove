@@ -1,6 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Check, Sparkles } from 'lucide-react';
 import type { Plan } from '@/types';
-import { CheckIcon } from '@/shared/ui/icons/CheckIcon';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
 type PlanStatus = 'current' | 'upgrade' | 'downgrade';
@@ -14,84 +15,80 @@ interface PlanCardProps {
 
 const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = false }) => {
   const isCurrentPlan = status === 'current';
+  const isFeatured = plan.isFeatured;
 
-  const cardClasses = [
-    'bg-gradient-to-br border shadow-lg transition-all duration-300 transform hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform',
-    plan.isFeatured
-      ? 'from-fuchsia-950 via-pink-950/90 to-slate-950 border-pink-400/50'
-      : 'from-slate-900 to-slate-950 border-slate-700/70',
-    isCurrentPlan ? 'ring-2 ring-pink-400/70' : '',
-    status === 'upgrade' ? 'border-pink-300/50' : '',
-    status === 'downgrade' ? 'opacity-95' : '',
-  ].filter(Boolean).join(' ');
-
-  let buttonClasses = '';
   let buttonText = plan.cta;
-  buttonClasses = plan.isFeatured
-    ? 'bg-pink-500 text-white hover:bg-pink-600 shadow-pink-500/30'
-    : 'bg-slate-700 text-slate-200 hover:bg-slate-600';
-
-  // Override button styles for special states
   if (disabled) {
     buttonText = uiCopy.pricing.loading;
-    buttonClasses = 'bg-slate-800 text-slate-500 cursor-wait';
   } else if (isCurrentPlan) {
     buttonText = uiCopy.pricing.currentPlanButton;
-    buttonClasses = 'bg-slate-800 text-slate-500 cursor-not-allowed';
   } else if (status === 'upgrade') {
     buttonText = uiCopy.pricing.upgradeButton;
   } else if (status === 'downgrade') {
     buttonText = uiCopy.pricing.downgradeButton;
-    buttonClasses = 'bg-slate-700 text-slate-200 hover:bg-slate-600';
   }
 
   const handleSelect = () => {
-    if (onSelect) {
-      onSelect(plan.id);
-    }
+    if (onSelect) onSelect(plan.id);
   };
 
   return (
     <div
-      className={`relative rounded-xl p-6 md:p-8 flex flex-col h-full shadow-lg transition-all duration-300 transform hover:scale-103 hover:-translate-y-1 hover:shadow-xl will-change-transform ${cardClasses}`}
+      className={`card-elite p-8 md:p-10 flex flex-col h-full relative group transition-all duration-500 ${
+        isFeatured ? 'border-primary/20 bg-white/[0.05]' : ''
+      } ${isCurrentPlan ? 'ring-2 ring-primary/40' : ''}`}
     >
-      {plan.isFeatured && !isCurrentPlan && (
-        <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+      {isFeatured && !isCurrentPlan && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(255,45,85,0.4)] flex items-center gap-2">
+          <Sparkles className="w-3 h-3" />
           {uiCopy.pricing.popularBadge}
-        </span>
+        </div>
       )}
+      
       {isCurrentPlan && (
-         <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/10 text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] backdrop-blur-md border border-white/10">
           {uiCopy.pricing.currentBadge}
-        </span>
+        </div>
       )}
-      <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-      <div className="mt-4 text-slate-300">
-        <span className="text-3xl sm:text-4xl font-bold text-white">R${plan.price}</span>
-        {plan.billingCycle !== uiCopy.pricing.oneTimePayment ? (
-           <span className="text-sm">/{plan.billingCycle}</span>
-        ) : (
-           <span className="block text-sm font-semibold text-pink-400 mt-1">{uiCopy.pricing.oneTimePayment}</span>
-        )}
+
+      <div className="mb-8">
+        <h3 className="text-2xl font-black text-white tracking-tight uppercase">{plan.name}</h3>
+        <div className="mt-4 flex items-baseline gap-1">
+          <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">R${plan.price}</span>
+          {plan.billingCycle !== uiCopy.pricing.oneTimePayment ? (
+             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">/{plan.billingCycle}</span>
+          ) : (
+             <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">{uiCopy.pricing.oneTimePayment}</span>
+          )}
+        </div>
       </div>
-      <div className="border-t my-6 border-slate-700"></div>
-      <ul className="space-y-4 text-left flex-grow">
+
+      <div className="h-[1px] w-full bg-white/5 mb-8" />
+
+      <ul className="space-y-5 text-left flex-grow mb-12">
         {(plan.features || []).map((feature, index) => {
           const isSpecialFeature = feature === uiCopy.pricing.specialFeature;
           return (
-            <li key={index} className="flex items-center">
-              <CheckIcon className="h-5 w-5 text-pink-400 mr-3 flex-shrink-0" />
-              <span className={`text-slate-300 text-sm md:text-base ${isSpecialFeature ? 'font-bold text-pink-400' : ''}`}>
+            <li key={index} className="flex items-start gap-4">
+              <div className={`mt-1 p-0.5 rounded-full ${isSpecialFeature ? 'text-primary' : 'text-slate-500'}`}>
+                <Check className="h-3.5 w-3.5 stroke-[4]" />
+              </div>
+              <span className={`text-[13px] font-medium leading-relaxed ${isSpecialFeature ? 'text-primary font-black uppercase tracking-wider text-[11px]' : 'text-slate-400'}`}>
                 {feature}
               </span>
             </li>
           );
         })}
       </ul>
+
       <button
         onClick={handleSelect}
         disabled={isCurrentPlan || disabled}
-        className={`w-full mt-10 py-3 px-6 font-semibold rounded-lg shadow-sm transition-transform transition-colors duration-300 transform hover:scale-105 ${buttonClasses}`}
+        className={`w-full py-5 px-6 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl transition-all duration-300 ${
+          isFeatured 
+            ? 'bg-primary text-white shadow-[0_10px_25px_-5px_rgba(255,45,85,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(255,45,85,0.5)] hover:-translate-y-1' 
+            : 'btn-secondary'
+        } disabled:opacity-30 disabled:pointer-events-none disabled:transform-none`}
       >
         {buttonText}
       </button>

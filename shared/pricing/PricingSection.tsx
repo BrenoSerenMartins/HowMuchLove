@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import PlanCard from './PlanCard';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import { useNavigate } from '@/app/hooks/useNavigate';
@@ -29,7 +30,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
   const formattedPlans: DisplayPlan[] = (dbPlans || []).map((p) => ({
     id: p.id,
     name: p.name,
-    price: p.price.toFixed(2).replace('.', ','), // Ensure 2 decimal places and comma
+    price: p.price.toFixed(2).replace('.', ','),
     priceValue: p.price,
     billing_provider: p.billing_provider,
     billing_price_id: p.billing_price_id,
@@ -39,62 +40,19 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
     cta: `Escolher ${p.name}`,
   }));
 
-    useEffect(() => {
-      if (!carouselRef.current || formattedPlans.length === 0) return;
-  
-      requestAnimationFrame(() => {
-        let targetIndex = -1;
-    
-        // Prioritize current plan if user is logged in
-        if (user && currentPlan) {
-          targetIndex = formattedPlans.findIndex(p => p.name === currentPlan);
-        }
-    
-        // Fallback to featured plan if no current plan or user not logged in
-        if (targetIndex === -1) {
-          targetIndex = formattedPlans.findIndex(p => p.isFeatured);
-        }
-        
-        if (targetIndex !== -1) {
-          const targetElement = carouselRef.current.children[targetIndex] as HTMLElement;
-          if (targetElement && carouselRef.current) {
-            // Calculate scrollLeft to center the target element
-            const scrollLeft = targetElement.offsetLeft - 
-                               (carouselRef.current.offsetWidth / 2) + 
-                               (targetElement.offsetWidth / 2);
-            
-            carouselRef.current.scrollLeft = scrollLeft;
-          }
-        }
-      });
-    }, [dbPlans, user, currentPlan]); // Re-run if these change
   const currentPlanDetails = currentPlan
     ? formattedPlans.find((plan) => plan.name === currentPlan)
     : null;
 
   const getPlanStatus = (plan: DisplayPlan) => {
-    if (!currentPlanDetails) {
-      return undefined;
-    }
-
-    if (plan.id === currentPlanDetails.id) {
-      return 'current';
-    }
-
-    if (plan.priceValue > currentPlanDetails.priceValue) {
-      return 'upgrade';
-    }
-
-    if (plan.priceValue < currentPlanDetails.priceValue) {
-      return 'downgrade';
-    }
-
+    if (!currentPlanDetails) return undefined;
+    if (plan.id === currentPlanDetails.id) return 'current';
+    if (plan.priceValue > currentPlanDetails.priceValue) return 'upgrade';
+    if (plan.priceValue < currentPlanDetails.priceValue) return 'downgrade';
     return undefined;
   };
 
-  const parsePriceToNumber = (priceString: string): number => {
-    return parseFloat(priceString.replace(',', '.'));
-  };
+  const parsePriceToNumber = (priceString: string): number => parseFloat(priceString.replace(',', '.'));
 
   const handleSelectPlan = (planId: number) => {
     if (!user) {
@@ -122,42 +80,55 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
   };
   
   return (
-    <section id={id} className="py-16 sm:py-20 scroll-mt-20 overflow-hidden">
-      {/* Section Header */}
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+    <section id={id} className="section-fluid relative overflow-visible">
+      {/* Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[clamp(500px,70vw,1000px)] h-[clamp(500px,70vw,1000px)] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
+
+      <div className="relative z-10 container-fluid overflow-visible">
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center max-w-4xl mx-auto mb-20"
+        >
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6 block">
+            Escolha seu Legado
+          </span>
+          <h2 className="font-black text-white leading-[0.9] tracking-tighter mb-8">
             {uiCopy.pricing.titleLead}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">{uiCopy.pricing.titleHighlight}</span>
+            <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+              {uiCopy.pricing.titleHighlight}
+            </span>
           </h2>
-          <p className="text-slate-300 mt-4 text-lg">
+          <p className="text-slate-400 text-fluid-body font-medium max-w-2xl mx-auto">
             {uiCopy.pricing.description}
           </p>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Plan Cards Container - Full bleed on mobile */}
-      <div 
-        ref={carouselRef}
-        className="flex space-x-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-8 md:space-x-0 pb-4 animate-fade-in-slide-up hide-scrollbar scroll-smooth snap-x snap-mandatory py-8 scroll-px-4"
-        style={{ animationDelay: '300ms' }}
-      >
-        {formattedPlans.map((plan) => (
-          <div 
-            key={plan.id} 
-            className={`
-              relative w-5/6 flex-shrink-0 md:w-full transition-transform duration-300 hover:z-20 snap-center
-              ${plan.isFeatured ? 'md:scale-105 lg:scale-110 md:z-10' : ''}
-            `}
-          >
-            <PlanCard
-              plan={plan}
-              status={getPlanStatus(plan)}
-              onSelect={handleSelectPlan}
-              disabled={!plan.billing_price_id || plan.billing_provider !== 'stripe'}
-            />
-          </div>
-        ))}
+        {/* Plan Cards Grid - Horizontal on mobile, Grid on desktop */}
+        <div 
+          ref={carouselRef}
+          className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch"
+        >
+          {formattedPlans.map((plan, index) => (
+            <motion.div 
+              key={plan.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto"
+            >
+              <PlanCard
+                plan={plan}
+                status={getPlanStatus(plan)}
+                onSelect={handleSelectPlan}
+                disabled={!plan.billing_price_id || plan.billing_provider !== 'stripe'}
+              />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
