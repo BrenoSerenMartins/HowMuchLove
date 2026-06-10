@@ -13,7 +13,7 @@ const FinalCTASection: React.FC = () => {
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[clamp(400px,60vw,800px)] h-[clamp(400px,60vw,800px)] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="relative z-10">
+      <div className="relative z-10 container-fluid overflow-visible">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}

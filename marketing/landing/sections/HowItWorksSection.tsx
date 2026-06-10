@@ -19,7 +19,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, icon, title, description, ind
     }}
     transition={{ duration: 0.6, delay: index * 0.1 }}
     viewport={{ once: true }}
-    className="relative group"
+    className="relative group h-full"
   >
     <div className="card-elite p-10 pt-16 flex flex-col items-center text-center h-full relative">
       <div className="absolute top-8 left-10 text-5xl font-black text-white/5 group-hover:text-primary/10 transition-colors duration-500">
@@ -67,9 +67,9 @@ const HowItWorksSection: React.FC = () => {
         </motion.div>
 
         {/* Steps Grid - Horizontal scroll on mobile, Grid on desktop */}
-        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible">
+        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch">
           {uiCopy.marketing.howItWorks.steps.map((step, index) => (
-            <div key={step.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center">
+            <div key={step.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto">
               <StepCard
                 index={index}
                 step={index + 1}

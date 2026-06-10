@@ -50,14 +50,15 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
   ];
 
   return (
-    <header className="bg-black/40 backdrop-blur-2xl sticky top-0 z-30 border-b border-white/[0.05]">
-      <div className="container-fluid py-6 flex justify-between items-center">
-        <div className="flex items-center">
+    <header className="fixed top-8 left-0 right-0 z-50 px-6 md:px-12 pointer-events-none">
+      <div className="max-w-fluid mx-auto flex justify-center lg:justify-between items-center gap-6">
+        {/* Brand Capsule */}
+        <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-full px-6 py-2.5 flex items-center shadow-2xl pointer-events-auto group transition-all hover:bg-white/[0.05] hover:border-white/10">
             <button onClick={() => navigate('/')} className="focus:outline-none transition-transform hover:scale-105 active:scale-95">
               <img
                 src="/images/logo.avif"
                 alt="HowMuchLove Logo"
-                className="max-h-5 sm:max-h-6 md:max-h-7 w-auto brightness-110"
+                className="max-h-4 md:max-h-5 w-auto brightness-125 opacity-80 group-hover:opacity-100 transition-opacity"
                 fetchpriority="high"
                 width="400"
                 height="66"
@@ -66,32 +67,33 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
             {user && <PlanBadge planName={user.plan} />}
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop Navigation - Light Capsule */}
+        <div className="hidden lg:flex items-center gap-10 bg-white/[0.02] backdrop-blur-2xl px-10 py-3 rounded-full border border-white/[0.05] shadow-2xl pointer-events-auto">
           {isHomePage && navLinks.map(link => (
             <button 
               key={link.id} 
               onClick={() => handleScrollTo(link.id)} 
-              className="text-slate-400 hover:text-white transition-all text-[11px] font-black uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-all text-[9px] font-black uppercase tracking-[0.3em] opacity-70 hover:opacity-100"
             >
               {link.label}
             </button>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-2 sm:gap-4">
+        {/* Actions Capsule */}
+        <div className="hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-2xl px-4 py-2 rounded-full border border-white/[0.05] shadow-2xl pointer-events-auto">
           {user ? (
             <>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="text-slate-400 hover:text-white transition-colors duration-300 p-2 rounded-full hover:bg-white/5"
-                aria-label={uiCopy.navigation.settingsAriaLabel}
+                  className="text-slate-400 hover:text-white transition-all p-2 rounded-full hover:bg-white/5"
+                  aria-label={uiCopy.navigation.settingsAriaLabel}
                 >
-                  <GearIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <GearIcon className="w-4 h-4" />
                 </button>
               <button
                 onClick={handleLogout}
-                className="btn-secondary !py-2.5 !px-6"
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white px-4 py-2 transition-all"
               >
                 {uiCopy.navigation.logout}
               </button>
@@ -100,13 +102,13 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
             <>
               <button
                 onClick={() => navigate('/login')}
-                className="btn-secondary !py-2.5 !px-6"
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white px-4 py-2 transition-all"
               >
                 {uiCopy.navigation.login}
               </button>
               <button
-                onClick={() => handleScrollTo('pricing')}
-                className="btn-primary !py-2.5 !px-6"
+                onClick={() => isHomePage ? handleScrollTo('pricing') : navigate('/#pricing')}
+                className="bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(255,45,85,0.3)] hover:scale-105 active:scale-95 transition-all"
               >
                 {uiCopy.navigation.viewPlans}
               </button>

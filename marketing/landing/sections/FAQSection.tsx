@@ -46,7 +46,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
 const FAQSection: React.FC = () => {
   return (
     <section id="faq" className="section-fluid relative overflow-visible">
-      <div className="relative z-10 overflow-visible">
+      <div className="relative z-10 overflow-visible container-fluid">
         
         {/* Section Header */}
         <motion.div 

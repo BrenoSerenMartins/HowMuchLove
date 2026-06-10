@@ -61,9 +61,9 @@ const FeaturesSection: React.FC = () => {
         </motion.div>
 
         {/* Features Grid - Horizontal scroll on mobile, Grid on desktop */}
-        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible">
+        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch">
           {uiCopy.marketing.features.cards.map((card, index) => (
-            <div key={card.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center">
+            <div key={card.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto">
               <FeatureCard 
                 index={index}
                 icon={
