@@ -114,7 +114,7 @@ const HomePage: React.FC = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true }}
-            className="card-elite max-w-5xl mx-auto p-4 sm:p-8"
+            className="card-elite !bg-transparent !shadow-none !backdrop-blur-0 max-w-6xl mx-auto p-4 sm:p-8 overflow-x-hidden overflow-y-visible"
           >
             <CounterDemo isDashboard={false} planFeatures={null} />
           </motion.div>

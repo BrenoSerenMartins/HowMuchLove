@@ -214,7 +214,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
     <div className="relative">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-[clamp(2rem,6vw,6rem)] items-start">
         {/* --- Editor Panel --- */}
-        <div className="lg:col-span-5 order-2 lg:order-1">
+        <div className="lg:col-span-4 order-2 lg:order-1 min-w-0">
           <div className="flex items-center gap-4 mb-12 px-2">
             <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
               <Layout className="w-6 h-6" />
@@ -420,8 +420,8 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
         </div>
 
         {/* --- Preview --- */}
-        <div className="lg:col-span-7 order-1 lg:order-2">
-          <div className="sticky top-32">
+        <div className="lg:col-span-8 order-1 lg:order-2 min-w-0">
+          <div className="sticky top-32 min-w-0">
             <div className="flex items-center gap-4 mb-12 px-2">
               <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
                 <Sparkles className="w-6 h-6" />
@@ -432,7 +432,9 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
               </div>
             </div>
             
-            <StoryPreview storyData={localData} plan={planFeatures} />
+            <div className="w-full max-w-full min-w-0 overflow-hidden">
+              <StoryPreview storyData={localData} plan={planFeatures} />
+            </div>
             
             {!isDashboard && (
               <motion.button 

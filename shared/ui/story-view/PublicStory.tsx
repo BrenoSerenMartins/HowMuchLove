@@ -119,12 +119,12 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             )}
 
             {/* Main Immersive Hero */}
-            <div className={`w-full max-w-screen-2xl mx-auto relative z-10 ${isPreview ? 'h-full p-2' : 'px-4'}`}>
+            <div className={`w-full max-w-screen-2xl mx-auto relative z-10 ${isPreview ? 'h-full max-h-full p-2 overflow-hidden' : 'px-4'}`}>
                 <motion.section 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  className={`relative w-full ${isPreview ? 'h-full min-h-0' : 'h-[calc(100vh-6rem)]'} flex flex-col rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden ${getLayoutContainerClasses(layoutPosition)} ring-1 ring-white/10`}
+                  className={`relative w-full ${isPreview ? 'h-full min-h-0' : 'h-[calc(100vh-6rem)]'} flex flex-col rounded-[2rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden ${getLayoutContainerClasses(layoutPosition)} ring-1 ring-white/10`}
                 >
                     {/* Cross-fading Gallery */}
                     <AnimatePresence mode="popLayout">

@@ -14,6 +14,10 @@ type ViewMode = 'mobile' | 'desktop';
 
 const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('mobile');
+  const frameStyle = { maxWidth: 'calc(100% - 1.5rem)' };
+  const frameAnimate = viewMode === 'mobile'
+    ? { width: 'clamp(230px, 46vw, 300px)', height: 'clamp(430px, 34vw, 560px)' }
+    : { width: '100%', height: 'clamp(430px, 34vw, 560px)' };
 
   if (!storyData) {
     return (
@@ -29,7 +33,7 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
   const previewData = { ...storyData, plan: plan || storyData.plan };
 
   return (
-    <div className="flex flex-col items-center w-full gap-8 relative z-10">
+    <div className="flex flex-col items-center w-full max-w-full min-w-0 gap-8 relative z-10">
       {/* --- Device Switcher Capsule --- */}
       <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-full p-1.5 flex items-center gap-1 shadow-2xl">
         {(['mobile', 'desktop'] as const).map((mode) => (
@@ -60,12 +64,10 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
       {/* --- Simulator Frame --- */}
       <motion.div
         initial={false}
-        animate={{
-          width: viewMode === 'mobile' ? '360px' : '100%',
-          height: viewMode === 'mobile' ? '700px' : '600px',
-        }}
-        transition={{ type: 'spring', bounce: 0.1, duration: 0.5 }}
-        className="relative bg-black rounded-[3rem] border-[12px] border-[#151515] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 overflow-hidden flex flex-col group transition-all duration-500"
+        style={frameStyle}
+        animate={frameAnimate}
+        transition={{ type: 'spring', bounce: 0.05, duration: 0.5 }}
+        className="relative bg-transparent rounded-[3rem] border-[10px] border-[#151515] shadow-[0_18px_42px_-28px_rgba(0,0,0,0.45)] ring-1 ring-white/10 overflow-hidden flex flex-col group max-w-full w-full"
       >
         {/* Device Detail: Speaker/Dynamic Island Area */}
         {viewMode === 'mobile' && (
@@ -91,7 +93,7 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
         )}
 
         {/* The Actual Immersive Page Content */}
-        <div className="flex-grow overflow-hidden relative">
+        <div className="flex-grow min-w-0 overflow-hidden relative">
           <PublicStory 
             storyData={previewData} 
             isPreview={true}
