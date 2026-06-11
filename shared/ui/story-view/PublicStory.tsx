@@ -31,9 +31,9 @@ const getLayoutContainerClasses = (position: LayoutPosition) => {
   
 const getLayoutPanelClasses = (position: LayoutPosition) => {
     switch(position) {
-      case 'top': return 'w-full bg-gradient-to-b from-black/80 via-black/40 to-transparent pt-12 pb-32 px-[clamp(1.5rem,8vw,8rem)]';
-      case 'center': return 'w-full max-w-7xl bg-black/30 backdrop-blur-md rounded-[clamp(2rem,5vw,4rem)] p-12 md:p-24 border border-white/10 mx-auto';
-      case 'bottom': default: return 'w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-32 pb-12 px-[clamp(1.5rem,8vw,8rem)]';
+      case 'top': return 'w-full bg-gradient-to-b from-black/80 via-black/40 to-transparent pt-12 pb-32 px-[clamp(1rem,5vw,5rem)]';
+      case 'center': return 'w-full max-w-7xl bg-black/30 backdrop-blur-md rounded-[clamp(1.5rem,4vw,3rem)] p-[clamp(1.5rem,6vw,6rem)] border border-white/10 mx-auto';
+      case 'bottom': default: return 'w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-32 pb-12 px-[clamp(1rem,5vw,5rem)]';
     }
 };
 
@@ -80,8 +80,9 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
     const { scrollYProgress } = useScroll({
         container: isPreview ? containerRef : undefined
     });
-    const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
-    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.3]);
+    
+    const bgScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
+    const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.3]);
 
     useEffect(() => {
         if (!images || images.length <= 1) return;
@@ -96,8 +97,10 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             ref={containerRef}
             className={`w-full flex flex-col relative ${isPreview ? 'h-full overflow-y-auto overflow-x-hidden' : 'min-h-screen pt-4 overflow-x-hidden'}`}
         >
-            <div className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-0`}>
-              <motion.div style={{ scale, opacity }} className="w-full h-full">
+            <div className={`${isPreview ? 'absolute' : 'fixed'} inset-0 z-0 bg-[#050505]`}>
+              <div className="absolute inset-0 z-[-1] lights-container opacity-40"></div>
+              <div className="bg-grain" />
+              <motion.div style={{ scale: isPreview ? 1 : bgScale, opacity: isPreview ? 0.2 : bgOpacity }} className="w-full h-full">
                 <img src={backgroundImageUrl} alt="" className="w-full h-full object-cover brightness-[0.2] blur-xl" />
               </motion.div>
               {isFreePlan(plan) && <Watermark />}
@@ -116,12 +119,12 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
             )}
 
             {/* Main Immersive Hero */}
-            <div className="px-4 w-full max-w-screen-2xl mx-auto relative z-10">
+            <div className={`w-full max-w-screen-2xl mx-auto relative z-10 ${isPreview ? 'h-full p-2' : 'px-4'}`}>
                 <motion.section 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  className={`relative w-full ${isPreview ? 'min-h-[500px] aspect-[9/16]' : 'h-[calc(100vh-6rem)]'} flex flex-col rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden ${getLayoutContainerClasses(layoutPosition)} ring-1 ring-white/10`}
+                  className={`relative w-full ${isPreview ? 'h-full min-h-0' : 'h-[calc(100vh-6rem)]'} flex flex-col rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] overflow-hidden ${getLayoutContainerClasses(layoutPosition)} ring-1 ring-white/10`}
                 >
                     {/* Cross-fading Gallery */}
                     <AnimatePresence mode="popLayout">

@@ -432,9 +432,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
               </div>
             </div>
             
-            <div className="card-elite aspect-[9/16] max-h-[85vh] w-full max-w-[500px] mx-auto relative overflow-hidden ring-1 ring-white/10 shadow-[0_100px_150px_-50px_rgba(0,0,0,1)]">
-              <StoryPreview storyData={localData} plan={planFeatures} />
-            </div>
+            <StoryPreview storyData={localData} plan={planFeatures} />
             
             {!isDashboard && (
               <motion.button 
