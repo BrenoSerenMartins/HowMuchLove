@@ -30,8 +30,8 @@ const UpgradeToUnlock: React.FC<UpgradeToUnlockProps> = ({ children, isFeatureAl
   };
 
   return (
-    <div className="relative group">
-      <div className="opacity-30 pointer-events-none grayscale blur-[1px] transition-all duration-500 group-hover:opacity-20">
+    <div className="relative group w-full min-w-0">
+      <div className="w-full min-w-0 opacity-30 pointer-events-none grayscale blur-[1px] transition-all duration-500 group-hover:opacity-20">
         {children}
       </div>
       

@@ -233,26 +233,27 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
               openSection={openSection} 
               setOpenSection={setOpenSection}
             >
-              <div className="space-y-6">
+              <div className="space-y-6 w-full min-w-0">
                 <div>
                   <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.startedWhen}</label>
-                  <div className="relative group">
+                  <div className="relative group w-full min-w-0">
                     <DatePicker
                       selected={localData.startDate ? new Date(localData.startDate) : null}
                       onChange={(d: Date | null) => updateLocalData('startDate', d ? d.toISOString() : null)}
                       dateFormat="dd/MM/yyyy" placeholderText="dd/mm/aaaa" maxDate={new Date()} locale="pt-BR"
-                      className="input-elite !py-5"
+                      wrapperClassName="w-full min-w-0"
+                      className="input-elite !py-5 !w-full !min-w-0"
                     />
                     <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="message" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.messageLabel}</label>
-                  <div className="relative group">
+                  <div className="relative group w-full min-w-0">
                     <textarea
                       id="message" value={localData.message} onChange={(e) => updateLocalData('message', e.target.value)}
                       placeholder={uiCopy.editor.messagePlaceholder} rows={5}
-                      className="input-elite resize-none !py-5"
+                      className="input-elite resize-none !py-5 !w-full !min-w-0"
                     ></textarea>
                     <MessageSquare className="absolute right-5 top-5 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
                   </div>
@@ -267,7 +268,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
               openSection={openSection} 
               setOpenSection={setOpenSection}
             >
-              <div className="space-y-8">
+              <div className="space-y-8 w-full min-w-0">
                 <div>
                   <div className="flex justify-between items-center mb-4 ml-1">
                     <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500">{uiCopy.editor.photosLabel}</label>
@@ -300,7 +301,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
                 </div>
                 <div>
                   <label className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.positionLabel}</label>
-                  <div className="grid grid-cols-3 gap-3 p-2 bg-white/[0.03] rounded-2xl border border-white/5 shadow-inner">
+                  <div className="grid w-full grid-cols-3 gap-3 p-2 bg-white/[0.03] rounded-2xl border border-white/5 shadow-inner">
                       {(['top', 'center', 'bottom'] as const).map(pos => (
                           <button
                             key={pos} onClick={() => updateLocalData('layoutPosition', pos)}
@@ -316,11 +317,11 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
                   </div>
                 </div>
                 <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message={uiCopy.editor.youtubeUpgradeMessage}>
-                  <div>
+                  <div className="w-full min-w-0">
                     <label htmlFor="youtubeUrl" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.youtubeLabel}</label>
-                    <div className="relative group">
+                    <div className="relative group w-full min-w-0">
                       <input type="text" id="youtubeUrl" value={localData.youtubeUrl} onChange={(e) => updateLocalData('youtubeUrl', e.target.value)} placeholder={uiCopy.editor.youtubePlaceholder}
-                        className="input-elite pr-14 !py-5" disabled={!features.allowYoutube}
+                        className="input-elite pr-14 !py-5 !w-full !min-w-0" disabled={!features.allowYoutube}
                       />
                       <Music className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
                     </div>
@@ -336,14 +337,14 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
               openSection={openSection} 
               setOpenSection={setOpenSection}
             >
-              <div className="space-y-6">
+              <div className="space-y-6 w-full min-w-0">
                 <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message={uiCopy.editor.passwordUpgradeMessage}>
-                  <div>
+                  <div className="w-full min-w-0">
                     <label htmlFor="storyPassword" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.passwordLabel}</label>
-                    <div className="relative group">
+                    <div className="relative group w-full min-w-0">
                       <input type="password" id="storyPassword" value={localData.storyPassword} onChange={(e) => updateLocalData('storyPassword', e.target.value)}
                         placeholder={localData.requiresPassword ? uiCopy.editor.passwordPlaceholderKeep : uiCopy.editor.passwordPlaceholderSet} 
-                        className="input-elite pr-14 !py-5" 
+                        className="input-elite pr-14 !py-5 !w-full !min-w-0" 
                         disabled={!features.allowPasswordProtection || localData.removePassword}
                       />
                       <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
@@ -372,11 +373,11 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
                   </div>
                 </UpgradeToUnlock>
                 <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message={uiCopy.editor.customButtonUpgradeMessage}>
-                  <div>
+                  <div className="w-full min-w-0">
                     <label htmlFor="entryButtonText" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.entryButtonLabel}</label>
-                    <div className="relative group">
+                    <div className="relative group w-full min-w-0">
                       <input type="text" id="entryButtonText" value={localData.entryButtonText} onChange={(e) => updateLocalData('entryButtonText', e.target.value)}
-                        placeholder={uiCopy.editor.entryButtonPlaceholder} className="input-elite pr-14 !py-5" disabled={!features.allowCustomButton}
+                        placeholder={uiCopy.editor.entryButtonPlaceholder} className="input-elite pr-14 !py-5 !w-full !min-w-0" disabled={!features.allowCustomButton}
                       />
                       <MousePointer2 className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
                     </div>

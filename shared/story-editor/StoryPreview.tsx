@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Smartphone, Monitor, Globe } from 'lucide-react';
 import type { LoveStoryData, PlanFeatures } from '@/types';
@@ -14,10 +14,43 @@ type ViewMode = 'mobile' | 'desktop';
 
 const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('mobile');
+  const desktopViewportRef = useRef<HTMLDivElement>(null);
+  const [desktopScale, setDesktopScale] = useState(1);
+  const desktopViewport = { width: 1600, height: 900 };
   const frameStyle = { maxWidth: 'calc(100% - 1.5rem)' };
   const frameAnimate = viewMode === 'mobile'
     ? { width: 'clamp(230px, 46vw, 300px)', height: 'clamp(430px, 34vw, 560px)' }
     : { width: '100%', height: 'clamp(430px, 34vw, 560px)' };
+
+  useEffect(() => {
+    if (viewMode !== 'desktop') return;
+
+    const updateScale = () => {
+      const element = desktopViewportRef.current;
+      if (!element) return;
+
+      const availableWidth = element.clientWidth;
+      const availableHeight = element.clientHeight;
+      const nextScale = Math.min(
+        availableWidth / desktopViewport.width,
+        availableHeight / desktopViewport.height
+      );
+
+      setDesktopScale(Math.max(0.5, Math.min(nextScale, 1)));
+    };
+
+    updateScale();
+
+    const element = desktopViewportRef.current;
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [viewMode]);
 
   if (!storyData) {
     return (
@@ -93,20 +126,38 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
         )}
 
         {/* The Actual Immersive Page Content */}
-        <div className="flex-grow min-w-0 overflow-hidden relative">
-          <PublicStory 
-            storyData={previewData} 
-            isPreview={true}
-            hasEntered={true}
-            isMuted={true}
-          />
+        <div
+          ref={desktopViewportRef}
+          className="flex-grow min-w-0 overflow-hidden relative"
+        >
+          {viewMode === 'desktop' ? (
+            <div
+              className="absolute left-1/2 top-0"
+              style={{
+                width: `${desktopViewport.width}px`,
+                height: `${desktopViewport.height}px`,
+                transform: `translateX(-50%) scale(${desktopScale})`,
+                transformOrigin: 'top center',
+              }}
+            >
+              <PublicStory
+                storyData={previewData}
+                isPreview={true}
+                hasEntered={true}
+                isMuted={true}
+                previewDensityOverride="dense"
+              />
+            </div>
+          ) : (
+            <PublicStory
+              storyData={previewData}
+              isPreview={true}
+              hasEntered={true}
+              isMuted={true}
+            />
+          )}
         </div>
 
-        {/* Live Pulse Indicator */}
-        <div className="absolute bottom-6 right-6 z-[70] flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-white/70">Live Sim</span>
-        </div>
       </motion.div>
 
       {/* Interaction Hint */}

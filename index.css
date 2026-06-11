@@ -102,6 +102,15 @@
   background: rgba(255, 45, 85, 0.2);
 }
 
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 ::selection {
   background-color: var(--primary);
   color: white;
