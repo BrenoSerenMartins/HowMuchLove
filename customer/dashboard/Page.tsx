@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Eye, 
-  Share2, 
-  ArrowUpRight, 
-  ChevronLeft, 
-  Sparkles,
-  ArrowRight
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, Sparkles } from 'lucide-react';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
@@ -17,68 +10,11 @@ import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import QRCodeModal from './components/QRCodeModal';
 import DashboardSummary from './components/DashboardSummary';
+import DashboardActions from './components/DashboardActions';
+import DashboardPreviewPane from './components/DashboardPreviewPane';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import { canShareStory } from '@/shared/lib/plans';
 import StoryPreview from '@/shared/story-editor/StoryPreview';
-
-// --- Styled ShareSection ---
-const ShareSection: React.FC<{ shareUrl: string; onPreview: () => void; onShare: () => void; planFeatures: Partial<PlanFeatures> | null; navigate: (path: string) => void; }> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
-  const isFreePlan = !canShareStory(planFeatures);
-
-  const handleShareClick = () => {
-    if (isFreePlan) {
-      navigate('/settings#pricing-section');
-    } else {
-      onShare();
-    }
-  };
-
-    return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mt-12 card-elite p-8 relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full -mr-32 -mt-32" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Status da História</span>
-            </div>
-            <h3 className="text-2xl font-black text-white tracking-tight leading-none mb-3">
-              {uiCopy.dashboard.shareReadyTitle}
-            </h3>
-            <p className="text-slate-400 text-sm font-medium max-w-md">
-              {isFreePlan 
-                ? uiCopy.dashboard.shareUpgradeDescription
-                : uiCopy.dashboard.shareReadyDescription
-              }
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <button
-              onClick={onPreview}
-              className="btn-secondary group flex-grow sm:flex-grow-0"
-            >
-              <Eye className="w-4 h-4" />
-              {uiCopy.dashboard.preview}
-            </button>
-            <button
-              onClick={handleShareClick}
-              className="btn-primary group flex-grow sm:flex-grow-0"
-            >
-              <Share2 className="w-4 h-4" />
-              {isFreePlan ? uiCopy.dashboard.upgrade : uiCopy.dashboard.share}
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    );
-};
 
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
@@ -92,6 +28,7 @@ const DashboardPage: React.FC = () => {
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [editorPreviewData, setEditorPreviewData] = useState<LoveStoryData | null>(null);
   
   const generateShareLink = (userId: string) => {
       const storyId = encodeURIComponent(userId);
@@ -114,6 +51,7 @@ const DashboardPage: React.FC = () => {
       try {
         const data = await loadStory();
         setStoryData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', removePassword: false, requiresPassword: false, entryButtonText: '' });
+        setEditorPreviewData(data || { startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', removePassword: false, requiresPassword: false, entryButtonText: '' });
         if (data?.startDate && user) {
           setShareLink(generateShareLink(user.id));
         }
@@ -134,6 +72,7 @@ const DashboardPage: React.FC = () => {
       await saveStory(newData, newFiles, imageIdsToDelete);
       const updatedStoryData = await loadStory();
       setStoryData(updatedStoryData || newData);
+      setEditorPreviewData(updatedStoryData || newData);
       if (updatedStoryData?.startDate && user) {
         setShareLink(generateShareLink(user.id));
       } else {
@@ -158,67 +97,117 @@ const DashboardPage: React.FC = () => {
       );
     }
     
-    if (storyData?.startDate && !isEditing) {
-      return (
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <DashboardSummary storyData={storyData} onEdit={() => setIsEditing(true)} />
-          </motion.div>
-          {shareLink && <ShareSection 
-            shareUrl={shareLink} 
-            onPreview={() => setIsPreviewing(true)} 
-            onShare={() => setIsQrModalOpen(true)}
-            planFeatures={planFeatures}
-            navigate={navigate}
-          />}
-        </div>
-      );
-    }
+    const isActiveStory = Boolean(storyData?.startDate && !isEditing);
+    const previewStoryData = isEditing ? editorPreviewData ?? storyData : storyData;
 
     const welcomeText = isEditing 
       ? uiCopy.dashboard.editMode 
       : uiCopy.dashboard.welcome;
-    const subText = isEditing
-      ? uiCopy.dashboard.editModeDescription
-      : uiCopy.dashboard.draftDescription;
 
     return (
-      <div className="max-w-6xl mx-auto">
-        <motion.div 
+      <div className="container-fluid py-8 lg:py-16 space-y-24">
+        {/* Dashboard Header */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-4"
         >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-primary font-mono">Espaço Criativo</span>
-            </div>
-            <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tighter leading-none mb-6">
-                {welcomeText} {!isEditing && <span className="text-primary italic font-cursive lowercase tracking-normal px-2">{user?.name}!</span>}
+          <div className="space-y-4">
+            <h1 className="text-fluid-h2 font-black text-white leading-[0.9] tracking-tighter uppercase">
+              {isEditing ? 'Aperfeiçoe seu' : 'Seu Legado'} <br />
+              <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+                {isEditing ? 'legado digital.' : 'está vivo.'}
+              </span>
             </h1>
-            <p className="text-slate-400 text-lg font-medium max-w-2xl mx-auto">
-                {subText}
-            </p>
+          </div>
+          <div className="flex items-center gap-6 text-slate-500">
+             <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Live Studio</span>
+             </div>
+             <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+             <p className="text-[10px] font-black uppercase tracking-widest font-mono hidden md:block">
+                v2.4.0
+             </p>
+          </div>
         </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-            <CounterDemo 
-              initialData={storyData} 
-              onSave={handleSaveStory}
-              onCancel={() => setIsEditing(false)}
-              saveStatus={saveStatus}
-              isDashboard 
-              onDirty={() => setIsDirty(true)}
-              planFeatures={planFeatures}
-            />
-        </motion.div>
+
+        {/* Free-Flow Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-[clamp(4rem,10vw,12rem)] items-start">
+          {/* Left Side: Management Console OR Editor */}
+          <div className="space-y-24 px-4">
+            {isActiveStory ? (
+              <>
+                <DashboardSummary storyData={storyData!} onEdit={() => setIsEditing(true)} />
+                
+                {shareLink && (
+                  <div className="pt-12 border-t border-white/5">
+                      <DashboardActions
+                        shareUrl={shareLink}
+                        onPreview={() => setIsPreviewing(true)}
+                        onShare={() => setIsQrModalOpen(true)}
+                        planFeatures={planFeatures}
+                        navigate={navigate}
+                      />
+                  </div>
+                )}
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <CounterDemo
+                  initialData={storyData}
+                  onSave={handleSaveStory}
+                  onCancel={() => setIsEditing(false)}
+                  saveStatus={saveStatus}
+                  isDashboard
+                  onDirty={() => setIsDirty(true)}
+                  planFeatures={planFeatures}
+                  showPreview={false}
+                  onPreviewDataChange={setEditorPreviewData}
+                />
+              </motion.div>
+            )}
+
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-8 group pt-8 border-t border-white/5"
+            >
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 text-slate-500 group-hover:text-primary transition-all duration-500">
+                  <Sparkles className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 font-mono">Dica do Studio</p>
+                  <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">
+                      Mantenha sua história atualizada com novos momentos para que ela nunca pare de crescer e emocionar.
+                  </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Side: Immersive Monitor Pane */}
+          <div className="lg:sticky lg:top-32 relative group px-4">
+             {/* Background atmosphere specifically for the monitor area */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-[120px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+             
+             <DashboardPreviewPane
+               storyData={previewStoryData}
+               planFeatures={planFeatures}
+               isEditing={isEditing}
+             />
+             
+             <div className="mt-12 flex justify-center">
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-700 font-mono">
+                  Interação Ativa • Monitor v2.4
+                </span>
+             </div>
+          </div>
+        </div>
       </div>
     );
   };

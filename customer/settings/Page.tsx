@@ -1,26 +1,26 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Sparkles, ArrowLeft, ShieldCheck, CreditCard } from 'lucide-react';
 import PricingSection from '@/shared/pricing/PricingSection';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
-import { ArrowLeftIcon } from '@/shared/ui/icons/ArrowLeftIcon';
 import PageWrapper from '@/shared/ui/PageWrapper';
-import LoadingSpinner from '@/shared/ui/LoadingSpinner'; // Adicionado: Import do LoadingSpinner
+import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { fetchAllPlans } from '@/shared/lib/pricing';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import { supabase } from '@/shared/lib/supabase';
 import type { PlanFromDB } from '@/types';
-import BottomNavBar from '@/shared/ui/BottomNavBar';
 import { getApiErrorMessage, getErrorMessage, getPayloadErrorMessage, logError } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import SettingsProfileCard from './components/SettingsProfileCard';
 
 const SettingsPage: React.FC = () => {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout } = useAuth();
   const { navigate } = useNavigate();
   const { addToast } = useNotification();
-  const [isLoading, setIsLoading] = useState(true); // New loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState<PlanFromDB[]>([]);
-  
+
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoading(true);
@@ -36,13 +36,12 @@ const SettingsPage: React.FC = () => {
         setIsLoading(false);
       }
     };
+
     fetchInitialData();
 
-    // Check if the URL hash points to the pricing section and scroll to it
     if (window.location.hash.includes('pricing-section')) {
       const element = document.getElementById('pricing-section');
       if (element) {
-        // Use a timeout to ensure the element is rendered before scrolling
         setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
       }
     }
@@ -52,7 +51,7 @@ const SettingsPage: React.FC = () => {
     logout();
     navigate('/');
   };
-  
+
   const handlePlanSelected = async (plan: { id: number; name: string; amount: number }) => {
     try {
       const { data, error } = await supabase.functions.invoke('process-payment', {
@@ -79,85 +78,131 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  if (!user) {
-    return null; // Redirect logic in App.tsx will handle this
-  }
+  if (!user) return null;
 
   if (isLoading) {
     return (
-      <PageWrapper>
-        <div className="flex justify-center items-center py-20">
-          <LoadingSpinner />
-        </div>
-      </PageWrapper>
+      <div className="flex items-center justify-center py-32">
+        <LoadingSpinner />
+      </div>
     );
   }
 
-  const backgroundImageUrl = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+  const currentPlanLabel = user?.plan || uiCopy.account.noPlanActive;
 
   return (
-    <div className="min-h-screen flex flex-col text-white relative">
-        <main className="flex-grow container mx-auto py-8 md:py-12 z-10 pb-20 md:pb-12">
-          <PageWrapper>
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-8 hidden md:flex animate-fade-in-slide-up" style={{ animationDelay: '100ms' }}>
-                <button 
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 text-slate-300 font-semibold hover:text-white transition-colors duration-300 group"
-                >
-                  <ArrowLeftIcon className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-                  <span>{uiCopy.navigation.backToDashboard}</span>
-                </button>
+    <PageWrapper>
+      <div className="container-fluid space-y-12">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between"
+        >
+          <div className="space-y-6">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="inline-flex items-center gap-3 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] hover:text-white transition-all group"
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              {uiCopy.navigation.backToDashboard}
+            </button>
+
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 shadow-[0_0_15px_rgba(255,45,85,0.1)]">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary font-mono">
+                  Conta e Assinatura
+                </span>
               </div>
 
-              <div className="text-center mb-12 animate-fade-in-slide-up" style={{ animationDelay: '200ms' }}>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-                  {uiCopy.account.title}
+              <div className="max-w-3xl">
+                <h1 className="text-fluid-h2 font-black text-white leading-[0.9] tracking-tighter">
+                  Gerencie seu <br/>
+                  <span className="text-primary italic font-cursive lowercase tracking-normal">legado digital.</span>
                 </h1>
-                <p className="text-slate-300 mt-2 text-base sm:text-lg">
-                  {uiCopy.account.description}
+                <p className="mt-6 max-w-2xl text-slate-400 font-medium text-fluid-body leading-relaxed">
+                  Atualize seus dados, acompanhe o plano atual e escolha o próximo passo da sua história sem sair da página.
                 </p>
               </div>
-
-              <div className="bg-black/30 backdrop-blur-xl shadow-xl rounded-2xl p-8 mb-8 border border-white/20 animate-fade-in-slide-up" style={{ animationDelay: '300ms' }}>
-                <h2 className="text-2xl font-bold text-white mb-6">{uiCopy.account.detailsTitle}</h2>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-slate-300">{uiCopy.account.currentPlanLabel}</p>
-                    <p className="text-lg font-bold text-pink-400">{user?.plan || uiCopy.account.noPlanActive}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-300">{uiCopy.account.nameLabel}</p>
-                    <p className="text-lg text-white">{user.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-300">{uiCopy.account.emailLabel}</p>
-                    <p className="text-lg text-white">{user.email}</p>
-                  </div>
-                </div>
-                <div className="border-t my-8 border-white/20"></div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full sm:w-auto border border-red-500 text-red-400 font-semibold py-2 px-6 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors duration-300"
-                  >
-                  {uiCopy.account.logout}
-                  </button>
-              </div>
-              
-              <div className="animate-fade-in-slide-up" style={{ animationDelay: '400ms' }}>
-                <PricingSection 
-                  id="pricing-section" 
-                  plans={plans}
-                  currentPlan={user?.plan} 
-                  onPlanSelect={handlePlanSelected}
-                />
-              </div>
-
             </div>
-          </PageWrapper>
-        </main>
-        <BottomNavBar onMenuOpen={() => {}} onLogoutRequest={logout} />
-    </div>
+          </div>
+
+          <div className="card-elite p-8 w-full xl:max-w-xl relative overflow-hidden group border-white/10 bg-white/[0.03]">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32 transition-transform duration-1000 group-hover:scale-110" />
+            <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-3">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 font-mono">
+                  Resumo rápido
+                </p>
+                <p className="text-3xl font-black tracking-tighter text-white uppercase">
+                  {currentPlanLabel}
+                </p>
+                <p className="max-w-md text-xs font-medium text-slate-400 leading-relaxed">
+                  Sua conta está sincronizada e pronta para publicar e compartilhar.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:text-right">
+                <span className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-primary">
+                  <ShieldCheck className="w-3 h-3" />
+                  Conta Ativa
+                </span>
+                <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+                  <CreditCard className="w-3 h-3" />
+                  Checkout Seguro
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Content Grid */}
+        <div className="grid gap-12 xl:grid-cols-[minmax(340px,0.35fr)_minmax(0,1fr)] items-start">
+          <SettingsProfileCard
+            planName={user.plan}
+            userName={user.name}
+            userEmail={user.email}
+            onLogout={handleLogout}
+          />
+
+          <div className="space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="card-elite p-8 md:p-12 relative overflow-hidden border-white/10 bg-white/[0.03]"
+            >
+              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48" />
+              <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary font-mono">
+                    Upgrade de Experiência
+                  </p>
+                  <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white leading-[0.9] uppercase">
+                    Escolha o próximo passo <br/>
+                    da sua história.
+                  </h2>
+                  <p className="max-w-2xl text-slate-400 font-medium text-sm leading-relaxed">
+                    {currentPlanLabel === uiCopy.account.noPlanActive
+                      ? 'Comece com um plano para publicar e compartilhar sua história.'
+                      : 'Confira os planos disponíveis e faça upgrade quando quiser ampliar os recursos da sua conta.'}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="animate-fade-in-slide-up" style={{ animationDelay: '200ms' }}>
+              <PricingSection
+                id="pricing-section"
+                plans={plans}
+                currentPlan={user?.plan}
+                onPlanSelect={handlePlanSelected}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageWrapper>
   );
 };
 

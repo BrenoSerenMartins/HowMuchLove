@@ -48,6 +48,7 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
     { label: uiCopy.navigation.testimonials, id: 'testimonials' },
     { label: uiCopy.navigation.pricing, id: 'pricing' },
   ];
+  const showCenterNav = isHomePage && navLinks.length > 0;
 
   return (
     <header className="fixed top-8 left-0 right-0 z-50 px-6 md:px-12 pointer-events-none">
@@ -68,17 +69,19 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
         </div>
 
         {/* Desktop Navigation - Light Capsule */}
-        <div className="hidden lg:flex items-center gap-10 bg-white/[0.02] backdrop-blur-2xl px-10 py-3 rounded-full border border-white/[0.05] shadow-2xl pointer-events-auto">
-          {isHomePage && navLinks.map(link => (
-            <button 
-              key={link.id} 
-              onClick={() => handleScrollTo(link.id)} 
-              className="text-slate-400 hover:text-white transition-all text-[9px] font-black uppercase tracking-[0.3em] opacity-70 hover:opacity-100"
-            >
-              {link.label}
-            </button>
-          ))}
-        </div>
+        {showCenterNav && (
+          <div className="hidden lg:flex items-center gap-10 bg-white/[0.02] backdrop-blur-2xl px-10 py-3 rounded-full border border-white/[0.05] shadow-2xl pointer-events-auto">
+            {navLinks.map(link => (
+              <button 
+                key={link.id} 
+                onClick={() => handleScrollTo(link.id)} 
+                className="text-slate-400 hover:text-white transition-all text-[9px] font-black uppercase tracking-[0.3em] opacity-70 hover:opacity-100"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Actions Capsule */}
         <div className="hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-2xl px-4 py-2 rounded-full border border-white/[0.05] shadow-2xl pointer-events-auto">

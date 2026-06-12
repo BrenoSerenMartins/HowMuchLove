@@ -8,18 +8,19 @@ import { uiCopy } from '@/shared/lib/ui-copy';
 interface StoryPreviewProps {
   storyData: LoveStoryData | null;
   plan?: Partial<PlanFeatures> | null;
+  showInteractionHint?: boolean;
 }
 
 type ViewMode = 'mobile' | 'desktop';
 
-const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
+const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan, showInteractionHint = true }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('mobile');
   const desktopViewportRef = useRef<HTMLDivElement>(null);
   const [desktopScale, setDesktopScale] = useState(1);
   const desktopViewport = { width: 1600, height: 900 };
   const frameStyle = { maxWidth: 'calc(100% - 1.5rem)' };
   const frameAnimate = viewMode === 'mobile'
-    ? { width: 'clamp(230px, 46vw, 300px)', height: 'clamp(430px, 34vw, 560px)' }
+    ? { width: 'clamp(210px, 42vw, 280px)', height: 'clamp(430px, 34vw, 560px)' }
     : { width: '100%', height: 'clamp(430px, 34vw, 560px)' };
 
   useEffect(() => {
@@ -161,13 +162,15 @@ const StoryPreview: React.FC<StoryPreviewProps> = ({ storyData, plan }) => {
       </motion.div>
 
       {/* Interaction Hint */}
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.4 }}
-        className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500"
-      >
-        Você pode interagir e rolar o simulador
-      </motion.p>
+      {showInteractionHint && (
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.4 }}
+          className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500"
+        >
+          Você pode interagir e rolar o simulador
+        </motion.p>
+      )}
     </div>
   );
 };

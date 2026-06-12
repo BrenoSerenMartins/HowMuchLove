@@ -1,77 +1,137 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Edit3, Calendar, Camera } from 'lucide-react';
+import {
+  CalendarDays,
+  Camera,
+  Lock,
+  LayoutGrid,
+  Music4,
+  PencilLine,
+  Sparkles,
+  Star,
+} from 'lucide-react';
 import type { LoveStoryData } from '@/types';
 import DurationCounter from '@/shared/ui/story-view/DurationCounter';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
-interface DashboardSummaryProps {
+const formatDateLabel = (value: string | null): string => {
+  if (!value) return 'Sem data definida';
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return 'Sem data definida';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsedDate);
+};
+
+const DashboardStat: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}> = ({ icon, label, value }) => (
+  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all duration-300 hover:bg-white/[0.04] group">
+    <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-primary transition-colors">
+      {icon}
+      <span>{label}</span>
+    </div>
+    <p className="text-sm font-bold text-white/90 leading-tight">
+      {value}
+    </p>
+  </div>
+);
+
+const DashboardSummary: React.FC<{
   storyData: LoveStoryData;
   onEdit: () => void;
-}
-
-const DashboardSummary: React.FC<DashboardSummaryProps> = ({ storyData, onEdit }) => {
-  const { startDate, images } = storyData;
-  const date = startDate ? new Date(startDate) : null;
-  const mainImage = images && images.length > 0 ? images[0].image_url : 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=2070&auto=format&fit=crop';
+}> = ({ storyData, onEdit }) => {
+  const startDate = storyData.startDate ? new Date(storyData.startDate) : null;
+  const validStartDate = startDate && !Number.isNaN(startDate.getTime()) ? startDate : null;
+  const imageCount = storyData.images.length;
+  const hasMusic = Boolean(storyData.youtubeUrl?.trim());
+  const hasPassword = Boolean(storyData.storyPassword?.trim() || storyData.requiresPassword);
+  const planName = typeof storyData.plan === 'string'
+    ? storyData.plan
+    : Array.isArray(storyData.plan)
+      ? storyData.plan[0]?.name || 'Gratis'
+      : storyData.plan?.name || 'Gratis';
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="card-elite p-8 md:p-12 text-white relative overflow-hidden"
-    >
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -mr-48 -mt-48" />
-      
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="relative w-full max-w-lg aspect-video rounded-3xl overflow-hidden shadow-2xl mb-12 ring-1 ring-white/10">
-          <motion.div 
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${mainImage})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          
-          <div className="absolute bottom-6 left-8 flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
-              <Camera className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/90">
-              {images.length} {images.length === 1 ? 'Momento' : 'Momentos'}
-            </span>
-          </div>
+    <div className="space-y-16">
+      {/* Upper Console: Journey Counter */}
+      <div className="space-y-12">
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-3">
+              <CalendarDays className="w-5 h-5 text-primary/30" />
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 font-mono">Tempo de Jornada</p>
+           </div>
         </div>
 
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-2">
-            <Calendar className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 font-mono">
-              Sua História Ativa
-            </span>
-          </div>
-          
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">
-            {uiCopy.dashboard.summaryTitle}
-          </h2>
-          
-          <div className="py-8 transform scale-110 sm:scale-125">
-            <DurationCounter startDate={date} />
-          </div>
+        <div className="py-4 transform scale-110 lg:scale-[1.45] origin-left">
+          <DurationCounter startDate={validStartDate} density="dashboard" />
+        </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onEdit}
-            className="btn-secondary !py-4 !px-10 group"
-          >
-            <Edit3 className="w-4 h-4 text-primary transition-transform group-hover:rotate-12" />
-            {uiCopy.dashboard.editStory}
-          </motion.button>
+        <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">
+               Iniciado em {formatDateLabel(storyData.startDate)}
+            </div>
+            <div className="h-[1px] flex-grow bg-white/5" />
+            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest font-mono">
+                {planName} Plan
+            </div>
         </div>
       </div>
-    </motion.div>
+
+      {/* Stats Grid - Minimalist Text-based */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-12">
+        <div className="space-y-3 group">
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-600 group-hover:text-primary transition-colors">
+                <Camera className="w-4 h-4" />
+                <span>Momentos</span>
+            </div>
+            <p className="text-2xl font-black text-white leading-none">{imageCount}</p>
+        </div>
+
+        <div className="space-y-3 group">
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-600 group-hover:text-primary transition-colors">
+                <Music4 className="w-4 h-4" />
+                <span>Música</span>
+            </div>
+            <p className="text-2xl font-black text-white leading-none">{hasMusic ? 'Ativa' : 'Off'}</p>
+        </div>
+
+        <div className="space-y-3 group">
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-600 group-hover:text-primary transition-colors">
+                <Lock className="w-4 h-4" />
+                <span>Segurança</span>
+            </div>
+            <p className="text-2xl font-black text-white leading-none">{hasPassword ? 'Ativa' : 'Off'}</p>
+        </div>
+
+        <div className="space-y-3 group">
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-slate-600 group-hover:text-primary transition-colors">
+                <LayoutGrid className="w-4 h-4" />
+                <span>Posição</span>
+            </div>
+            <p className="text-2xl font-black text-white leading-none capitalize">
+                {storyData.layoutPosition === 'top' ? 'Topo' : storyData.layoutPosition === 'center' ? 'Centro' : 'Base'}
+            </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-8 pt-8">
+        <button 
+          onClick={onEdit} 
+          className="btn-primary !px-12 !py-6 group shadow-none hover:shadow-[0_0_30px_rgba(255,45,85,0.2)]"
+        >
+          <PencilLine className="h-4 w-4 transition-transform group-hover:-rotate-12" />
+          {uiCopy.dashboard.editStory}
+        </button>
+        
+        <p className="max-w-[240px] text-[10px] font-medium text-slate-600 leading-relaxed italic">
+          "O amor é o único legado que realmente importa."
+        </p>
+      </div>
+    </div>
   );
 };
 

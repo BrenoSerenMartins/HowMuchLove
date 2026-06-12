@@ -23,7 +23,7 @@ The semantic route tree now owns the page layer. The remaining implementation de
 - Shell: `shared/ui/Header.tsx`, `shared/ui/Footer.tsx`, `shared/ui/BottomNavBar.tsx`, `shared/ui/PageWrapper.tsx`.
 - Modals: `shared/ui/ConfirmModal.tsx` and `customer/dashboard/components/QRCodeModal.tsx`.
 - Feedback: `shared/ui/Toast.tsx`, `shared/ui/LoadingSpinner.tsx`.
-- Story UI: `shared/story-editor/CounterDemo.tsx`, `shared/story-editor/StoryPreview.tsx`, `story/public/components/PublicStory.tsx`, `customer/dashboard/components/DashboardSummary.tsx`, `story/public/components/DurationCounter.tsx`.
+- Story UI: `shared/story-editor/CounterDemo.tsx`, `shared/story-editor/StoryPreview.tsx`, `shared/ui/story-view/PublicStory.tsx`, `shared/ui/story-view/StoryHero.tsx`, `shared/ui/story-view/StoryMessage.tsx`, `shared/ui/story-view/StoryFloatingControls.tsx`, `shared/ui/story-view/StoryWatermark.tsx`, `shared/ui/story-view/DurationCounter.tsx`, `customer/dashboard/components/DashboardSummary.tsx`.
 - Commerce UI: `shared/pricing/PricingSection.tsx`, `shared/pricing/PlanCard.tsx`, `shared/story-editor/UpgradeToUnlock.tsx`.
 - Plan capability resolution is centralized in `shared/lib/plans.ts`. UI code should prefer that helper over re-deriving image limits or feature flags from raw plan names, because it supports `feature_rules` overrides and integration metadata.
 - Plan cards no longer depend on hardcoded names like `Sonho` or `Eterno` for their visual state; featured state and relative price drive the upgrade/current/downgrade treatment.

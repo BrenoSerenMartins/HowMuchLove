@@ -120,9 +120,22 @@ interface CounterDemoProps {
   saveStatus?: 'idle' | 'saving';
   onDirty?: () => void;
   planFeatures: Partial<PlanFeatures> | null;
+  showPreview?: boolean;
+  onPreviewDataChange?: (data: LoveStoryData) => void;
 }
 
-const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel, onImageDelete, isDashboard, saveStatus, onDirty, planFeatures }) => {
+const CounterDemo: React.FC<CounterDemoProps> = ({
+  initialData,
+  onSave,
+  onCancel,
+  onImageDelete,
+  isDashboard,
+  saveStatus,
+  onDirty,
+  planFeatures,
+  showPreview = true,
+  onPreviewDataChange,
+}) => {
   const [localData, setLocalData] = useState<LoveStoryData>({
     startDate: null, message: '', images: [], layoutPosition: 'bottom', youtubeUrl: '', storyPassword: '', removePassword: false, requiresPassword: false, entryButtonText: '',
   });
@@ -130,6 +143,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [imageIdsToDelete, setImageIdsToDelete] = useState<number[]>([]); 
   const [openSection, setOpenSection] = useState<string | null>('content');
+  const hasHydratedInitialDataRef = useRef(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
@@ -145,10 +159,31 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
         layoutPosition: initialData.layoutPosition || 'bottom', youtubeUrl: initialData.youtubeUrl || '',
         storyPassword: initialData.storyPassword || '', removePassword: false, requiresPassword: initialData.requiresPassword || false, entryButtonText: initialData.entryButtonText || '',
       });
+      hasHydratedInitialDataRef.current = true;
       setNewImageFiles([]);
       setImageIdsToDelete([]);
+      onPreviewDataChange?.({
+        startDate: initialData.startDate || null,
+        message: initialData.message || '',
+        images: initialData.images || [],
+        layoutPosition: initialData.layoutPosition || 'bottom',
+        youtubeUrl: initialData.youtubeUrl || '',
+        storyPassword: initialData.storyPassword || '',
+        removePassword: false,
+        requiresPassword: initialData.requiresPassword || false,
+        entryButtonText: initialData.entryButtonText || '',
+        id: initialData.id,
+        plan: initialData.plan,
+      });
     }
   }, [initialData]);
+
+  useEffect(() => {
+    if (!onPreviewDataChange) return;
+    if (!hasHydratedInitialDataRef.current && initialData) return;
+
+    onPreviewDataChange(localData);
+  }, [localData, onPreviewDataChange, initialData]);
 
   const updateLocalData = (field: keyof LoveStoryData, value: any) => {
     onDirty?.();
@@ -212,9 +247,9 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
 
   return (
     <div className="relative">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[clamp(2rem,6vw,6rem)] items-start">
+      <div className={`grid grid-cols-1 gap-[clamp(2rem,6vw,6rem)] items-start ${showPreview ? 'lg:grid-cols-12' : 'lg:grid-cols-1'}`}>
         {/* --- Editor Panel --- */}
-        <div className="lg:col-span-4 order-2 lg:order-1 min-w-0">
+        <div className={`${showPreview ? 'lg:col-span-4 order-2 lg:order-1' : 'lg:col-span-1 order-1'} min-w-0`}>
           <div className="flex items-center gap-4 mb-12 px-2">
             <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
               <Layout className="w-6 h-6" />
@@ -421,35 +456,37 @@ const CounterDemo: React.FC<CounterDemoProps> = ({ initialData, onSave, onCancel
         </div>
 
         {/* --- Preview --- */}
-        <div className="lg:col-span-8 order-1 lg:order-2 min-w-0">
-          <div className="sticky top-32 min-w-0">
-            <div className="flex items-center gap-4 mb-12 px-2">
-              <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
-                <Sparkles className="w-6 h-6" />
+        {showPreview && (
+          <div className="lg:col-span-8 order-1 lg:order-2 min-w-0">
+            <div className="sticky top-32 min-w-0">
+              <div className="flex items-center gap-4 mb-12 px-2">
+                <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(255,45,85,0.2)]">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                    <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Visualização em Tempo Real</h3>
+                    <p className="text-[clamp(9px,0.7vw,11px)] font-bold text-slate-500 uppercase tracking-widest mt-1 font-mono">Como seu Amor verá</p>
+                </div>
               </div>
-              <div>
-                  <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Visualização em Tempo Real</h3>
-                  <p className="text-[clamp(9px,0.7vw,11px)] font-bold text-slate-500 uppercase tracking-widest mt-1 font-mono">Como seu Amor verá</p>
+              
+              <div className="w-full max-w-full min-w-0 overflow-hidden">
+                <StoryPreview storyData={localData} plan={planFeatures} />
               </div>
+              
+              {!isDashboard && (
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleScrollToPricing}
+                  className="btn-primary w-full max-w-[500px] mx-auto flex mt-12 !py-6 shadow-[0_30px_60px_-10px_rgba(255,45,85,0.4)] text-[11px]"
+                >
+                  {uiCopy.editor.saveAndShare}
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              )}
             </div>
-            
-            <div className="w-full max-w-full min-w-0 overflow-hidden">
-              <StoryPreview storyData={localData} plan={planFeatures} />
-            </div>
-            
-            {!isDashboard && (
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleScrollToPricing}
-                className="btn-primary w-full max-w-[500px] mx-auto flex mt-12 !py-6 shadow-[0_30px_60px_-10px_rgba(255,45,85,0.4)] text-[11px]"
-              >
-                {uiCopy.editor.saveAndShare}
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
-            )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
