@@ -140,67 +140,63 @@ const DashboardPage: React.FC = () => {
            document.body
         )}
 
-        <div className="relative z-10 pb-32">
-          {/* 1. HERO AREA: The Emotional Center (NO CONTAINER) */}
-          <div className="relative min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-visible text-center pt-24 md:pt-32 px-4">
-              {/* Internal Hero Backdrop - The "Artistic Canvas" */}
-              {isActiveStory && heroImages[0] && (
-                  <motion.div 
-                    key={heroImages[0].image_url}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 2.5 }}
-                    className="absolute inset-0 z-0 p-6 md:p-12 lg:p-16"
-                  >
-                      <div className="relative w-full h-full rounded-[3rem] md:rounded-[5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] border border-white/5 group">
+        <div className="relative z-10 pb-32 pt-0 space-y-[clamp(4rem,8vh,12rem)]">
+          {/* 1. HERO AREA: The Emotional Center (Unified Artistic Deck) */}
+          <div className="container-fluid pt-[clamp(3rem,6vh,5rem)]">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-full min-h-[clamp(35rem,65vh,55rem)] rounded-[clamp(2.5rem,7vw,6rem)] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] border border-white/5 flex items-center justify-center group"
+              >
+                  {/* Backdrop Layer */}
+                  {isActiveStory && heroImages[0] && (
+                      <>
                           <img 
                               src={heroImages[0].image_url} 
                               alt="" 
-                              className="w-full h-full object-cover opacity-70 blur-[2px] scale-110 transition-transform duration-[25s] group-hover:scale-100"
+                              className="absolute inset-0 w-full h-full object-cover opacity-60 blur-[1px] scale-105 transition-transform duration-[30s] group-hover:scale-100"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/20 z-10" />
-                          <div className="absolute inset-0 bg-black/5 z-10" />
-                          {/* Soft Inner Glow */}
-                          <div className="absolute inset-0 ring-1 ring-inset ring-white/10 z-20 rounded-[3rem] md:rounded-[5rem]" />
-                      </div>
-                  </motion.div>
-              )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/30 z-10" />
+                          <div className="absolute inset-0 bg-black/10 z-10" />
+                          <div className="absolute inset-0 ring-1 ring-inset ring-white/10 z-20 rounded-[clamp(2.5rem,7vw,6rem)]" />
+                      </>
+                  )}
 
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-transparent pointer-events-none z-10" />
-              
-              {isActiveStory ? (
-                  <div className="relative z-20 w-full drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                      <DashboardSummary 
-                        storyData={storyData!} 
-                        onEdit={() => setIsEditing(true)} 
-                        onPreview={() => setIsPreviewing(true)}
-                        onlyHero 
-                      />
+                  {/* Dynamic Inner Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent pointer-events-none z-10" />
+                  
+                  {/* Submerged Content: Perfectly Contained & Centered */}
+                  <div className="relative z-30 w-full px-[clamp(1.5rem,6vw,6rem)] py-12 drop-shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+                      {isActiveStory ? (
+                          <DashboardSummary 
+                            storyData={storyData!} 
+                            onEdit={() => setIsEditing(true)} 
+                            onPreview={() => setIsPreviewing(true)}
+                            onlyHero 
+                          />
+                      ) : isEditing ? (
+                          <div className="text-center space-y-6 animate-fade-in-up">
+                              <h2 className="text-[clamp(3rem,9vw,6rem)] font-black text-white uppercase tracking-tighter leading-none">Studio <br/> Creation</h2>
+                              <p className="text-primary font-cursive text-[clamp(1.5rem,4vw,3rem)] lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
+                          </div>
+                      ) : null}
                   </div>
-              ) : isEditing ? (
-                  <motion.div
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="relative z-20 py-24 space-y-6"
-                  >
-                      <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-2xl">Studio <br/> Creation</h2>
-                      <p className="text-primary font-cursive text-3xl lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
-                  </motion.div>
-              ) : null}
+              </motion.div>
           </div>
 
           {/* 2. DYNAMIC WORKSPACE: Floating Content Grid */}
-          <div className="container-fluid px-[clamp(1.5rem,5vw,5rem)] max-w-fluid mx-auto w-full">
+          <div className="container-fluid px-[clamp(1rem,5vw,5rem)] max-w-fluid mx-auto w-full">
               <div className={`grid grid-cols-1 ${isEditing ? 'xl:grid-cols-2 gap-24' : ''} relative z-10`}>
                   
                   {/* Left: Actions & Editor */}
-                  <div className="space-y-16">
+                  <div className="space-y-[clamp(1.5rem,4vh,4rem)]">
                       {!isActiveStory ? (
                       <motion.div
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.6 }}
-                          className="p-8 md:p-12 lg:p-16 border border-white/5 bg-white/[0.01] backdrop-blur-3xl rounded-[3rem]"
+                          className="p-[clamp(1.5rem,5vw,4rem)] border border-white/5 bg-white/[0.01] backdrop-blur-3xl rounded-[clamp(2rem,4vw,3rem)]"
                       >
                           <CounterDemo
                           initialData={storyData}
@@ -215,7 +211,7 @@ const DashboardPage: React.FC = () => {
                           />
                       </motion.div>
                       ) : (
-                      <div className="space-y-24 max-w-4xl mx-auto w-full">
+                      <div className="space-y-[clamp(2rem,6vh,10rem)] max-w-4xl mx-auto w-full">
                           <DashboardSummary 
                             storyData={storyData!} 
                             onEdit={() => setIsEditing(true)} 
