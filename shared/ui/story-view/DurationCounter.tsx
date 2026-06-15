@@ -83,7 +83,7 @@ const DurationCounter: React.FC<{ startDate: Date | null; density?: CounterDensi
     const isDashboard = density === 'dashboard';
 
     return (
-      <div className={`grid ${isCompact ? 'grid-cols-3 gap-1.5 sm:gap-2' : isDashboard ? 'grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 md:gap-4' : isDense ? 'grid-cols-3 gap-2 sm:gap-3' : 'grid-cols-3 sm:grid-cols-6 gap-6 md:gap-10'} text-center`}>
+      <div className={`grid ${isCompact ? 'grid-cols-3 gap-1.5 sm:gap-2' : isDashboard ? 'grid-cols-3 gap-4 sm:gap-5 md:gap-6' : isDense ? 'grid-cols-3 gap-2 sm:gap-3' : 'grid-cols-3 sm:grid-cols-6 gap-6 md:gap-10'} text-center`}>
         <TimeUnit index={0} value={duration.years} label="Anos" density={density} />
         <TimeUnit index={1} value={duration.months} label="Meses" density={density} />
         <TimeUnit index={2} value={duration.days} label="Dias" density={density} />

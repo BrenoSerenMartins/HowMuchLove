@@ -6,12 +6,10 @@ import { canShareStory } from '@/shared/lib/plans';
 import { uiCopy } from '@/shared/lib/ui-copy';
 
 const DashboardActions: React.FC<{
-  shareUrl: string;
-  onPreview: () => void;
   onShare: () => void;
   planFeatures: Partial<PlanFeatures> | null;
   navigate: (path: string) => void;
-}> = ({ shareUrl, onPreview, onShare, planFeatures, navigate }) => {
+}> = ({ onShare, planFeatures, navigate }) => {
   const isFreePlan = !canShareStory(planFeatures);
 
   const handleShareClick = () => {
@@ -23,57 +21,46 @@ const DashboardActions: React.FC<{
   };
 
   return (
-    <div className="relative flex flex-col gap-10">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between px-1">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 font-mono">
-              Link de Publicação
-            </h3>
-        </div>
+    <div className="relative space-y-8">
+      <div className="flex items-center gap-4">
+          <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] font-mono whitespace-nowrap">04 / DISTRIBUTION</span>
+          <div className="h-[1px] flex-grow bg-white/5" />
+      </div>
 
-        <div className="flex items-center justify-between gap-6 group">
-            <div className="flex-grow min-w-0 py-2 border-b border-white/5 group-hover:border-primary/30 transition-colors">
-               <p className="truncate text-xs font-mono text-slate-500 group-hover:text-slate-200 transition-colors">
-                 {shareUrl}
-               </p>
+      <button
+        onClick={handleShareClick}
+        className="w-full group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] p-8 transition-all duration-500 hover:border-primary/30 hover:bg-white/[0.04]"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+                <div className="p-4 rounded-2xl bg-primary/10 text-primary shadow-[0_0_20px_rgba(255,45,85,0.2)]">
+                    <Share2 className="w-6 h-6" />
+                </div>
+                <div className="text-left space-y-1">
+                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Compartilhar Legado</h3>
+                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest font-mono">
+                        {isFreePlan ? 'Upgrade Necessário para publicar' : 'Link Único • QR Code Ativo'}
+                    </p>
+                </div>
             </div>
-            <button 
-                onClick={() => {
-                    navigator.clipboard.writeText(shareUrl);
-                }}
-                className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all"
-                title="Copiar Link"
-            >
-                <Share2 className="w-4 h-4" />
-            </button>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={onPreview}
-          className="btn-secondary !py-5 group justify-center border-white/5 hover:border-white/10"
-        >
-          <Eye className="h-4 w-4 text-primary/70" />
-          <span className="text-[9px] font-black uppercase tracking-[0.2em]">{uiCopy.dashboard.preview}</span>
-        </button>
-        <button
-          onClick={handleShareClick}
-          className="btn-primary !py-5 group justify-center shadow-none hover:shadow-[0_0_30px_rgba(255,45,85,0.2)]"
-        >
-          {isFreePlan ? (
-            <>
-              <ArrowUpRight className="h-4 w-4" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]">{uiCopy.dashboard.upgrade}</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Gerar QR Code</span>
-            </>
-          )}
-        </button>
-      </div>
+            <div className="flex items-center gap-3">
+                {isFreePlan ? (
+                    <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                        <ArrowUpRight className="w-3 h-3" />
+                        Desbloquear
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg group-hover:scale-105 transition-transform">
+                        <Sparkles className="w-3 h-3" />
+                        Abrir Painel
+                    </div>
+                )}
+            </div>
+        </div>
+      </button>
     </div>
   );
 };

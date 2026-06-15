@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { Heart, Share2, Download, X } from 'lucide-react';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import { logError } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
@@ -65,42 +66,58 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose, url, title }
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-center items-center z-[999] p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-[999] p-4 animate-fade-in"
       onClick={onClose}
     >
       <div 
-        className="relative bg-black/30 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center transform transition-all"
+        className="relative bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] p-10 max-w-sm w-full text-center transform transition-all overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-white mb-2">{uiCopy.story.shareTitle}</h2>
-        <p className="text-slate-300 mb-6">{uiCopy.story.shareDescription}</p>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 pointer-events-none" />
         
-        <div ref={qrCodeRef} className="p-4 bg-white rounded-lg inline-block">
-          <QRCodeCanvas value={url} size={256} bgColor="#FFFFFF" fgColor="#000000" />
-        </div>
+        <div className="relative z-10 space-y-8">
+            <div className="space-y-3">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{uiCopy.story.shareTitle}</h2>
+                <p className="text-primary italic font-cursive text-xl lowercase tracking-normal">
+                    Eternize cada capítulo.
+                </p>
+                <div className="h-px w-12 bg-primary/30 mx-auto" />
+                <p className="text-[10px] font-medium text-slate-500 leading-relaxed max-w-[240px] mx-auto uppercase tracking-[0.2em] font-mono">
+                    {uiCopy.story.shareDescription}
+                </p>
+            </div>
+            
+            <div ref={qrCodeRef} className="p-6 bg-white rounded-[2rem] inline-block shadow-[0_0_40px_rgba(255,45,85,0.15)] relative">
+                <div className="absolute -top-2 -right-2 p-2 rounded-full bg-primary text-white shadow-lg">
+                    <Heart className="w-3 h-3 fill-current" />
+                </div>
+                <QRCodeCanvas value={url} size={200} bgColor="#FFFFFF" fgColor="#000000" level="H" />
+            </div>
 
-        <div className="mt-6 space-y-4">
-          <button
-            onClick={downloadQRCode}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            Baixar QR Code
-          </button>
-          <button
-            onClick={handleWebShare}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
-            Compartilhar Link
-          </button>
+            <div className="pt-2 space-y-3">
+                <button
+                    onClick={handleWebShare}
+                    className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl shadow-[0_20px_40px_-10px_rgba(255,45,85,0.4)] hover:shadow-[0_25px_50px_-12px_rgba(255,45,85,0.5)] transition-all hover:-translate-y-1 active:scale-[0.98]"
+                >
+                    <Share2 className="w-4 h-4" />
+                    Eternizar História
+                    <Heart className="w-3.5 h-3.5 fill-current ml-1" />
+                </button>
+                <button
+                    onClick={downloadQRCode}
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-white/5 border border-white/5 text-slate-400 font-black uppercase tracking-[0.2em] text-[9px] rounded-xl hover:bg-white/10 hover:text-white transition-all"
+                >
+                    <Download className="w-4 h-4" />
+                    Salvar Convite Digital
+                </button>
+            </div>
         </div>
 
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-6 right-6 text-slate-600 hover:text-white transition-colors z-20"
         >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <X className="w-6 h-6" />
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, Sparkles, CalendarDays } from 'lucide-react';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
@@ -99,114 +99,191 @@ const DashboardPage: React.FC = () => {
     
     const isActiveStory = Boolean(storyData?.startDate && !isEditing);
     const previewStoryData = isEditing ? editorPreviewData ?? storyData : storyData;
-
-    const welcomeText = isEditing 
-      ? uiCopy.dashboard.editMode 
-      : uiCopy.dashboard.welcome;
+    const heroImages = storyData?.images || [];
 
     return (
-      <div className="container-fluid py-8 lg:py-16 space-y-24">
-        {/* Dashboard Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-4"
-        >
-          <div className="space-y-4">
-            <h1 className="text-fluid-h2 font-black text-white leading-[0.9] tracking-tighter uppercase">
-              {isEditing ? 'Aperfeiçoe seu' : 'Seu Legado'} <br />
-              <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
-                {isEditing ? 'legado digital.' : 'está vivo.'}
-              </span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-6 text-slate-500">
-             <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
-                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Live Studio</span>
-             </div>
-             <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
-             <p className="text-[10px] font-black uppercase tracking-widest font-mono hidden md:block">
-                v2.4.0
-             </p>
-          </div>
-        </motion.div>
-
-        {/* Free-Flow Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-[clamp(4rem,10vw,12rem)] items-start">
-          {/* Left Side: Management Console OR Editor */}
-          <div className="space-y-24 px-4">
-            {isActiveStory ? (
-              <>
-                <DashboardSummary storyData={storyData!} onEdit={() => setIsEditing(true)} />
-                
-                {shareLink && (
-                  <div className="pt-12 border-t border-white/5">
-                      <DashboardActions
-                        shareUrl={shareLink}
-                        onPreview={() => setIsPreviewing(true)}
-                        onShare={() => setIsQrModalOpen(true)}
-                        planFeatures={planFeatures}
-                        navigate={navigate}
-                      />
-                  </div>
-                )}
-              </>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <CounterDemo
-                  initialData={storyData}
-                  onSave={handleSaveStory}
-                  onCancel={() => setIsEditing(false)}
-                  saveStatus={saveStatus}
-                  isDashboard
-                  onDirty={() => setIsDirty(true)}
-                  planFeatures={planFeatures}
-                  showPreview={false}
-                  onPreviewDataChange={setEditorPreviewData}
-                />
-              </motion.div>
-            )}
-
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="flex items-center gap-8 group pt-8 border-t border-white/5"
-            >
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 text-slate-500 group-hover:text-primary transition-all duration-500">
-                  <Sparkles className="w-6 h-6" />
+      <div className="relative min-h-[calc(100vh-8rem)]">
+        {/* Cinematic Background Layer - Evocative & Visible */}
+        {isActiveStory && heroImages.length > 0 && (
+           <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505] z-10" />
+              <div className="absolute inset-0 bg-[#050505]/40 z-10" />
+              <div className="flex h-full w-full">
+                 {heroImages.slice(0, 3).map((img, idx) => (
+                    <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 3, delay: idx * 0.8 }}
+                        className="flex-grow h-full relative"
+                    >
+                        <img 
+                            src={img.image_url} 
+                            alt="" 
+                            className="w-full h-full object-cover blur-[100px]"
+                        />
+                    </motion.div>
+                 ))}
               </div>
-              <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 font-mono">Dica do Studio</p>
-                  <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">
-                      Mantenha sua história atualizada com novos momentos para que ela nunca pare de crescer e emocionar.
-                  </p>
-              </div>
-            </motion.div>
-          </div>
+           </div>
+        )}
 
-          {/* Right Side: Immersive Monitor Pane */}
-          <div className="lg:sticky lg:top-32 relative group px-4">
-             {/* Background atmosphere specifically for the monitor area */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-[120px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
-             
-             <DashboardPreviewPane
-               storyData={previewStoryData}
-               planFeatures={planFeatures}
-               isEditing={isEditing}
-             />
-             
-             <div className="mt-12 flex justify-center">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-700 font-mono">
-                  Interação Ativa • Monitor v2.4
+        <div className="container-fluid py-8 lg:py-16 space-y-12 relative z-10">
+          {/* Dashboard System Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-4"
+          >
+            <div className="space-y-4">
+              <h1 className="text-fluid-h2 font-black text-white leading-[0.9] tracking-tighter uppercase">
+                {isEditing ? 'Aperfeiçoe seu' : 'Seu Legado'} <br />
+                <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
+                  {isEditing ? 'legado digital.' : 'está vivo.'}
                 </span>
-             </div>
-          </div>
+              </h1>
+            </div>
+            <div className="flex items-center gap-6 text-slate-500">
+               <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest font-mono">Live Studio</span>
+               </div>
+               <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+               <p className="text-[10px] font-black uppercase tracking-widest font-mono hidden md:block">
+                  v2.4.0
+               </p>
+            </div>
+          </motion.div>
+
+          {/* The Unified Studio Deck */}
+          <motion.div
+              initial={{ opacity: 0, scale: 0.99 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="card-elite bg-white/[0.01] border-white/5 overflow-hidden relative shadow-[0_50px_100px_-30px_rgba(0,0,0,1)]"
+          >
+              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+              
+              {/* 1. HERO AREA: The Emotional Center (Full Width) */}
+              <div className="relative min-h-[450px] md:min-h-[500px] flex items-center justify-center border-b border-white/5 overflow-hidden text-center p-8 md:p-12 lg:p-20">
+                  {/* Internal Hero Backdrop - The "Soul" of the Story */}
+                  {isActiveStory && heroImages[0] && (
+                      <motion.div 
+                        key={heroImages[0].image_url}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 z-0"
+                      >
+                          <img 
+                              src={heroImages[0].image_url} 
+                              alt="" 
+                              className="w-full h-full object-cover opacity-60 blur-[4px] scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent z-10" />
+                          <div className="absolute inset-0 bg-black/10 z-10" />
+                      </motion.div>
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none z-10" />
+                  
+                  {isActiveStory ? (
+                      <div className="relative z-20 w-full">
+                          <DashboardSummary storyData={storyData!} onEdit={() => setIsEditing(true)} onlyHero />
+                      </div>
+                  ) : isEditing ? (
+                      <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="relative z-20 py-12"
+                      >
+                          <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Modo de Edição Ativo</h2>
+                          <p className="text-slate-500 font-mono text-[10px] uppercase tracking-[0.4em]">Aperfeiçoando sua história em tempo real</p>
+                      </motion.div>
+                  ) : null}
+              </div>
+
+              {/* 2. DYNAMIC WORKSPACE: Changes between Management and Editing */}
+              <div className={`grid grid-cols-1 ${isEditing ? 'xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x' : ''} divide-white/5 relative z-10`}>
+                  
+                  {/* Left: Actions & Editor */}
+                  <div className="p-8 md:p-12 lg:p-16 space-y-16">
+                      {!isActiveStory ? (
+                      <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.6 }}
+                      >
+                          <CounterDemo
+                          initialData={storyData}
+                          onSave={handleSaveStory}
+                          onCancel={() => setIsEditing(false)}
+                          saveStatus={saveStatus}
+                          isDashboard
+                          onDirty={() => setIsDirty(true)}
+                          planFeatures={planFeatures}
+                          showPreview={false}
+                          onPreviewDataChange={setEditorPreviewData}
+                          />
+                      </motion.div>
+                      ) : (
+                      <div className="space-y-16">
+                          <DashboardSummary 
+                            storyData={storyData!} 
+                            onEdit={() => setIsEditing(true)} 
+                            onPreview={() => setIsPreviewing(true)}
+                            onlyStats 
+                          />
+                          
+                          {shareLink && (
+                          <div className="pt-12 border-t border-white/5">
+                              <DashboardActions
+                                  onShare={() => setIsQrModalOpen(true)}
+                                  planFeatures={planFeatures}
+                                  navigate={navigate}
+                              />
+                          </div>
+                          )}
+                      </div>
+                      )}
+
+                      <div className="flex items-center gap-8 group pt-8 border-t border-white/5">
+                          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-slate-500 group-hover:text-primary transition-all duration-500">
+                              <Sparkles className="w-6 h-6" />
+                          </div>
+                          <div className="space-y-1">
+                              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 font-mono">Dica do Studio</p>
+                              <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">
+                                  Mantenha sua história atualizada com novos momentos para que ela nunca pare de crescer e emocionar.
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+
+                  {/* Right: Immersive Monitor (ONLY IN EDITING MODE) */}
+                  {isEditing && (
+                    <div className="p-8 md:p-12 lg:p-16 bg-black/20 relative group">
+                        <div className="lg:sticky lg:top-32 space-y-10">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 font-mono">
+                                    Studio Monitor v2.4
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                    <span className="text-[8px] font-black text-primary uppercase tracking-widest">Live Sync</span>
+                                </div>
+                            </div>
+
+                            <DashboardPreviewPane
+                                storyData={previewStoryData}
+                                planFeatures={planFeatures}
+                                isEditing={isEditing}
+                            />
+                        </div>
+                    </div>
+                  )}
+              </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -220,7 +297,7 @@ const DashboardPage: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="h-full w-full overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/30 backdrop-blur-3xl shadow-[0_50px_100px_-20px_rgba(0,0,0,1)] ring-8 ring-white/[0.02]"
+            className="h-full w-full overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/30 backdrop-blur-3xl shadow-[0_50px_100px_-30px_rgba(0,0,0,1)] ring-8 ring-white/[0.02]"
           >
             <StoryPreview storyData={previewData} plan={planFeatures} />
           </motion.div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import PlanCard from './PlanCard';
 import { useNotification } from '@/app/providers/NotificationProvider';
@@ -18,31 +18,59 @@ interface PricingSectionProps {
   plans: PlanFromDB[]; // Receives raw DB plans
   currentPlan?: string | null;
   onPlanSelect: (plan: { id: number; name: string; amount: number }) => void;
+  variant?: 'default' | 'compact';
 }
 
-const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect }) => {
+const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, currentPlan, onPlanSelect, variant = 'default' }) => {
   const { addToast } = useNotification();
   const { navigate } = useNavigate();
   const { user } = useAuth();
   const carouselRef = useRef<HTMLDivElement>(null);
+  const planRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const isCompact = variant === 'compact';
 
   // Format the raw DB plans into the structure the PlanCard expects
-  const formattedPlans: DisplayPlan[] = (dbPlans || []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    price: p.price.toFixed(2).replace('.', ','),
-    priceValue: p.price,
-    billing_provider: p.billing_provider,
-    billing_price_id: p.billing_price_id,
-    billingCycle: p.billing_cycle,
-    features: p.features,
-    isFeatured: p.is_featured,
-    cta: `Escolher ${p.name}`,
-  }));
+  const formattedPlans: DisplayPlan[] = useMemo(
+    () =>
+      (dbPlans || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price.toFixed(2).replace('.', ','),
+        priceValue: p.price,
+        billing_provider: p.billing_provider,
+        billing_price_id: p.billing_price_id,
+        billingCycle: p.billing_cycle,
+        features: p.features,
+        isFeatured: p.is_featured,
+        cta: `Escolher ${p.name}`,
+      })),
+    [dbPlans],
+  );
 
   const currentPlanDetails = currentPlan
     ? formattedPlans.find((plan) => plan.name === currentPlan)
     : null;
+
+  const centeredPlanId = currentPlanDetails?.id ?? formattedPlans.find((plan) => plan.isFeatured)?.id ?? formattedPlans[0]?.id;
+
+  useEffect(() => {
+    if (!isCompact || !centeredPlanId) return;
+
+    const targetIndex = formattedPlans.findIndex((plan) => plan.id === centeredPlanId);
+    const targetNode = planRefs.current[targetIndex];
+
+    if (!targetNode) return;
+
+    const timer = window.setTimeout(() => {
+      targetNode.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [centeredPlanId, formattedPlans, isCompact]);
 
   const getPlanStatus = (plan: DisplayPlan) => {
     if (!currentPlanDetails) return undefined;
@@ -79,6 +107,34 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
     });
   };
   
+  if (isCompact) {
+    return (
+      <div id={id} className="relative w-full">
+        {/* Plan Rows - Executive List for Settings */}
+        <div className="flex flex-col gap-4">
+          {formattedPlans.map((plan, index) => (
+            <motion.div 
+              key={plan.id}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="w-full"
+            >
+              <PlanCard
+                plan={plan}
+                status={getPlanStatus(plan)}
+                onSelect={handleSelectPlan}
+                disabled={!plan.billing_price_id || plan.billing_provider !== 'stripe'}
+                density="compact"
+              />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section id={id} className="section-fluid relative overflow-visible">
       {/* Background Glow */}
@@ -90,7 +146,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center max-w-4xl mx-auto mb-20"
+          className="text-center mx-auto mb-20 max-w-4xl"
         >
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6 block">
             Escolha seu Legado
@@ -114,6 +170,9 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
           {formattedPlans.map((plan, index) => (
             <motion.div 
               key={plan.id}
+              ref={(node) => {
+                planRefs.current[index] = node;
+              }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -125,6 +184,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
                 status={getPlanStatus(plan)}
                 onSelect={handleSelectPlan}
                 disabled={!plan.billing_price_id || plan.billing_provider !== 'stripe'}
+                density="default"
               />
             </motion.div>
           ))}
