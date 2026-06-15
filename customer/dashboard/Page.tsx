@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Sparkles, CalendarDays } from 'lucide-react';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
@@ -102,112 +103,95 @@ const DashboardPage: React.FC = () => {
     const heroImages = storyData?.images || [];
 
     return (
-      <div className="relative min-h-[calc(100vh-8rem)]">
-        {/* Cinematic Background Layer - Evocative & Visible */}
-        {isActiveStory && heroImages.length > 0 && (
-           <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505] z-10" />
-              <div className="absolute inset-0 bg-[#050505]/40 z-10" />
+      <div className="relative min-h-screen">
+        {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
+        {isActiveStory && heroImages.length > 0 && createPortal(
+           <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60">
+              <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] z-10 opacity-20" />
               <div className="flex h-full w-full">
                  {heroImages.slice(0, 3).map((img, idx) => (
                     <motion.div 
                         key={idx}
-                        initial={{ opacity: 0, scale: 1.1 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 3, delay: idx * 0.8 }}
+                        initial={{ opacity: 0, scale: 1 }}
+                        animate={{ 
+                            opacity: 1, 
+                            scale: [1, 1.1, 1],
+                        }}
+                        transition={{ 
+                            duration: 15, 
+                            repeat: Infinity, 
+                            ease: "linear",
+                            delay: idx * 2
+                        }}
                         className="flex-grow h-full relative"
                     >
                         <img 
                             src={img.image_url} 
                             alt="" 
-                            className="w-full h-full object-cover blur-[100px]"
+                            className="w-full h-full object-cover blur-[80px]"
                         />
                     </motion.div>
                  ))}
               </div>
-           </div>
+           </div>,
+           document.body
         )}
 
-        <div className="container-fluid py-8 lg:py-16 space-y-12 relative z-10">
-          {/* Dashboard System Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between px-4"
-          >
-            <div className="space-y-4">
-              <h1 className="text-fluid-h2 font-black text-white leading-[0.9] tracking-tighter uppercase">
-                {isEditing ? 'Aperfeiçoe seu' : 'Seu Legado'} <br />
-                <span className="text-primary italic font-cursive lowercase tracking-normal px-2">
-                  {isEditing ? 'legado digital.' : 'está vivo.'}
-                </span>
-              </h1>
-            </div>
-            <div className="flex items-center gap-6 text-slate-500">
-               <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest font-mono">Live Studio</span>
-               </div>
-               <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
-               <p className="text-[10px] font-black uppercase tracking-widest font-mono hidden md:block">
-                  v2.4.0
-               </p>
-            </div>
-          </motion.div>
-
-          {/* The Unified Studio Deck */}
-          <motion.div
-              initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="card-elite bg-white/[0.01] border-white/5 overflow-hidden relative shadow-[0_50px_100px_-30px_rgba(0,0,0,1)]"
-          >
-              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[140px] rounded-full -mr-64 -mt-64 pointer-events-none" />
-              
-              {/* 1. HERO AREA: The Emotional Center (Full Width) */}
-              <div className="relative min-h-[450px] md:min-h-[500px] flex items-center justify-center border-b border-white/5 overflow-hidden text-center p-8 md:p-12 lg:p-20">
-                  {/* Internal Hero Backdrop - The "Soul" of the Story */}
-                  {isActiveStory && heroImages[0] && (
-                      <motion.div 
-                        key={heroImages[0].image_url}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1 }}
-                        className="absolute inset-0 z-0"
-                      >
+        <div className="space-y-24 relative z-10 pb-32 pt-12 md:pt-24">
+          {/* 1. HERO AREA: The Emotional Center (NO CONTAINER) */}
+          <div className="relative min-h-[500px] md:min-h-[700px] flex items-center justify-center overflow-visible text-center">
+              {/* Internal Hero Backdrop - The "Artistic Canvas" */}
+              {isActiveStory && heroImages[0] && (
+                  <motion.div 
+                    key={heroImages[0].image_url}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 2.5 }}
+                    className="absolute inset-0 z-0 p-6 md:p-12 lg:p-16"
+                  >
+                      <div className="relative w-full h-full rounded-[3rem] md:rounded-[5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] border border-white/5 group">
                           <img 
                               src={heroImages[0].image_url} 
                               alt="" 
-                              className="w-full h-full object-cover opacity-60 blur-[4px] scale-105"
+                              className="w-full h-full object-cover opacity-60 blur-[2px] scale-110 transition-transform duration-[20s] group-hover:scale-100"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/40 z-10" />
                           <div className="absolute inset-0 bg-black/10 z-10" />
-                      </motion.div>
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none z-10" />
-                  
-                  {isActiveStory ? (
-                      <div className="relative z-20 w-full">
-                          <DashboardSummary storyData={storyData!} onEdit={() => setIsEditing(true)} onlyHero />
+                          {/* Soft Inner Glow */}
+                          <div className="absolute inset-0 ring-1 ring-inset ring-white/10 z-20 rounded-[3rem] md:rounded-[5rem]" />
                       </div>
-                  ) : isEditing ? (
-                      <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="relative z-20 py-12"
-                      >
-                          <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Modo de Edição Ativo</h2>
-                          <p className="text-slate-500 font-mono text-[10px] uppercase tracking-[0.4em]">Aperfeiçoando sua história em tempo real</p>
-                      </motion.div>
-                  ) : null}
-              </div>
+                  </motion.div>
+              )}
 
-              {/* 2. DYNAMIC WORKSPACE: Changes between Management and Editing */}
-              <div className={`grid grid-cols-1 ${isEditing ? 'xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x' : ''} divide-white/5 relative z-10`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-transparent pointer-events-none z-10" />
+              
+              {isActiveStory ? (
+                  <div className="relative z-20 w-full">
+                      <DashboardSummary 
+                        storyData={storyData!} 
+                        onEdit={() => setIsEditing(true)} 
+                        onPreview={() => setIsPreviewing(true)}
+                        onlyHero 
+                      />
+                  </div>
+              ) : isEditing ? (
+                  <motion.div
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="relative z-20 py-12 space-y-4"
+                  >
+                      <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">Studio <br/> Creation</h2>
+                      <p className="text-primary font-cursive text-2xl lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
+                  </motion.div>
+              ) : null}
+          </div>
+
+          {/* 2. DYNAMIC WORKSPACE: Pure Floating Grid */}
+          <div className="container-fluid px-[clamp(1.5rem,5vw,5rem)] max-w-fluid mx-auto w-full">
+              <div className={`grid grid-cols-1 ${isEditing ? 'xl:grid-cols-2 gap-24' : ''} relative z-10`}>
                   
                   {/* Left: Actions & Editor */}
-                  <div className="p-8 md:p-12 lg:p-16 space-y-16">
+                  <div className="space-y-16">
                       {!isActiveStory ? (
                       <motion.div
                           initial={{ opacity: 0, x: -20 }}
@@ -227,7 +211,7 @@ const DashboardPage: React.FC = () => {
                           />
                       </motion.div>
                       ) : (
-                      <div className="space-y-16">
+                      <div className="space-y-16 max-w-4xl mx-auto w-full">
                           <DashboardSummary 
                             storyData={storyData!} 
                             onEdit={() => setIsEditing(true)} 
@@ -236,13 +220,11 @@ const DashboardPage: React.FC = () => {
                           />
                           
                           {shareLink && (
-                          <div className="pt-12 border-t border-white/5">
-                              <DashboardActions
-                                  onShare={() => setIsQrModalOpen(true)}
-                                  planFeatures={planFeatures}
-                                  navigate={navigate}
-                              />
-                          </div>
+                            <DashboardActions
+                                onShare={() => setIsQrModalOpen(true)}
+                                planFeatures={planFeatures}
+                                navigate={navigate}
+                            />
                           )}
                       </div>
                       )}
@@ -250,9 +232,9 @@ const DashboardPage: React.FC = () => {
 
                   {/* Right: Immersive Monitor (ONLY IN EDITING MODE) */}
                   {isEditing && (
-                    <div className="p-8 md:p-12 lg:p-16 bg-black/20 relative group">
+                    <div className="relative group">
                         <div className="lg:sticky lg:top-32 space-y-10">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between px-4">
                                 <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 font-mono">
                                     Studio Monitor v2.4
                                 </span>
@@ -271,7 +253,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                   )}
               </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     );

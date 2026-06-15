@@ -29,7 +29,7 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-md mx-auto relative z-10 py-12">
+        <div className="container-fluid w-full max-w-md mx-auto relative z-10 py-12">
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

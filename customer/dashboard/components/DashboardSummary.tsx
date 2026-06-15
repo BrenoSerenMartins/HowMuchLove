@@ -58,32 +58,34 @@ const DashboardSummary: React.FC<{
 
   if (onlyHero) {
     return (
-        <div className="mx-auto w-full max-w-5xl space-y-16 text-center">
-            <div className="space-y-4">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.6em] font-mono">The Living Legacy</span>
-                <h2 className="text-fluid-h2 font-black text-white tracking-tighter uppercase leading-none">
-                    A nossa história <br/>
-                    <span className="text-slate-500 font-cursive lowercase italic tracking-normal px-2">começou há:</span>
-                </h2>
-            </div>
-            
-            <div className="py-8 transform scale-[1.1] md:scale-[1.25] lg:scale-[1.4] transition-transform duration-1000">
-                <DurationCounter startDate={validStartDate} density="dashboard" />
-            </div>
+        <div className="mx-auto w-full max-w-5xl space-y-12 text-center relative group">
+            {/* Heartbeat Ambient Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full animate-glow-pulse pointer-events-none z-0" />
 
-            <div className="mx-auto flex w-fit items-center justify-center gap-6 rounded-full border border-white/5 bg-white/[0.03] px-8 py-3 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                    <CalendarDays className="w-3.5 h-3.5 text-primary/60" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-slate-300">
-                        Desde {formatDateLabel(storyData.startDate)}
-                    </span>
+            <div className="relative z-10 space-y-12">
+                <h2 className="text-fluid-h2 font-black text-white tracking-tighter uppercase leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                    A nossa história <br/>
+                    <span className="text-primary italic font-cursive text-4xl lowercase tracking-normal px-2 opacity-80">começou há:</span>
+                </h2>
+
+                <div className="py-4 transform scale-[1.1] md:scale-[1.25] lg:scale-[1.4] transition-transform duration-1000 filter drop-shadow-[0_0_30px_rgba(255,45,85,0.3)]">
+                    <DurationCounter startDate={validStartDate} density="dashboard" />
                 </div>
-                <div className="h-4 w-px bg-white/10" />
-                <div className="flex items-center gap-3">
-                    <Sparkles className="w-3.5 h-3.5 text-primary/60" />
-                    <span className="text-[10px] font-black uppercase tracking-widest font-mono text-primary">
-                        {planName} Tier
-                    </span>
+
+                <div className="mx-auto flex w-fit items-center justify-center gap-8 py-4 opacity-60 hover:opacity-100 transition-opacity duration-500">
+                    <div className="flex items-center gap-3 text-slate-400">
+                        <CalendarDays className="w-4 h-4 text-primary/40" />
+                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] font-mono">
+                            Desde {formatDateLabel(storyData.startDate)}
+                        </span>
+                    </div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                    <div className="flex items-center gap-3">
+                        <Sparkles className="w-4 h-4 text-primary/40" />
+                        <span className="text-[11px] font-black uppercase tracking-[0.3em] font-mono text-primary/80">
+                            {planName} Tier
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

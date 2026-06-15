@@ -166,14 +166,14 @@ const Main: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed top-0 left-0 right-0 z-[100]"
+                className="fixed top-0 left-0 right-0 z-[100] bg-transparent pointer-events-none"
             >
                 <Header onLogoutRequest={logout} handleScrollTo={handleScrollTo} />
             </motion.div>
         )}
       </AnimatePresence>
 
-      <main className={`flex-grow container-fluid relative z-10 ${isHomePage ? '' : 'py-fluid-py'}`}>
+      <main className={`flex-grow relative z-10 ${isHomePage ? '' : ''}`}>
         <ConfirmModal
           isOpen={isConfirmationModalOpen}
           onConfirm={confirmNavigation}

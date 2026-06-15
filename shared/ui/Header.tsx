@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
   const showCenterNav = isHomePage && navLinks.length > 0;
 
   return (
-    <header className="fixed top-8 left-0 right-0 z-50 px-6 md:px-12 pointer-events-none">
+    <header className="w-full px-6 md:px-12 pointer-events-none pt-8 md:pt-10">
       <div className="max-w-fluid mx-auto flex justify-center lg:justify-between items-center gap-6">
         {/* Brand Capsule */}
         <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-full px-6 py-2.5 flex items-center shadow-2xl pointer-events-auto group transition-all hover:bg-white/[0.05] hover:border-white/10">
