@@ -246,18 +246,6 @@ const DashboardPage: React.FC = () => {
                           )}
                       </div>
                       )}
-
-                      <div className="flex items-center gap-8 group pt-8 border-t border-white/5">
-                          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-slate-500 group-hover:text-primary transition-all duration-500">
-                              <Sparkles className="w-6 h-6" />
-                          </div>
-                          <div className="space-y-1">
-                              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 font-mono">Dica do Studio</p>
-                              <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">
-                                  Mantenha sua história atualizada com novos momentos para que ela nunca pare de crescer e emocionar.
-                              </p>
-                          </div>
-                      </div>
                   </div>
 
                   {/* Right: Immersive Monitor (ONLY IN EDITING MODE) */}

@@ -91,42 +91,24 @@ const DashboardSummary: React.FC<{
   }
 
   return (
-    <div className="space-y-16">
-      {/* 02 / ROMANTIC STUDIO ACTIONS */}
-      <div className="space-y-10">
-        <div className="flex items-center gap-4">
-            <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] font-mono">Studio HUB</span>
-            <div className="h-[1px] flex-grow bg-white/5" />
-        </div>
+    <div className="space-y-10">
+      {/* DIRECT STUDIO ACTIONS - NO HEADER */}
+      <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+          <button 
+            onClick={onEdit} 
+            className="flex-grow py-5 px-10 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] transition-all hover:bg-white/10 hover:border-primary/30 flex items-center justify-center gap-3 group"
+          >
+            <PencilLine className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+            {uiCopy.dashboard.editStory}
+          </button>
 
-        <div className="flex flex-col gap-10">
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full">
-                <button 
-                  onClick={onEdit} 
-                  className="flex-grow py-5 px-10 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] transition-all hover:bg-white/10 hover:border-primary/30 flex items-center justify-center gap-3 group"
-                >
-                  <PencilLine className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-                  {uiCopy.dashboard.editStory}
-                </button>
-
-                <button 
-                  onClick={onPreview} 
-                  className="flex-grow py-5 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_40px_-10px_rgba(255,45,85,0.4)] transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
-                >
-                  <Star className="w-4 h-4 fill-white" />
-                  Ver Prévia Real
-                </button>
-            </div>
-            
-            <div className="flex items-center gap-6 p-8 rounded-[2.5rem] bg-gradient-to-r from-primary/5 to-transparent border border-white/5">
-                <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                    <Sparkles className="w-5 h-5" />
-                </div>
-                <p className="text-[11px] font-medium text-slate-400 leading-relaxed italic max-w-xl">
-                    "O amor é o único legado que realmente importa. Cada momento adicionado é um novo verso na eternidade da sua jornada."
-                </p>
-            </div>
-        </div>
+          <button 
+            onClick={onPreview} 
+            className="flex-grow py-5 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_40px_-10px_rgba(255,45,85,0.4)] transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
+          >
+            <Star className="w-4 h-4 fill-white" />
+            Ver Prévia Real
+          </button>
       </div>
     </div>
   );
