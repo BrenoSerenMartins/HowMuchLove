@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Sparkles, CalendarDays } from 'lucide-react';
+import { ChevronLeft, Sparkles, CalendarDays, PencilLine, Star, Share2, ArrowUpRight, Heart } from 'lucide-react';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
@@ -103,11 +103,14 @@ const DashboardPage: React.FC = () => {
     const heroImages = storyData?.images || [];
 
     return (
-      <div className="relative min-h-screen">
+      <div className="relative">
         {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
         {isActiveStory && heroImages.length > 0 && createPortal(
-           <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60">
-              <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] z-10 opacity-20" />
+           <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60 animate-fade-in">
+              {/* Soft Environmental Masks - Transparent at top to merge with shell */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent z-10 opacity-60" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]/60 z-10" />
+              
               <div className="flex h-full w-full">
                  {heroImages.slice(0, 3).map((img, idx) => (
                     <motion.div 
@@ -118,7 +121,7 @@ const DashboardPage: React.FC = () => {
                             scale: [1, 1.1, 1],
                         }}
                         transition={{ 
-                            duration: 15, 
+                            duration: 20, 
                             repeat: Infinity, 
                             ease: "linear",
                             delay: idx * 2
@@ -128,7 +131,7 @@ const DashboardPage: React.FC = () => {
                         <img 
                             src={img.image_url} 
                             alt="" 
-                            className="w-full h-full object-cover blur-[80px]"
+                            className="w-full h-full object-cover blur-[110px]"
                         />
                     </motion.div>
                  ))}
@@ -137,9 +140,9 @@ const DashboardPage: React.FC = () => {
            document.body
         )}
 
-        <div className="space-y-24 relative z-10 pb-32 pt-12 md:pt-24">
+        <div className="relative z-10 pb-32">
           {/* 1. HERO AREA: The Emotional Center (NO CONTAINER) */}
-          <div className="relative min-h-[500px] md:min-h-[700px] flex items-center justify-center overflow-visible text-center">
+          <div className="relative min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-visible text-center pt-24 md:pt-32 px-4">
               {/* Internal Hero Backdrop - The "Artistic Canvas" */}
               {isActiveStory && heroImages[0] && (
                   <motion.div 
@@ -153,10 +156,10 @@ const DashboardPage: React.FC = () => {
                           <img 
                               src={heroImages[0].image_url} 
                               alt="" 
-                              className="w-full h-full object-cover opacity-60 blur-[2px] scale-110 transition-transform duration-[20s] group-hover:scale-100"
+                              className="w-full h-full object-cover opacity-70 blur-[2px] scale-110 transition-transform duration-[25s] group-hover:scale-100"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/40 z-10" />
-                          <div className="absolute inset-0 bg-black/10 z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/20 z-10" />
+                          <div className="absolute inset-0 bg-black/5 z-10" />
                           {/* Soft Inner Glow */}
                           <div className="absolute inset-0 ring-1 ring-inset ring-white/10 z-20 rounded-[3rem] md:rounded-[5rem]" />
                       </div>
@@ -166,7 +169,7 @@ const DashboardPage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-transparent pointer-events-none z-10" />
               
               {isActiveStory ? (
-                  <div className="relative z-20 w-full">
+                  <div className="relative z-20 w-full drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                       <DashboardSummary 
                         storyData={storyData!} 
                         onEdit={() => setIsEditing(true)} 
@@ -178,15 +181,15 @@ const DashboardPage: React.FC = () => {
                   <motion.div
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="relative z-20 py-12 space-y-4"
+                      className="relative z-20 py-24 space-y-6"
                   >
-                      <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">Studio <br/> Creation</h2>
-                      <p className="text-primary font-cursive text-2xl lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
+                      <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-2xl">Studio <br/> Creation</h2>
+                      <p className="text-primary font-cursive text-3xl lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
                   </motion.div>
               ) : null}
           </div>
 
-          {/* 2. DYNAMIC WORKSPACE: Pure Floating Grid */}
+          {/* 2. DYNAMIC WORKSPACE: Floating Content Grid */}
           <div className="container-fluid px-[clamp(1.5rem,5vw,5rem)] max-w-fluid mx-auto w-full">
               <div className={`grid grid-cols-1 ${isEditing ? 'xl:grid-cols-2 gap-24' : ''} relative z-10`}>
                   
@@ -197,6 +200,7 @@ const DashboardPage: React.FC = () => {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.6 }}
+                          className="p-8 md:p-12 lg:p-16 border border-white/5 bg-white/[0.01] backdrop-blur-3xl rounded-[3rem]"
                       >
                           <CounterDemo
                           initialData={storyData}
@@ -211,7 +215,7 @@ const DashboardPage: React.FC = () => {
                           />
                       </motion.div>
                       ) : (
-                      <div className="space-y-16 max-w-4xl mx-auto w-full">
+                      <div className="space-y-24 max-w-4xl mx-auto w-full">
                           <DashboardSummary 
                             storyData={storyData!} 
                             onEdit={() => setIsEditing(true)} 
@@ -232,7 +236,7 @@ const DashboardPage: React.FC = () => {
 
                   {/* Right: Immersive Monitor (ONLY IN EDITING MODE) */}
                   {isEditing && (
-                    <div className="relative group">
+                    <div className="relative group p-8 md:p-12 lg:p-16 border border-white/5 bg-white/[0.01] backdrop-blur-3xl rounded-[3rem]">
                         <div className="lg:sticky lg:top-32 space-y-10">
                             <div className="flex items-center justify-between px-4">
                                 <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 font-mono">
