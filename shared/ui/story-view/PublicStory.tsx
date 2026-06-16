@@ -172,6 +172,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                     heroHeightClass={heroHeightClass}
                     heroDesktopStyle={heroDesktopStyle}
                     showEmptyState={(!images || images.length === 0) && !message}
+                    plan={plan}
                 />
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Sparkles, CalendarDays, PencilLine, Star, Share2, ArrowUpRight, Heart } from 'lucide-react';
 import CounterDemo from '@/shared/story-editor/CounterDemo';
 import { useAuth } from '@/app/hooks/useAuth';
@@ -15,7 +15,7 @@ import DashboardActions from './components/DashboardActions';
 import DashboardPreviewPane from './components/DashboardPreviewPane';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import StoryPreview from '@/shared/story-editor/StoryPreview';
+import PublicStory from '@/shared/ui/story-view/PublicStory';
 
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
@@ -89,27 +89,51 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const renderContent = () => {
-    if (isLoading || !planFeatures) {
-      return (
-        <div className="flex justify-center items-center py-32">
-          <LoadingSpinner />
-        </div>
-      );
-    }
-    
-    const isActiveStory = Boolean(storyData?.startDate && !isEditing);
-    const previewStoryData = isEditing ? editorPreviewData ?? storyData : storyData;
-    const heroImages = storyData?.images || [];
-
+  if (isLoading || !planFeatures) {
     return (
+      <div className="flex justify-center items-center py-32">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isPreviewing) {
+    const previewData = { ...storyData, plan: user?.plan || 'Gratis' } as LoveStoryData;
+    return (
+      <div className="fixed inset-0 z-[10000] bg-[#050505] flex flex-col h-screen w-screen overflow-hidden">
+          <PublicStory 
+            storyData={previewData} 
+            isPreview={true} 
+            hasEntered={true} 
+            isMuted={true}
+          />
+
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => setIsPreviewing(false)}
+            className="fixed top-8 left-8 z-[110] btn-secondary group !bg-black/60 !backdrop-blur-xl border-white/10 shadow-2xl pointer-events-auto"
+          >
+            <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Voltar ao Dashboard
+          </motion.button>
+      </div>
+    );
+  }
+
+  const isActiveStory = Boolean(storyData?.startDate && !isEditing);
+  const previewStoryData = isEditing ? editorPreviewData ?? storyData : storyData;
+  const heroImages = storyData?.images || [];
+
+  return (
+    <PageWrapper>
       <div className="relative">
         {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
         {isActiveStory && heroImages.length > 0 && createPortal(
            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60 animate-fade-in">
               {/* Soft Environmental Masks - Transparent at top to merge with shell */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent z-10 opacity-60" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]/60 z-10" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] z-10 opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]/40 z-10" />
               
               <div className="flex h-full w-full">
                  {heroImages.slice(0, 3).map((img, idx) => (
@@ -121,7 +145,7 @@ const DashboardPage: React.FC = () => {
                             scale: [1, 1.1, 1],
                         }}
                         transition={{ 
-                            duration: 20, 
+                            duration: 15, 
                             repeat: Infinity, 
                             ease: "linear",
                             delay: idx * 2
@@ -131,7 +155,7 @@ const DashboardPage: React.FC = () => {
                         <img 
                             src={img.image_url} 
                             alt="" 
-                            className="w-full h-full object-cover blur-[110px]"
+                            className="w-full h-full object-cover blur-[80px]"
                         />
                     </motion.div>
                  ))}
@@ -140,7 +164,7 @@ const DashboardPage: React.FC = () => {
            document.body
         )}
 
-        <div className="relative z-10 pb-32 pt-0 space-y-[clamp(4rem,8vh,12rem)]">
+        <div className="relative z-10 pb-32 pt-0 space-y-[clamp(2rem,6vh,8rem)]">
           {/* 1. HERO AREA: The Emotional Center (Unified Artistic Deck) */}
           <div className="container-fluid pt-[clamp(3rem,6vh,5rem)]">
               <motion.div 
@@ -155,16 +179,16 @@ const DashboardPage: React.FC = () => {
                           <img 
                               src={heroImages[0].image_url} 
                               alt="" 
-                              className="absolute inset-0 w-full h-full object-cover opacity-60 blur-[1px] scale-105 transition-transform duration-[30s] group-hover:scale-100"
+                              className="absolute inset-0 w-full h-full object-cover opacity-70 blur-[2px] scale-110 transition-transform duration-[25s] group-hover:scale-100"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/30 z-10" />
-                          <div className="absolute inset-0 bg-black/10 z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/20 z-10" />
+                          <div className="absolute inset-0 bg-black/5 z-10" />
                           <div className="absolute inset-0 ring-1 ring-inset ring-white/10 z-20 rounded-[clamp(2.5rem,7vw,6rem)]" />
                       </>
                   )}
 
                   {/* Dynamic Inner Glow */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent pointer-events-none z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-transparent pointer-events-none z-10" />
                   
                   {/* Submerged Content: Perfectly Contained & Centered */}
                   <div className="relative z-30 w-full px-[clamp(1.5rem,6vw,6rem)] py-12 drop-shadow-[0_0_40px_rgba(0,0,0,0.6)]">
@@ -177,7 +201,7 @@ const DashboardPage: React.FC = () => {
                           />
                       ) : isEditing ? (
                           <div className="text-center space-y-6 animate-fade-in-up">
-                              <h2 className="text-[clamp(3rem,9vw,6rem)] font-black text-white uppercase tracking-tighter leading-none">Studio <br/> Creation</h2>
+                              <h2 className="text-[clamp(3rem,9vw,6rem)] font-black text-white uppercase tracking-tighter leading-none drop-shadow-2xl">Studio <br/> Creation</h2>
                               <p className="text-primary font-cursive text-[clamp(1.5rem,4vw,3rem)] lowercase italic tracking-normal">Aperfeiçoando sua jornada...</p>
                           </div>
                       ) : null}
@@ -255,40 +279,6 @@ const DashboardPage: React.FC = () => {
               </div>
           </div>
         </div>
-      </div>
-    );
-  };
-  
-  if (isPreviewing) {
-    const previewData = { ...storyData, plan: planFeatures };
-    return (
-      <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#050505] p-3 md:p-10">
-        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-center relative">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="h-full w-full overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/30 backdrop-blur-3xl shadow-[0_50px_100px_-30px_rgba(0,0,0,1)] ring-8 ring-white/[0.02]"
-          >
-            <StoryPreview storyData={previewData} plan={planFeatures} />
-          </motion.div>
-          
-          <motion.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={() => setIsPreviewing(false)}
-            className="fixed top-8 left-8 z-[110] btn-secondary group !bg-black/60 !backdrop-blur-xl"
-          >
-            <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            {uiCopy.story.backToEditor}
-          </motion.button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <PageWrapper>
-        {renderContent()}
         {shareLink && (
             <QRCodeModal 
                 isOpen={isQrModalOpen}
@@ -297,6 +287,7 @@ const DashboardPage: React.FC = () => {
                 title={storyData?.storyTitle || uiCopy.dashboard.previewTitle}
             />
         )}
+      </div>
     </PageWrapper>
   );
 };

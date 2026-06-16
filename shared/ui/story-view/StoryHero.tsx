@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CalendarDays, Sparkles } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import type { LoveStoryData } from '@/types';
 import DurationCounter from './DurationCounter';
@@ -9,6 +10,15 @@ import {
   type LayoutPosition,
   type PreviewDensity,
 } from './story-layout';
+
+const formatDateLabel = (value: Date | null): string => {
+  if (!value) return 'Sem data definida';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(value);
+};
 
 interface StoryHeroProps {
   images: LoveStoryData['images'];
@@ -23,6 +33,7 @@ interface StoryHeroProps {
   heroHeightClass: string;
   heroDesktopStyle?: CSSProperties;
   showEmptyState: boolean;
+  plan?: any;
 }
 
 const StoryHero: React.FC<StoryHeroProps> = ({
@@ -38,7 +49,14 @@ const StoryHero: React.FC<StoryHeroProps> = ({
   heroHeightClass,
   heroDesktopStyle,
   showEmptyState,
+  plan
 }) => {
+  const planName = typeof plan === 'string' 
+    ? plan 
+    : Array.isArray(plan) 
+      ? plan[0]?.name 
+      : plan?.name || 'Story';
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -84,8 +102,33 @@ const StoryHero: React.FC<StoryHeroProps> = ({
         transition={{ delay: 0.5, duration: 1 }}
         className={`relative z-20 ${getLayoutPanelClasses(layoutPosition, storyDensity)}`}
       >
-        <div className={`mx-auto text-center ${storyDensity === 'compact' ? 'max-w-2xl' : storyDensity === 'dense' ? 'max-w-3xl' : 'max-w-4xl'}`}>
-          <DurationCounter startDate={date} density={storyDensity} />
+        <div className={`mx-auto text-center space-y-10 ${storyDensity === 'compact' ? 'max-w-2xl' : storyDensity === 'dense' ? 'max-w-3xl' : 'max-w-5xl'}`}>
+          <div className="space-y-4 drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+             <h2 className="text-[clamp(1.5rem,4vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-none">
+                A nossa história <br/>
+                <span className="text-primary italic font-cursive text-[clamp(1.25rem,3.5vw,2.5rem)] lowercase tracking-normal px-2 opacity-90">começou há:</span>
+             </h2>
+          </div>
+
+          <div className="py-4">
+            <DurationCounter startDate={date} density={storyDensity} />
+          </div>
+
+          <div className="mx-auto flex w-fit items-center justify-center gap-4 md:gap-6 rounded-full border border-white/10 bg-black/20 px-6 md:px-8 py-2 md:py-3 backdrop-blur-md opacity-80">
+            <div className="flex items-center gap-2 md:gap-3">
+                <CalendarDays className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary/60" />
+                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest font-mono text-slate-300">
+                    Desde {formatDateLabel(date)}
+                </span>
+            </div>
+            <div className="h-4 w-px bg-white/10" />
+            <div className="flex items-center gap-2 md:gap-3">
+                <Sparkles className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary/60" />
+                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest font-mono text-primary">
+                    {planName} Tier
+                </span>
+            </div>
+          </div>
         </div>
       </motion.div>
 
