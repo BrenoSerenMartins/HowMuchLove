@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 type CounterDensity = 'default' | 'dense' | 'compact' | 'dashboard';
 
 const TimeUnit: React.FC<{ value: number; label: string; index: number; density?: CounterDensity }> = ({ value, label, index, density = 'default' }) => {
-  const isDense = density !== 'default';
+  const isDense = density === 'dense';
   const isCompact = density === 'compact';
   const isDashboard = density === 'dashboard';
 
@@ -18,12 +18,12 @@ const TimeUnit: React.FC<{ value: number; label: string; index: number; density?
       <div className="relative">
         <span className={`font-black text-white tracking-tighter leading-none block ${
           isCompact
-            ? 'text-[clamp(0.95rem,2.6vw,2.1rem)]'
+            ? 'text-[clamp(0.95rem,2.2vw,1.6rem)]'
             : isDashboard
-              ? 'text-[clamp(1.25rem,3.2vw,3.2rem)]'
+              ? 'text-[clamp(1.1rem,3vw,2.8rem)]'
               : isDense
-                ? 'text-[clamp(1.35rem,3.2vw,3.6rem)]'
-                : 'text-[clamp(2.5rem,8vw,8rem)]'
+                ? 'text-[clamp(1.15rem,3.2vw,3rem)]'
+                : 'text-[clamp(1.25rem,3.5vw,3.2rem)]'
         }`}>
           {String(value).padStart(2, '0')}
         </span>
@@ -31,12 +31,12 @@ const TimeUnit: React.FC<{ value: number; label: string; index: number; density?
       </div>
       <span className={`font-black text-primary uppercase font-mono ${
         isCompact
-          ? 'mt-1.5 tracking-[0.22em] text-[clamp(5px,0.55vw,8px)]'
+          ? 'mt-1 tracking-[0.2em] text-[clamp(5px,0.45vw,7px)]'
           : isDashboard
-            ? 'mt-1.5 tracking-[0.26em] text-[clamp(6px,0.7vw,9px)]'
+            ? 'mt-1.5 tracking-[0.24em] text-[clamp(6px,0.6vw,8.5px)]'
             : isDense
-              ? 'mt-2 tracking-[0.34em] text-[clamp(6px,0.8vw,10px)]'
-              : 'mt-6 tracking-[0.4em] text-[clamp(8px,1vw,12px)]'
+              ? 'mt-2 tracking-[0.28em] text-[clamp(6.5px,0.7vw,9.5px)]'
+              : 'mt-2.5 tracking-[0.32em] text-[clamp(7px,0.8vw,10.5px)]'
       }`}>
         {label}
       </span>
@@ -78,12 +78,11 @@ const DurationCounter: React.FC<{ startDate: Date | null; density?: CounterDensi
   
     if (!duration) return null;
   
-    const isDense = density !== 'default';
-    const isCompact = density === 'compact';
     const isDashboard = density === 'dashboard';
+    const isCompact = density === 'compact';
 
     return (
-      <div className={`grid ${isCompact ? 'grid-cols-3 gap-1.5 sm:gap-2' : isDashboard ? 'grid-cols-3 gap-4 sm:gap-5 md:gap-6' : isDense ? 'grid-cols-3 gap-2 sm:gap-3' : 'grid-cols-3 sm:grid-cols-6 gap-6 md:gap-10'} text-center`}>
+      <div className={`grid grid-cols-3 ${isCompact ? 'gap-x-[clamp(2rem,6vw,4rem)] gap-y-4' : isDashboard ? 'gap-x-[clamp(3rem,8vw,6rem)] gap-y-6' : 'gap-x-[clamp(4.5rem,12vw,14rem)] gap-y-[clamp(1.5rem,4vh,2.5rem)]'} text-center max-w-fit mx-auto`}>
         <TimeUnit index={0} value={duration.years} label="Anos" density={density} />
         <TimeUnit index={1} value={duration.months} label="Meses" density={density} />
         <TimeUnit index={2} value={duration.days} label="Dias" density={density} />

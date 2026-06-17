@@ -67,7 +67,7 @@ const StoryHero: React.FC<StoryHeroProps> = ({
     >
       <AnimatePresence mode="popLayout">
         <motion.div
-          key={images?.[topImageIndex]?.id || 'bg'}
+          key={topImageIndex}
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
@@ -78,7 +78,7 @@ const StoryHero: React.FC<StoryHeroProps> = ({
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
               <div className="h-full w-[clamp(34rem,40vw,46rem)] shrink-0 overflow-hidden">
                 <img
-                  src={activeHeroImageUrl || backgroundImageUrl}
+                  src={images?.[topImageIndex]?.image_url || activeHeroImageUrl || backgroundImageUrl}
                   alt=""
                   className="h-full w-full object-cover object-center"
                 />
@@ -87,7 +87,7 @@ const StoryHero: React.FC<StoryHeroProps> = ({
           ) : (
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${activeHeroImageUrl || backgroundImageUrl})` }}
+              style={{ backgroundImage: `url(${images?.[topImageIndex]?.image_url || activeHeroImageUrl || backgroundImageUrl})` }}
             />
           )}
           <div className="absolute inset-0 bg-black/30" />
@@ -102,30 +102,14 @@ const StoryHero: React.FC<StoryHeroProps> = ({
         transition={{ delay: 0.5, duration: 1 }}
         className={`relative z-20 ${getLayoutPanelClasses(layoutPosition, storyDensity)}`}
       >
-        <div className={`mx-auto text-center space-y-10 ${storyDensity === 'compact' ? 'max-w-2xl' : storyDensity === 'dense' ? 'max-w-3xl' : 'max-w-5xl'}`}>
-          <div className="space-y-4 drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-             <h2 className="text-[clamp(1.5rem,4vw,3.5rem)] font-black text-white uppercase tracking-tighter leading-none">
-                A nossa história <br/>
-                <span className="text-primary italic font-cursive text-[clamp(1.25rem,3.5vw,2.5rem)] lowercase tracking-normal px-2 opacity-90">começou há:</span>
-             </h2>
-          </div>
-
-          <div className="py-4">
+        <div className={`mx-auto text-center space-y-6 ${storyDensity === 'compact' ? 'max-w-2xl' : storyDensity === 'dense' ? 'max-w-3xl' : 'max-w-5xl'}`}>
+          <div className="flex flex-col items-center space-y-6">
             <DurationCounter startDate={date} density={storyDensity} />
-          </div>
-
-          <div className="mx-auto flex w-fit items-center justify-center gap-4 md:gap-6 rounded-full border border-white/10 bg-black/20 px-6 md:px-8 py-2 md:py-3 backdrop-blur-md opacity-80">
-            <div className="flex items-center gap-2 md:gap-3">
+            
+            <div className="flex items-center gap-2.5 opacity-60 mt-2">
                 <CalendarDays className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary/60" />
-                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest font-mono text-slate-300">
+                <span className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.35em] font-mono text-slate-300">
                     Desde {formatDateLabel(date)}
-                </span>
-            </div>
-            <div className="h-4 w-px bg-white/10" />
-            <div className="flex items-center gap-2 md:gap-3">
-                <Sparkles className="w-3 md:w-3.5 h-3 md:h-3.5 text-primary/60" />
-                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest font-mono text-primary">
-                    {planName} Tier
                 </span>
             </div>
           </div>
