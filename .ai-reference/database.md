@@ -1,106 +1,40 @@
-# Database
+# Análise do Banco de Dados
 
-## Confirmed data surfaces
-- Supabase Auth stores users and sessions.
-- Postgres stores app data.
-- Supabase Storage stores story images in a bucket named `story-images`.
+## SGBD
+- **PostgreSQL** (Hospedado via Supabase).
 
-## Observed tables
+## Arquitetura de Dados Principal
 
-### `plans`
-Confirmed from code:
-- `id`
-- `name`
-- `price`
-- `type`
-- `external_id`
-- `billing_provider`
-- `billing_product_id`
-- `billing_price_id`
-- `image_limit`
-- `allow_youtube`
-- `allow_password_protection`
-- `allow_custom_button`
-- `feature_rules`
-- `features`
-- `billing_cycle`
-- `is_featured`
-- `is_active`
-- `show_on_pricing_page`
+O ecossistema gira em torno de duas trilhas conceituais: **Faturamento (Planos)** e o **Domínio Core (Histórias e Imagens)**. Os usuários vêm do esquema nativo de autenticação do Supabase (`auth.users`).
 
-Inferred:
-- likely a primary key on `id`
-- likely a uniqueness constraint on `name`
+### 1. Entidade: `plans` (Catálogo de Preços e Limites)
+- Tabela responsável por controlar todo o faturamento dinâmico e capacidades oferecidas aos usuários baseadas na sua hierarquia de preço.
+- **Colunas Vitais:**
+  - `billing_provider` e IDs de precificação externos (`billing_product_id`, `billing_price_id`): Usados primordialmente pelo Stripe.
+  - `image_limit`: Regra de negócio gravada diretamente na base. Define quantas imagens do tipo StoryImage o plano permite.
+  - `allow_youtube`, `allow_password_protection`, `allow_custom_button`: Booleanos atrelados explicitamente a features (Feature Flags derivadas do banco).
+- A tabela de `plans` é majoritariamente lida pelo Frontend (para renderizar a página de vendas pública) e lida pela Edge Function na criação de Checkout. Ela raramente recebe *inserts* no ambiente de produção exceto por ação do Admin.
 
-### `profiles`
-Confirmed from code:
-- `id`
-- `name`
-- `plan_id`
-- `billing_provider`
-- `billing_customer_id`
-- `billing_subscription_id`
-- `billing_price_id`
-- `billing_status`
-- `billing_current_period_end`
-- `billing_cancel_at_period_end`
+### 2. Entidade: `stories` (A Cápsula do Tempo)
+- *Anotação: Baseado no front-end, a entidade `stories` parece existir atrelada ao usuário.*
+- Contém metadados configurados no `/dashboard` como: a data de início (`startDate`), a mensagem declarativa (`message`), configurações de posicionamento de layout (`layoutPosition`), hash de senha (`storyPassword`) para bloqueio e a URL do vídeo (`youtubeUrl`).
+- O acesso a essa tabela é o mais restrito de todos, garantido por políticas RLS rigorosas de UPDATE (apenas dono da história) e SELECT público (apenas de histórias visíveis ou mediante senha).
 
-Behavior:
-- `id` matches the Supabase auth user ID.
-- `plan_id` is the authoritative plan pointer and is resolved explicitly by code when loading the current user plan.
+### 3. Entidade: `story_images` (A Galeria)
+- Subentidade, relacionada a `stories`. Representa as mídias da galeria.
+- **Colunas Vitais:**
+  - `image_url`: Aponta para o arquivo real estocado no Storage (Bucket `story-images`).
+  - `display_order`: Um inteiro que reflete a ordem imposta no frontend (via Drag and Drop do `dnd-kit`).
+- **Comportamento Implícito:** A inserção neste local e posterior salvamento no backend utiliza a *Atomic Save* via SQL. Ou seja, se o frontend submete a exclusão de IDs antigos e a criação de novos, o banco transaciona isso, visando evitar imagens orfãs e ordenação quebrada.
 
-### `love_stories`
-Confirmed from code:
-- `id`
-- `user_id`
-- `start_date`
-- `story_text`
-- `layout_position`
-- `youtube_url`
-- `entry_button_text`
-- `story_password`
+### 4. Entidade de Sistema: `app_config`
+- Uma tabela Key-Value (Chave e Valor) genérica para armazenar variáveis de ambiente/configurações globais necessárias no ambiente sem a necessidade de re-deploy da aplicação (Exemplo observado no seed: `FRONTEND_URL`).
 
-Behavior:
-- one story per user is assumed by all save/load functions.
-- `story_password` stores a scrypt hash, not the raw password.
+## Mecanismos de Prevenção e Constraints
 
-### `story_images`
-Confirmed from code:
-- `id`
-- `story_id`
-- `image_url`
-- `display_order`
+- **Migrations Regulares:** O fluxo de vida de esquema é ditado via `/supabase/migrations`. O sistema é proibido de possuir "alterações manuais não rastreáveis" via SQL Editor em produção. As migrations controlam incrementos como `add_stripe_billing_fields_to_profiles` e `save_story_atomic`.
+- **Integridade Referencial Pesada:** Histórias dependem de usuários logados. Imagens dependem de Histórias. Na exclusão (se existir o comportamento de conta), cascateamento (ON DELETE CASCADE) será provavelmente ativado.
+- **Atomic Operations:** As migrations como `save_story_atomic.sql` evidenciam a inteligência de banco para impedir *race-conditions* (condições de corrida) ou salvamentos parciais (ex: imagem upada, mas erro ao salvar ordenação da galeria, resultando na reversão total).
 
-Behavior:
-- image ordering is restored by sorting on `display_order`.
-- image deletion is handled by ID and storage file path reconstruction.
-
-### `app_config`
-Confirmed from code:
-- `key`
-- `value`
-
-Used for:
-- `FRONTEND_URL`
-
-## Migrations present in repo
-- `20251117024849_add_show_on_pricing_to_plans.sql` adds `show_on_pricing_page` to `plans`.
-- `20260609000000_add_plan_integration_metadata_and_feature_rules.sql` adds `billing_provider`, `billing_product_id`, `billing_price_id`, and `feature_rules` to `plans`.
-- `20260609010000_add_stripe_billing_fields_to_profiles.sql` adds Stripe billing sync fields to `profiles`.
-- `20260608000000_save_story_atomic.sql` creates the `public.save_story_with_images(...)` RPC used by `save-story` to persist the story and its ordered images atomically.
-
-## Migration notes
-- The `show_on_pricing_page` migration is written defensively so it can be applied to a restored database that already contains the column.
-- `plans.feature_rules` is intentionally JSON-based so future billing integrations can override limits and feature flags without schema churn.
-- The atomic story-save RPC is part of the server contract; if it is missing from the remote database, `save-story` fails at runtime even when the edge function itself is deployed.
-
-## Constraints and assumptions
-- The repository does not contain the full schema, RLS policies, or trigger definitions.
-- The code assumes a profile row exists for every auth user.
-- The code assumes a relation between `profiles.plan_id` and `plans.id`.
-- The code assumes `love_stories.user_id` is unique per user.
-
-## Database risks
-- Plan enforcement is not duplicated in `save-story`.
-- Public story lookup now depends on UUID-only story identifiers and fails closed when the story cannot be resolved.
-- The schema is only partially documented in repository files, so some constraints are inferred.
+## Pontos de Risco (Gargalos)
+- O número limite de requisições à tabela de histórias para acesso público (`/story/:id`) pode virar um gargalo de leitura na base se histórias atingirem pico de popularidade viral, exigindo no futuro camadas de cache externo (Redis, ou CDN agressivo da Cloudflare, dificultado pelo acesso por senha).

@@ -1,10 +1,8 @@
-# Queue Map
+# Mapa de Filas (Queues)
 
-## Observed state
-- No queue infrastructure is present in the repository.
-- No background job runner, message broker, or queue consumer is defined in source.
+Atualmente a aplicação trabalha sob processamento estritamente **Síncrono/Bloqueante** na interação cliente-servidor para CRUDs.
 
-## Implication
-- All significant work is synchronous from the perspective of the user flow.
-- Payment, story save, and public story lookup are request/response operations.
+- **Processamento de Imagem:** Diferente de grandes arquiteturas que despacham uploads para workers secundários rodarem compressão, as imagens do `HowMuchLove` sobem inteiramente via cliente Web e são consumidas pelo bucket CDN. Não existem filas (ex: SQS, Redis Bull, Celery) configuradas.
 
+**Recomendação de Impacto Futuro:**
+Se for inserida a feature "Gerar Vídeo a partir de Fotos", a arquitetura precisará invocar Edge Functions assíncronas que disparem jobs de fila e notifiquem o frontend via SSE/WebSockets.

@@ -1,26 +1,23 @@
-# Tradeoffs
+# Trade-Offs e Anti-Padrões Internos
 
-## Custom Hash Routing vs. React Router
-- **Pros**: Zero dependencies, absolute control over navigation lifecycle, 100% compatibility with static hosting.
-- **Cons**: No out-of-the-box support for transitions, deep linking requires `window.location.hash` parsing, manual handling of "go back" behavior.
-- **Decision**: Custom Hash Routing won for its simplicity in a Supabase-centric environment.
+## Trade-offs de Design
 
-## Manual State Providers vs. Global Store (Redux/Zustand)
-- **Pros**: Explicit data flow, no extra library overhead, easy to debug via React DevTools.
-- **Cons**: Potential for "provider hell" (nested wrappers), manual optimization to avoid unnecessary re-renders.
-- **Decision**: Manual Providers were chosen as the app state is relatively shallow and scoped to discrete domains (Auth, Nav, Notifications).
+1. **SPA Custom Router vs React-Router**
+   - *O que ganhamos:* Controle sub-molecular em transições imperativas no `App.tsx` usando Suspense e Framer Motion. Zero quebras de estado da Store de Histórico global se algo acidentar no pipeline.
+   - *O que custou:* Ausência de *Active Links*, sub-rota nativa sem re-render, e hooks nativos modernos como Loader Parameters. Desenvolvedores novatos demorarão para se acostumar que a rotação URL vive no `NavigationProvider`.
 
-## Supabase Edge Functions vs. Custom API (Node/Express)
-- **Pros**: Seamless integration with Supabase Auth/DB, zero server management, auto-scaling.
-- **Cons**: Deno runtime limitations, cold start latency, harder local development setup (requires Supabase CLI).
-- **Decision**: Edge Functions are the backbone for high-privilege operations, keeping the project "serverless".
+2. **Delegação Criptográfica via Banco de Dados (Senha)**
+   - *O que ganhamos:* A rota da história não possui dependência de autenticação severa (Visitante não precisa criar conta). Ele consome a view livre, apenas precisando injetar o string da senha que é repassado ao Postgres para matching e devolução do dado encriptado original.
+   - *O que custou:* Como a senha atua não só como trava, mas para liberar dados na base de dados, a arquitetura de acesso requer Edge Functions seguras que processam esse hash ou complexos grants no RLS que limitam manutenções de query.
 
-## Inline Styles/Tailwind vs. CSS Modules/Sass
-- **Pros**: Fast prototyping, zero CSS bundle management, consistent design system.
-- **Cons**: JSX can become cluttered with utility classes, complex animations sometimes require `<style>` tags.
-- **Decision**: Tailwind CSS is the primary styling engine for its productivity benefits.
+## Anti-Patterns Assumidos Propositalmente
 
-## Stripe Checkout vs. Embedded Elements
-- **Pros**: Zero security risk for card data, native support for Apple/Google Pay, handles localized payment methods (Pix, etc.) automatically.
-- **Cons**: Interrupted user experience (external redirect), less "premium" integrated feel.
-- **Decision**: Stripe Checkout was selected to prioritize security and speed to market.
+1. **God Hook no AuthProvider**
+   - O Hook de Autenticação abraçou lógica pesada como carregar os Planos (`planFeatures`), carregar a História e gerenciar seu Salvamento.
+   - *Efeito Prático:* Apesar de classificado como um Anti-Pattern claro (Violação do Princípio de Responsabilidade Única no conceito SOLID), reduziu-se o emaranhado complexo de "quem depende de quem", já que em um modelo restrito, você não salva sem Auth. Isso unificou o escopo de variáveis visíveis ao Dashboard.
+
+2. **Script Externo Abandonado no Root**
+   - O injetável `sdk.mercadopago.com` está chumbado no `index.html` mesmo num ambiente estritamente desenhado para **Stripe Checkout**, servindo como dívida intencional não limpada, presumidamente devido ao medo de regressão onde features secundárias escondidas parassem de funcionar.
+
+3. **Dupla Fonte da Verdade para "Limites de Fotos"**
+   - A tabela Postgres (`plans`) limita o Plano Infinito a "10", enquanto as promessas copy no LandingPage (provavelmente extraídas pelo `.features`) vendem "até 20 fotos". Esse distanciamento gera a anomalia grave onde a camada humana (Marketing) mente e o Banco de Dados frustra o pagamento, que é um clássico anti-pattern arquitetural de divergência de modelagem de negócio.

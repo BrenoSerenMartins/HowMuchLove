@@ -1,49 +1,40 @@
-# Architecture
+# Arquitetura do Sistema
 
-## Architectural style
-This project is a client-heavy SPA with serverless backends. The UI owns most of the orchestration, while Supabase provides authentication, database access, file storage, and Edge Functions.
+## Padrão Arquitetural Global
+O **HowMuchLove** utiliza uma arquitetura **Serverless / BaaS (Backend as a Service)** fortemente acoplada ao ecossistema do **Supabase**. O padrão principal é o de **Thick Client (Rich Client)**, onde o frontend React detém a maior parte da lógica de visualização, roteamento e estado de interação, comunicando-se diretamente com o banco de dados via chamadas de API (PostgREST) protegidas por **Row Level Security (RLS)**.
 
-## Layering
-- Shell and route entrypoints: `app/App.tsx` plus the semantic route folders under `marketing/`, `auth/`, `customer/`, and `story/`.
-- Shared UI layer: `shared/ui/*`.
-- Client state layer: `app/providers/*`, `app/hooks/*`.
-- Service layer: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/plans.ts`, `shared/lib/storage.ts`, `shared/lib/supabase.ts`, `shared/lib/validators.ts`.
-- Backend layer: `supabase/functions/*`.
-- Data layer: Supabase Postgres tables, auth users, and storage bucket `story-images`.
+### Separação de Camadas
+1. **Presentation Layer (Client-Side)**
+   - **Framework**: React 18 (SPA) empacotado via Vite.
+   - **Roteamento**: Customizado (via `useNavigate` e `NavigationProvider`), sem uso de React Router. Baseado na renderização condicional baseada na rota da URL no `App.tsx`.
+   - **Estado Global**: Gerenciado via React Contexts (`AuthProvider`, `NavigationProvider`, `NotificationProvider`).
+   
+2. **Business Logic Layer (Edge / Client)**
+   - Regras de negócio de UI (validações de formulário, animações, transições) vivem no frontend (Custom Hooks como `useAuth`, `useFormValidator`).
+   - Regras de negócio críticas (processamento de pagamentos Stripe, limitação de features baseadas no plano) vivem em **Supabase Edge Functions** (`supabase/functions/process-payment`).
 
-## Routing model
-- Route state lives in `NavigationContext`.
-- The route is derived from `window.location.hash`.
-- `app/App.tsx` switches pages by string matching on the route.
-- Root `App.tsx` is a compatibility export that points at `app/App.tsx`.
-- Nested hash fragments are used for in-page anchors such as `#/settings#pricing-section`.
+3. **Data Layer (Supabase)**
+   - **Banco de Dados**: PostgreSQL com esquemas relacionais (`plans`, `users`, `stories` implicito via auth).
+   - **Armazenamento**: Supabase Storage (bucket `story-images`) para uploads de fotos da galeria.
+   - **Segurança (RLS)**: O acesso aos dados é restrito no nível do banco. O frontend faz chamadas diretas (ex: `saveStory`), e o Postgres decide o que permitir baseado no JWT da sessão.
 
-## Composition model
-- `app/App.tsx` wraps the entire app in `NavigationProvider`, `AuthProvider`, and `NotificationProvider`.
-- The shell renders global background, header, footer, mobile bottom nav, modals, and toast container.
-- Route entrypoints own the feature-specific composition and import shared feature components directly.
+## Fluxo de Requisição (Data Fetching)
+1. **Client**: Usuário interage com a UI (ex: clica em "Salvar Cápsula").
+2. **Hook**: O componente chama uma função do contexto (`useAuth().saveStory()`).
+3. **API Client**: A função no contexto (`shared/lib/story-api` ou similar) usa o Supabase SDK para mutar os dados.
+4. **Database (RLS)**: O PostgreSQL avalia o token JWT associado à requisição. Se o `auth.uid()` bater com o dono do registro, a operação de `INSERT/UPDATE` ou upload no Storage é permitida.
+5. **Response**: Retorna ao Client, que atualiza o estado local e despacha uma notificação (`NotificationProvider`).
 
-## Data ownership
-- Supabase Auth owns the identity/session.
-- `profiles` owns user name and plan membership.
-- `plans` owns plan metadata and feature flags.
-- `love_stories` owns the story body and access restrictions.
-- `story_images` owns image ordering and URLs.
-- `app_config` owns payment and deployment configuration values.
+## Gerenciamento de Estado
+- **Autenticação**: O `AuthProvider` mantém o usuário logado, estado de loading e as features do plano atual (`planFeatures`). Ele se hidrata a partir da sessão ativa do Supabase na montagem.
+- **Navegação**: O roteamento é estritamente controlado no frontend. O `App.tsx` injeta o componente correto baseado no path atual. Há regras estritas de proteção de rota dentro do `useEffect` do `App.tsx` (redirecionando não autenticados que tentam acessar `/dashboard` para `/`).
+- **Estado de Formulários**: Formulários utilizam uma abordagem *controlled* via o hook customizado `useFormValidator`, que aplica regras (`validateRequired`, `validateEmail`) e gere erros *inline*.
 
-## Coupling characteristics
-- Strong coupling exists between UI types and Supabase row shapes.
-- Strong coupling exists between public story links and the auth `user.id`; the public identifier is UUID-only.
-- Strong coupling exists between plan names and feature rank logic.
-- Strong coupling exists between payment behavior and the Stripe plan metadata (`billing_provider`, `billing_price_id`) plus the webhook sync path.
+## Integração com Serviços de Terceiros
+- **Pagamentos**: A aplicação depende de provedores como Stripe. O fluxo de checkout é *off-site*. O frontend chama uma Edge Function (`process-payment`), que cria uma sessão do Stripe Checkout. Ao finalizar, webhooks do Stripe alimentam o banco de dados via Edge Functions, e o usuário é redirecionado para as rotas `/payment-success` ou `/payment-failure`.
+- **Hospedagem Frontend**: Cloudflare Pages. O comando de preview e deploy no `package.json` aciona o Wrangler cli. A configuração SPA está no `wrangler.jsonc` (assumindo single-page-application mode, direcionando 404s para `index.html`).
 
-## Boot sequence
-1. `index.html` loads fonts, GA4, and the Vite bundle.
-2. `index.tsx` mounts `App` into `#root`.
-3. `AuthProvider` rehydrates the session with `supabase.auth.getSession()`.
-4. `app/App.tsx` blocks rendering until auth loading completes.
-5. The current hash route selects the page component.
-
-## Architectural drift
-- The service helpers live in `shared/lib/*` and talk directly to Supabase Edge Functions and tables.
-- The semantic tree is the preferred edit surface now, but several feature implementations are still physically located in the domain feature folders and `shared/lib/` while the shell and route layers are fully migrated.
+## Convenções Internas Arquiteturais
+- **Feature-based Folders**: O código fonte principal é dividido por domínio (`auth`, `customer`, `marketing`, `story`).
+- **Shared Kernel**: Código agnóstico de domínio fica em `/shared` (ex: `shared/ui`, `shared/lib`).
+- **Lazy Loading**: Componentes de página ("Pages") são carregados preguiçosamente (React.lazy) no `App.tsx` para garantir Code Splitting, melhorando a métrica Time to Interactive da landing page.

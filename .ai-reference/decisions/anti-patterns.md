@@ -1,13 +1,11 @@
-# Anti-patterns
+# Anti-Padrões de Referência (Anti-Patterns)
 
-## Present in the codebase
-- Business rules enforced only in the frontend without a backend revalidation path.
-- Secret or sensitive information indirectly exposed through share URLs.
-- Mixed responsibility service files that combine active code and legacy code.
-- Type models that do not match the real runtime objects.
+1. **God Hook (`useAuth`)**
+   - O Hook de Autenticação abraçou lógica pesada como carregar os Planos (`planFeatures`), carregar a História e gerenciar seu Salvamento.
+   - *Efeito Prático:* Apesar de classificado como um Anti-Pattern claro (Violação do Princípio de Responsabilidade Única no conceito SOLID), reduziu-se o emaranhado complexo de "quem depende de quem". Isso unificou o escopo de variáveis visíveis ao Dashboard, mas dificulta refatorações na camada de identidade.
 
-## Why they matter
-- They make regressions easy to introduce.
-- They increase the chance that a change in one place silently breaks another flow.
-- They hide important rules from future maintainers.
-- They make type checking less useful than it should be.
+2. **Script Externo Chumbado no Index**
+   - O injetável `sdk.mercadopago.com` está hardcoded no `index.html` mesmo num ambiente estritamente desenhado para **Stripe Checkout** (`seed.sql`), servindo como dívida intencional não limpada, provavelmente para evitar a quebra acidental de fallback legados em Edge Functions.
+
+3. **Dupla Fonte de Verdade de Regra de Negócio (DB vs Frontend)**
+   - A tabela Postgres (`plans`) limita o Plano Infinito a "10", enquanto as promessas copy no LandingPage descrevem "até 20 fotos". Esse distanciamento gera a anomalia grave onde a camada estática de UI mente ao cliente, e o Banco de Dados RLS recusa rigidamente a inserção da foto nº 11. Regras de limite deveriam fluir unicamente através do payload injetado do DB.

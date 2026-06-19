@@ -23,12 +23,12 @@ const DashboardTimeUnit: React.FC<{ value: number; label: string; index: number 
       className="flex flex-col items-center group"
     >
       <div className="relative">
-        <span className="font-black text-white tracking-tighter leading-none block text-[clamp(1.25rem,3.2vw,3.2rem)]">
+        <span className="font-black text-white tracking-tighter leading-none block text-[clamp(2rem,5vw,5.5rem)]">
           {String(value).padStart(2, '0')}
         </span>
         <div className="absolute inset-0 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
-      <span className="font-black text-primary uppercase font-mono mt-1.5 tracking-[0.26em] text-[clamp(6px,0.7vw,9px)]">
+      <span className="font-black text-primary uppercase font-mono mt-2 tracking-[0.3em] text-[clamp(9px,1vw,13px)]">
         {label}
       </span>
     </motion.div>
@@ -70,7 +70,7 @@ const DashboardCounter: React.FC<{ startDate: Date | null }> = ({ startDate }) =
     if (!duration) return null;
 
     return (
-      <div className="grid grid-cols-3 gap-4 sm:gap-5 md:gap-6 text-center max-w-fit mx-auto">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-6 sm:gap-8 md:gap-10 lg:gap-12 text-center w-full max-w-5xl mx-auto justify-center items-center">
         <DashboardTimeUnit index={0} value={duration.years} label="Anos" />
         <DashboardTimeUnit index={1} value={duration.months} label="Meses" />
         <DashboardTimeUnit index={2} value={duration.days} label="Dias" />
@@ -103,7 +103,7 @@ const DashboardHero: React.FC<{
                 <span className="text-primary italic font-cursive text-4xl lowercase tracking-normal px-2 opacity-80">começou há:</span>
             </h2>
 
-            <div className="py-4 transform scale-[1.1] md:scale-[1.25] lg:scale-[1.4] transition-transform duration-1000 filter drop-shadow-[0_0_30px_rgba(255,45,85,0.3)]">
+            <div className="py-4 filter drop-shadow-[0_0_30px_rgba(255,45,85,0.3)]">
                 <DashboardCounter startDate={validStartDate} />
             </div>
 

@@ -23,17 +23,17 @@ const DashboardSummary: React.FC<{
       <div className="flex flex-col md:flex-row items-center gap-4 w-full">
           <button 
             onClick={onEdit} 
-            className="flex-grow py-5 px-10 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[10px] transition-all hover:bg-white/10 hover:border-primary/30 flex items-center justify-center gap-3 group"
+            className="flex-grow py-[clamp(1rem,2vw,1.5rem)] px-[clamp(1.5rem,3vw,3rem)] rounded-[clamp(1rem,2vw,1.5rem)] bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[clamp(10px,1vw,14px)] transition-all hover:bg-white/10 hover:border-primary/30 flex items-center justify-center gap-3 group"
           >
-            <PencilLine className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+            <PencilLine className="w-[clamp(1rem,1.5vw,1.5rem)] h-[clamp(1rem,1.5vw,1.5rem)] text-primary group-hover:scale-110 transition-transform" />
             {uiCopy.dashboard.editStory}
           </button>
 
           <button 
             onClick={onPreview} 
-            className="flex-grow py-5 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_40px_-10px_rgba(255,45,85,0.4)] transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
+            className="flex-grow py-[clamp(1rem,2vw,1.5rem)] px-[clamp(1.5rem,3vw,3rem)] rounded-[clamp(1rem,2vw,1.5rem)] bg-primary text-white font-black uppercase tracking-[0.3em] text-[clamp(10px,1vw,14px)] shadow-[0_20px_40px_-10px_rgba(255,45,85,0.4)] transition-all hover:scale-[1.02] flex items-center justify-center gap-3"
           >
-            <Star className="w-4 h-4 fill-white" />
+            <Star className="w-[clamp(1rem,1.5vw,1.5rem)] h-[clamp(1rem,1.5vw,1.5rem)] fill-white" />
             Ver Prévia Real
           </button>
       </div>

@@ -1,38 +1,26 @@
-# Database Map
+# Mapeamento do Banco de Dados
 
-## Core Tables
+Baseado no dump (`seed.sql` e migrations lidas) e na premissa operacional do sistema, eis o mapa relacional e suas instâncias fundamentais no Supabase.
 
-### `plans`
-- **Purpose**: Defines available product tiers and their capabilities.
-- **Key Columns**: `id`, `name`, `type`, `price`, `image_limit`, `allow_youtube`, `allow_password_protection`, `allow_custom_button`, `feature_rules`.
-- **Integration**: `billing_provider`, `billing_product_id`, `billing_price_id`.
+## 1. Schema: `auth` (Natual do GoTrue)
+- **Tabela**: `users`
+  - Contém as entidades de login registradas. Nenhuma lógica pesada da aplicação toca diretamente aqui a não ser a Edge Function do Auth.
 
-### `profiles`
-- **Purpose**: Extends auth user data with application-specific state.
-- **Key Columns**: `id` (FK to auth.users), `name`, `plan_id` (FK to plans.id).
-- **Billing Sync**: `billing_status`, `billing_subscription_id`, `billing_customer_id`, `billing_current_period_end`.
+## 2. Schema: `public` (Regra de Negócio Própria)
+- **Tabela**: `plans`
+  - *Função*: Dicionário universal de features e preços. Controla o acesso funcional da aplicação inteira.
+  - *PK*: `id` (ou `name`).
+- **Tabela**: `app_config`
+  - *Função*: Singleton com propriedades (ex: `FRONTEND_URL`) injetadas no deploy.
+- **Tabela**: `stories` (e metadados associados implicitamente ao user)
+  - *Função*: Raiz de um projeto do cliente. Relaciona 1:1 ao UUID do `auth.users`.
+- **Tabela**: `story_images`
+  - *Função*: A galeria atrelada à `stories`.
+  - *Relação*: `N:1` para Story. Contém `display_order` usado pelo drag-and-drop.
 
-### `love_stories`
-- **Purpose**: Main content for the user's love story.
-- **Key Columns**: `id`, `user_id` (FK to profiles.id), `start_date`, `story_text`, `layout_position`, `youtube_url`, `entry_button_text`, `story_password` (hashed).
+## 3. Schema: `storage` (Arquivos)
+- **Bucket**: `story-images`
+  - *Propósito*: Armazenamento bruto (S3-like) das mídias transferidas do `CounterDemo` em base64/blob, transformadas para URL Pública referenciada dentro da galeria (`story_images.image_url`).
 
-### `story_images`
-- **Purpose**: Ordered gallery for a specific love story.
-- **Key Columns**: `id`, `story_id` (FK to love_stories.id), `image_url`, `display_order`.
-
-### `app_config`
-- **Purpose**: Global application settings.
-- **Key Columns**: `id`, `key`, `value`.
-- **Main Keys**: `FRONTEND_URL`.
-
-## Relationships
-- `profiles.id` -> `auth.users.id` (1:1)
-- `profiles.plan_id` -> `plans.id` (N:1)
-- `love_stories.user_id` -> `profiles.id` (1:1)
-- `story_images.story_id` -> `love_stories.id` (N:1)
-
-## Storage Buckets
-- `story-images`: Public bucket for user-uploaded photos. Filenames are typically UUID-based or prefixed with user/story identifiers.
-
-## RPC / Functions
-- `public.save_story_with_images`: Atomic update function for stories and their associated image records.
+## 4. Banco Dinâmico em Tela (DTO)
+A estrutura exata do fluxo não existe em JSON, mas via proxy no frontend via `LoveStoryData`. O frontend manipula os três domínios (`plans`, `stories`, `story_images`) enviando para funções armazenadas como a migração atômica no banco `save_story_atomic.sql`.

@@ -1,27 +1,24 @@
-# Performance
+# Análise de Performance
 
-## Positive performance choices
-- Page-level lazy loading reduces the initial bundle.
-- Most landing-page sections are static and inexpensive to render.
-- The editor preview and public story use image cross-fades instead of large rerenders.
+## Estratégias de Carregamento Assíncrono
 
-## Bottlenecks and costs
-- `get-public-story` and `verify-public-story-password` now avoid the legacy admin user scan entirely.
-- `DurationCounter` updates every second and rerenders its display continuously.
-- `PublicStory` can animate multiple layered images and a YouTube player.
-- The dashboard reloads story data after every save.
-- `process-payment` makes a remote call to Stripe plus a small number of Supabase lookups.
+1.  **Code Splitting via React Lazy**:
+    *   A Home Landing (`HomePage`), as rotas pesadas e complexas de edição (`DashboardPage`) e as rotas críticas de visualização pública (`StoryPage`) são desacopladas do bundle central de Javascript usando a técnica `React.lazy()` no arquivo de entrada `App.tsx`.
+    *   **Impacto de Negócio**: Isso acelera absurdamente a métrica "Time to Interactive" para leads da campanha de marketing na Landing Page, pois não fazem download das pesadas livrarias do Drag-and-Drop ou parse de data de edições necessárias no Dashboard.
 
-## Caching opportunities
-- Plan data is fetched on page mount without client caching.
-- The public story payload is now keyed by a stable opaque UUID and could be cached by story ID if future requirements allow it.
-- The plan catalog is effectively public and could be cached at the edge.
+2.  **Imagens e Storage Supabase**:
+    *   No seed relacional, observa-se que o bucket `story-images` não tem `avif_autodetection = true` forçado por padrão, mas o frontend invoca imagens e backgrounds no formato `.avif` nativamente nas pastas `public/images/`. A compressão estática é excelente. Resta acompanhar como as fotos enviadas pelos usuários (Jpeg, Png) são escalonadas. Recomenda-se para trabalhos futuros habilitar a transformação dinâmica de imagens do Supabase Storage CDN se o custo não for uma barreira.
 
-## Bundle and asset notes
-- The marketing page includes large static images and third-party scripts.
-- `@dnd-kit` and `react-datepicker` are only needed in the editor, so lazy loading them could further reduce the initial bundle.
-- Build output shows a relatively large main chunk, with `CounterDemo` and the root bundle being the largest pieces.
+3.  **Transições com Filtros de UI**:
+    *   O uso de `filter: 'blur(10px)'` no `<AnimatePresence>` é deslumbrante, no entanto, borramento renderizado em WebGL/CSS consome consideravelmente a placa de vídeo de clientes em dispositivos muito fracos (Mobile low-end). A fluidez se mantém dada a limitação de poucos elementos simultâneos animando dessa forma pesada.
 
-## Observed warnings during build
-- Browserslist data is stale.
-- `baseline-browser-mapping` warns that its data is older than two months.
+## Custos Repetitivos Identificados
+
+1.  **Chamadas API Desacopladas no Front-end**:
+    *   O App pode sofrer do sintoma _Waterfall Data Fetching_ no fluxo de Marketing: A aba `#pricing` invoca `fetchAllPlans()`, forçando um round-trip assíncrono para o PostgreSQL para obter os cartões de compra. No Dashboard, executa `loadStory()` que gera *spinners* longos após autenticação.
+2.  **Drag and Drop com Re-renderização Massiva**:
+    *   Manipulação fotográfica nativa local no Dashboard, onde a edição espelha ativamente um componente em tela gigante do lado ("Studio Monitor") usando `<DashboardPreviewPane>`. A reconstrução inteira do layout com cada tecla apertada pode gargalar máquinas simples com a repetição da renderização da view e cálculo condicional se os *inputs* textuais sofrerem de debounce ruim (a testar na execução).
+
+## Otimizações Constatadas (Bons Tratos)
+
+*   **Evite Repetições (AuthProvider):** O provedor absorveu a métrica `planFeatures` para dentro de suas paredes. Ele funciona como uma fonte de verdade global hidratada na fundação da aplicação, impedindo dezenas de componentes filhos do App consultarem o SGBD para saber a "quantidade de limite de imagem" em toda micro-interação.

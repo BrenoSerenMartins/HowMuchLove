@@ -1,22 +1,7 @@
-# Events Map
+# Mapa de Eventos
 
-## Client events
-| Event | Source | Consumer | Effect |
-|---|---|---|---|
-| `hashchange` | `NavigationProvider` | `app/App.tsx` | Updates active route. |
-| `before-save dirty flag` | `CounterDemo` | `NavigationContext` | Opens confirmation modal on navigation. |
-| `drag end` | `DndContext` in `CounterDemo` | Local story editor state | Reorders images and updates `display_order`. |
-| `file input change` | `CounterDemo` | Local story editor state | Adds a new preview image and queues upload. |
-| `toast add/remove` | `NotificationProvider` | `Toast` | Shows transient success/error messages. |
-| `intersection observer` | `PublicStory` | Message section | Triggers message blur and reveal behavior. |
-| `youtube entry click` | `story/public/Page.tsx` | `PublicStory` / `YouTubePlayer` | Enables music playback and hides the entry gate. |
-| `checkout success` | `customer/settings/Page.tsx` | Browser redirect to Stripe-hosted checkout return page | Continues billing flow after hosted checkout. |
-| `share/download` | `QRCodeModal` | Browser APIs | Copies link, triggers share sheet, or downloads QR code. |
+A aplicação não utiliza um Event-Bus tradicional (Kafka, RabbitMQ) no Backend.
 
-## Backend and remote events
-| Event | Source | Consumer | Effect |
-|---|---|---|---|
-| `Supabase auth session restored` | Supabase Auth | `AuthProvider` | Hydrates user and plan. |
-| `story saved` | `save-story` | `customer/dashboard/Page.tsx` | Reloads story and updates share link. |
-| `checkout session created` | `process-payment` | `customer/settings/Page.tsx` | Redirects the browser to Stripe Checkout. |
-| `stripe webhook event` | `stripe-webhook` | `profiles` / `AuthProvider` refreshes | Synchronizes plan and billing status. |
+## Eventos do Front-End (Client-Side)
+- **Supabase Auth Events:** O provedor principal `AuthProvider` escuta mudanças no estado de autenticação (`onAuthStateChange`). Quando um login, logoff ou recuperação de senha acontece assincronamente pelo serviço externo, o evento emite atualização imediata na Store.
+- **Form State Events:** Inputs de preenchimento disparam eventos de Change em tempo real limitados pela arquitetura React/DOM, capturados pelo `useFormValidator` e pelo `CounterDemo`.

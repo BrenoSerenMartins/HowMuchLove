@@ -1,35 +1,23 @@
-# Forbidden Patterns
+# Padrões Proibidos (Forbidden Patterns)
 
-## Architectural Constraints
+A proteção da estética e da engenharia estabelecida deste produto depende de não quebrar princípios duramente elaborados. **Nunca pratique ou comita código com estes padrões:**
 
-### ❌ NO Direct Database Access in UI
-- Components must NOT use `supabase.from('...')` directly for business logic.
-- Use service helpers in `shared/lib/` (e.g., `story-api.ts`, `pricing.ts`) to encapsulate data access.
+## 1. Bypass Direto de Validação no Frontend vs SDK API
+🚫 **Proibido:** Modificar campos estritos submetidos diretamente ao `saveStory()` pelo SDK Supabase bypassando os middlewares sem o tratamento local pelo `useFormValidator`. 
+*   **Por que?** O Backend falhará de maneira obscura dependendo do RLS, ou pior, encherá o PostgreSQL com inconsistências se as restrições não existirem nativamente no banco. Utilize a camada controladora local para rejeitar inputs grotescos na fonte.
 
-### ❌ NO Manual Route Manipulation
-- Components must NOT modify `window.location.hash` directly.
-- Use the `navigate` function from `useNavigate` hook to ensure state consistency and proper guarding.
+## 2. Abordagens Mistas de Requisições "Fetch/Axios"
+🚫 **Proibido:** Incorporar pacotes como `Axios` ou chamar APIs com `fetch` rudimentar para se comunicar com recursos controlados pela Plataforma.
+*   **Solução:** Tudo que orbita o banco de dados e os microserviços (Edge Functions) é injetado sob a guarda e padronização contida na referência `supabase.ts` (ex: `supabase.functions.invoke`).
 
-### ❌ NO Hardcoded Plan Names for Logic
-- Do NOT use strings like `"Sonho"` or `"Eterno"` to gate features.
-- Use `resolvePlanCapabilities` from `shared/lib/plans.ts` to check for `imageLimit`, `allowYoutube`, etc.
+## 3. Lógica de Redirecionamento Direta no `window.location` Interno
+🚫 **Proibido:** Usar `window.location.href = '/dashboard'` para migrar visualizações internas da plataforma em locais lógicos dentro dos componentes.
+*   **Solução:** Sempre injetar e usar o hook `const { navigate } = useNavigate()`, que manipula a interceptação do dirty-state e aciona a fluidez das animações Framer Motion `<AnimatePresence>`. *A exceção ocorre apenas em navegação extrínseca do projeto, e.g., rotear forçadamente pro site do Stripe.*
 
-### ❌ NO Raw Image URLs in State
-- Do NOT store or pass around raw Supabase Storage URLs without normalization.
-- Use `normalizeSupabaseStorageUrl` from `shared/lib/storage.ts` to ensure the correct origin is used.
+## 4. Omissão de Pseudo-Classes Visuais em Elementos Interativos
+🚫 **Proibido:** Criar links genéricos ou submissões que não mudam a *cor*, *opacidade* ou transicionam algum pixel lateral com uma seta indicadora aquando houver interação pseudo-classe (`:hover`, `:focus`). O projeto depende estritamente dessa reatividade.
+*   **Solução:** Adicione `.group` nas âncoras e propague as pseudo classes animadas internas (Exemplo clássico: `<ArrowRight className="transition-transform group-hover:translate-x-1" />`).
 
-### ❌ NO Plaintext Passwords in Storage
-- Stories must NEVER store plaintext passwords.
-- Password protection must use the `scrypt` hashing provided by the `verify-public-story-password` and `save-story` backend functions.
-
-### ❌ NO Business Logic in View Components
-- Keep JSX files focused on presentation.
-- Move complex calculations, validation, or data transformation to `shared/lib/` or custom hooks.
-
-### ❌ NO Direct Storage Deletion from UI
-- The frontend should NOT call `supabase.storage.from(...).remove(...)`.
-- Storage cleanup must be handled by the `save-story` Edge Function to ensure consistency with database records.
-
-### ❌ NO Circular Dependencies in `shared/lib/`
-- Keep service helpers focused and avoid cross-importing between them (e.g., `story-api` should not depend on `pricing` if possible).
-- Shared types should live in `types.ts` to prevent circular imports.
+## 5. Chamadas Complexas do SGBD dentro dos Componentes Burros
+🚫 **Proibido:** Implementar chamadas estáticas explícitas e brutais (ex: `const data = await supabase.from('plans').select('*')`) misturadas dentro de componentes simples do `shared/ui`. 
+*   **Solução:** Trate-os através da "Lift State Up" ou hooks customizados. Todos os acessos remotos deverão residir logicamente nos diretórios de página (`Page.tsx`) ou ser centralizados em bibliotecas isoladas como se faz no `fetchPublicStory`.

@@ -1,51 +1,71 @@
-# API
+# Documentação da API
 
-## Frontend service surface
+Devido à arquitetura adotada, o HowMuchLove não possui uma API tradicional baseada em rotas com documentação Swagger/OpenAPI. O contrato da API é, de fato, a exposição do esquema de banco de dados do PostgreSQL através do **PostgREST** integrado no cliente do **Supabase**.
 
-### `fetchPublicStory(storyId)`
-- Source: `shared/lib/story-api.ts`
-- Calls: `supabase.functions.invoke('get-public-story')`
-- Input contract: accepts a UUID-based public story identifier only.
-- Returns: story payload or `null` when the Edge Function says the story is not found.
+## Cliente de API e Roteamento Oculto
 
-### `verifyStoryPassword(storyId, password)`
-- Source: `shared/lib/story-api.ts`
-- Calls: `supabase.functions.invoke('verify-public-story-password')`
-- Returns: full story payload or throws on password failure.
+O arquivo central de conexão é `shared/lib/supabase.ts`. Ele expõe o singleton `supabase`, inicializado através de duas chaves de ambiente:
+- `VITE_SUPABASE_URL`: O endpoint do provedor BaaS (ex: `https://xxx.supabase.co`).
+- `VITE_SUPABASE_PUBLISHABLE_KEY` ou `VITE_SUPABASE_ANON_KEY`: A chave pública restrita.
 
-### `fetchAllPlans()`
-- Source: `shared/lib/pricing.ts`
-- Calls: `supabase.functions.invoke('get-all-plans')`
-- Returns: plan list or `null` on function error.
+## Contratos DTO Conhecidos (`types.ts`)
 
-### `normalizeSupabaseStorageUrl(url)`
-- Source: `shared/lib/storage.ts`
-- Rewrites legacy public storage URLs so restored content keeps working after the project ref changed.
+O arquivo raiz de tipos dita os contratos de payload. O frontend molda o JSON exatamente como exigido pela base de dados subjacente.
 
-### `normalizeStoryImages(images)` / `normalizeLoveStoryData(story)`
-- Source: `shared/lib/storage.ts`
-- Ensures story payloads always expose image URLs normalized to the current Supabase origin.
+### 1. Payload de Story (Salvar/Recuperar)
+Ao fazer operações na História (Cápsula), o SDK espera um objeto compatível com a interface `LoveStoryData`.
+```typescript
+interface LoveStoryData {
+  id?: number;
+  startDate: string | null;
+  message: string;
+  images: StoryImage[];
+  layoutPosition?: 'top' | 'center' | 'bottom';
+  youtubeUrl?: string;
+  storyPassword?: string;
+  removePassword?: boolean;
+  requiresPassword?: boolean;
+  entryButtonText?: string;
+}
+```
 
-### `validateRequired(value)` / `validateEmail(email)` / `validateMinLength(minLength)` / `validatePassword`
-- Source: `shared/lib/validators.ts`
-- Used by the auth forms and generic form validation hook.
+### 2. Payload de Galeria de Imagens
+```typescript
+interface StoryImage {
+  id: number;
+  image_url: string;
+  display_order: number;
+}
+```
 
-### Error normalization helpers
-- Source: `shared/lib/errors.ts`
-- Responsibilities: normalize unknown client-side errors into user-facing messages, standardize log context, and parse structured error payloads returned by Edge Functions.
+### 3. Recuperação Dinâmica de Planos
+```typescript
+interface PlanFeatures {
+  id: number;
+  name: string;
+  image_limit: number;
+  allow_youtube: boolean;
+  allow_password_protection: boolean;
+  allow_custom_button: boolean;
+  price: number;
+  billing_cycle: string | null;
+}
+```
 
-## Edge Function API contracts
-- `get-all-plans`: returns an array of plans.
-- `get-public-story`: returns either `requiresPassword`, a full story payload, or an error message.
-- `verify-public-story-password`: returns a full story payload or a password error.
-- `save-story`: accepts multipart form data, revalidates plan restrictions server-side, persists the story and its ordered images via an atomic database function, and returns `storyId`.
-- `process-payment`: validates the selected plan, creates a Stripe Checkout session for the configured `billing_price_id`, and returns a hosted checkout `url` using the request origin as the primary redirect base.
-- `stripe-webhook`: verifies Stripe webhook signatures, then synchronizes subscription state back into `profiles.plan_id` and billing metadata.
-- All frontend wrappers now prefer structured error payloads from the Edge Functions and fall back to a shared user-facing message when the payload is missing or malformed.
+## Categorias de Requests de API Ativas
 
-## Error handling conventions
-- Supabase function errors are usually surfaced as plain text or JSON `message` / `error` fields.
-- UI components commonly show toast messages from caught exceptions.
+### 1. Autenticação (Auth)
+Operações encapsuladas no `useAuth` hook.
+- **Login/Register:** Aciona a API GoTrue subjacente (`supabase.auth.signInWithPassword`, etc.).
 
-## API risks
-- Stripe and Supabase secrets for the Edge Functions live outside the frontend bundle, so the checkout contract still relies on runtime environment configuration and deployed function secrets.
+### 2. Domain Data Mutation (Banco de Dados)
+Isso ocorre nos arquivos de biblioteca compartilhada (`shared/lib/story-api`).
+- **Salvar História:** Transação atômica que pode submeter dados de mídia e dados em lote. Pode chamar funções RPC personalizadas (ex: `supabase.rpc('save_story_atomic', payload)`).
+- **Fetch Público de História:** Uma chamada explícita `fetchPublicStory(storyId)` que aciona um `SELECT` otimizado para visitantes. Acesso livre apenas às histórias que dispensam restrição pesada, e omite dados sigilosos por padrão (via RLS).
+- **Verificação de Senha:** `verifyStoryPassword(storyId, password)`. Devido a razões óbvias de segurança, a senha NUNCA é checada pelo frontend. Ela invoca uma API que roda no Supabase PostgREST ou numa Edge Function para aplicar hashing, validar a igualdade, e se for bem sucedida, então devolve o objeto integral da História.
+
+### 3. Chamadas a Edge Functions (`supabase.functions.invoke`)
+- **Rota Invocada:** `process-payment`
+  - **Payload Enviado:** `{ body: { planId: number, planName: string } }`
+  - **Resposta Esperada:** Sucesso `200` contento a URL do gateway (ex: `{ url: "https://checkout.stripe.com/..." }`).
+  - **Tratamento de Erros:** O frontend aguarda e interpreta explicitamente códigos de erro para exibir `uiCopy.payment.genericError`.

@@ -1,23 +1,25 @@
-# Integration Map
+# Mapa de Integrações
 
-## Supabase
-- **Authentication**: Used for user sign-in/sign-up and session management.
-- **PostgreSQL**: Primary data store for profiles, stories, images, and plans.
-- **Storage**: `story-images` bucket for user-uploaded assets.
-- **Edge Functions**: Serverless logic for payments, webhooks, and complex story operations.
+1. **Cliente Frontend (Vite/React)** <---> **Supabase API (PostgREST)**
+   - *Onde Ocorre*: `shared/lib/supabase.ts`, `story-api.ts`.
+   - *Finalidade*: Inserções atômicas, login, carregamento de histórias via RLS.
 
-## Stripe
-- **Checkout**: Hosted payment pages for plan upgrades.
-- **Webhooks**: Async notification of payment success, failures, and subscription lifecycle changes.
-- **API**: Used by `process-payment` to create checkout sessions.
+2. **Cliente Frontend** <---> **Supabase Edge Function** (`process-payment`)
+   - *Onde Ocorre*: Ação de Click em `HomePage`.
+   - *Finalidade*: Criar ID transacional secreto e gerar checkout URL.
 
-## YouTube
-- **Embedding**: Used to play background music on public story pages.
-- **URL Resolution**: Logic in `shared/lib/validators.ts` to extract video IDs.
+3. **Supabase Edge Function** <---> **Stripe API**
+   - *Onde Ocorre*: Interno ao ambiente Cloudflare Worker / Supabase Deno.
+   - *Finalidade*: Consumir as variáveis sensíveis `billing_product_id` e gerar uma sessão segura transacional pro usuário pagar a cápsula.
 
-## Cloudflare (Optional/Deployment)
-- **Wrangler**: Configuration in `wrangler.jsonc` suggests potential use for static site hosting or proxying, though Vite/Vercel/Netlify are more common for this stack.
+4. **Cliente Frontend** <---> **YouTube iFrame API**
+   - *Onde Ocorre*: Visita do convidado na `StoryPage`.
+   - *Finalidade*: Ao contornar a regra Anti-Autoplay da web (clicando no portão interativo de entrada), envia o sinal via SDK pra injetar a trilha sonora.
 
-## Google
-- **Analytics (GA4)**: Basic tracking injected via `index.html`.
-- **Fonts**: `Poppins` and `Dancing Script` loaded from Google Fonts.
+5. **Cliente Frontend** <---> **MercadoPago SDK**
+   - *Onde Ocorre*: Em script global via `index.html`.
+   - *Finalidade*: Legado arquitetural, não ativado massivamente nos novos seeds. Recomenda-se purga.
+
+6. **Cliente Frontend** <---> **Google Analytics (gtag.js)**
+   - *Onde Ocorre*: Em script global via `index.html`.
+   - *Finalidade*: Rastreamento de métricas e ROI para campanhas de Ads.

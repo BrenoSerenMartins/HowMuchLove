@@ -1,40 +1,18 @@
-# Dependency Map
+# Mapa de Dependências do Fluxo
 
-## Frontend Dependencies
+## Grafo de Dependência Frontend Central
 
-### Core
-- `react`: UI library.
-- `typescript`: Type safety.
-- `vite`: Build tool and dev server.
-- `tailwindcss`: Styling.
+1. `App.tsx` (Root/Mount)
+   ↳ **Providers:** `NavigationProvider`, `AuthProvider`, `NotificationProvider`.
+     ↳ **Hooks Consumidores Globais:** `useNavigate`, `useAuth`, `useNotification`.
 
-### Supabase
-- `@supabase/supabase-js`: Client for DB, Auth, and Storage.
+## Grafo de Negócio (Dashboard)
 
-### Utilities
-- `date-fns`: Date formatting and calculation for the story counter.
-- `qrcode.react`: Generates QR codes for story sharing.
-- `@dnd-kit/*`: Drag and drop for image reordering in the editor.
-- `react-datepicker`: Date selection for the story start date.
+1. `DashboardPage`
+   ↳ Depende de: `useAuth()` (Para ler a propriedade `planFeatures` da Assinatura ativa do Cliente e a Função mutadora `saveStory()`).
+   ↳ Injeta dados em: `<CounterDemo>` (Aba Esquerda de Edição) e `<DashboardPreviewPane>` (Aba Direita de Visualização).
+      ↳ `<CounterDemo>` Depende de: `@dnd-kit` (Drag and drop para manipulação de `story_images`).
 
-## Backend Dependencies (Edge Functions)
-- `Deno` runtime.
-- `Stripe`: Payment processing API.
-- `Supabase SDK`: Database and storage access.
-
-## External Services
-- **Supabase**: Auth, DB, Storage, Edge Functions.
-- **Stripe**: Billing, Subscriptions, Checkout.
-- **Google Fonts**: `Poppins` and `Dancing Script`.
-- **GA4 (Google Analytics)**: Basic tracking in `index.html`.
-- **Cloudflare/Wrangler**: Used for project deployment/preview (per `package.json`).
-
-## Internal Shared Logic (`shared/lib/`)
-- `story-api.ts`: Frontend client for Edge Functions.
-- `pricing.ts`: Plan fetching and Stripe session initiation.
-- `plans.ts`: Plan capability and feature rule resolution.
-- `supabase.ts`: Supabase client initialization.
-- `storage.ts`: Image upload and normalization.
-- `validators.ts`: Form and data validation logic.
-- `errors.ts`: Unified error handling and messaging.
-- `ui-copy.ts`: Centralized user-facing strings.
+## Grafo Analítico
+1. Visitante na URL
+   ↳ O script `gtag.js` invoca a injeção do monitor de eventos base do GA4 do Google dependendo unicamente da rede (Não bloqueante).

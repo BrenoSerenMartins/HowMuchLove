@@ -1,56 +1,36 @@
-# Overview
+# System Overview: HowMuchLove
 
-## Purpose
-HowMuchLove is a single-page React application for creating and sharing a "love story" page with a time counter, photo gallery, optional YouTube background music, optional password protection, and plan-based feature gating.
+## Objetivo do Sistema
+O **HowMuchLove** é uma aplicação web de consumo (B2C) projetada para permitir que casais celebrem seus relacionamentos. O sistema funciona como um construtor de "cápsulas do tempo" digitais, onde usuários pagantes podem criar, personalizar e compartilhar uma página interativa (Story) contendo um contador de tempo de relacionamento, uma galeria de fotos, uma música de fundo (via YouTube) e mensagens personalizadas.
 
-## Confirmed runtime model
-- Frontend stack: Vite + React 18 + TypeScript + Tailwind CSS.
-- Routing model: hash-based routing implemented manually in `NavigationProvider` / `NavigationContext`, not React Router.
-- Auth model: Supabase Auth session rehydration on app boot.
-- Persistence model: Supabase Postgres + Supabase Storage.
-- Server model: Supabase Edge Functions, not a dedicated Express backend in the current source tree.
+## Público-Alvo
+Casais em relacionamentos de longo prazo procurando presentes de aniversário de namoro/casamento, dia dos namorados, ou formas de imortalizar a história do casal digitalmente.
 
-## Main entrypoints
-- Browser bootstrap: `index.html`, `index.tsx`.
-- App orchestration: `App.tsx` as a compatibility export, with the real shell in `app/App.tsx`.
-- Semantic route entrypoints: `marketing/landing/Page.tsx`, `auth/*/Page.tsx`, `customer/*/Page.tsx`, `story/public/Page.tsx`.
-- Shared shell and providers: `app/providers/*`, `app/hooks/*`, `shared/ui/*`.
-- Feature implementation layer: `marketing/landing/sections/*`, `shared/pricing/*`, `shared/story-editor/*`, `customer/dashboard/components/*`, `customer/settings/components/*`, `story/public/components/*`, `shared/lib/*`.
-- Public data/services: `shared/lib/story-api.ts`, `shared/lib/pricing.ts`, `shared/lib/plans.ts`, `shared/lib/supabase.ts`, `shared/lib/storage.ts`, `shared/lib/validators.ts`, `shared/lib/errors.ts`.
-- Serverless endpoints: `supabase/functions/*`.
+## Proposta de Valor Core
+- Criação de uma página web única, estética e imersiva (`/story/:userId`).
+- Contagem dinâmica de tempo (anos, meses, dias, horas, minutos, segundos).
+- Compartilhamento via link ou QR Code.
+- Controle de acesso (opcionalmente protegido por senha).
 
-## Product surface
-- Public landing page with marketing sections and a demo-led CTA flow.
-- Auth pages for login and register.
-- Authenticated customer area for editing the story and managing settings/billing.
-- Public story page for shared links.
-- Payment result pages for Stripe checkout redirects.
+## Stack Tecnológico de Alto Nível
+- **Frontend**: React 18, Vite, TypeScript, TailwindCSS, Framer Motion (para animações core).
+- **Backend/Database**: Supabase (PostgreSQL, Auth, Storage, Edge Functions).
+- **Infraestrutura/Deploy**: Cloudflare Pages (via Wrangler).
+- **Monetização**: Integração de pagamentos via Stripe (anteriormente MercadoPago, dado o JS SDK no index.html, mas ativamente usando Stripe conforme `seed.sql`).
 
-## Copy and messaging
-- User-facing copy is centralized in `shared/lib/ui-copy.ts`.
-- Error parsing and technical fallback messages remain in `shared/lib/errors.ts`, which should be treated as a contract layer rather than a general text source.
-- The landing page marketing sections, auth screens, dashboard/account flows, and checkout messaging all read from `uiCopy` where possible. Pricing UI still reads from `uiCopy`, but it now lives in the authenticated account flow rather than on the landing page.
+## Principais Domínios
+1. **Marketing/Landing**: Página pública otimizada para conversão, SEO (Google Analytics 4 integrado), e exibição de planos de preços (gratuitos e pagos).
+2. **Auth (Autenticação)**: Fluxos de Login e Registro gerenciados localmente com sessão Supabase Auth.
+3. **Customer (Dashboard/Admin)**: Área restrita (`/dashboard`, `/settings`, `/payment-success`) onde o usuário edita a cápsula do tempo, faz upload de imagens e gerencia seu plano.
+4. **Story (Public View)**: O produto final entregue. Uma página pública e imersiva (`/story/:id`) com animações de entrada e verificação de senha.
+5. **Shared/Infrastructure**: Componentes reutilizáveis, validadores de formulário e integrações de API.
 
-## Structural note
-- The codebase is being migrated toward a semantic, domain-first tree.
-- New entrypoints live under `app/`, `customer/`, `marketing/`, `auth/`, `story/`, and `shared/`.
-- The old `pages/`, `contexts/`, and `hooks/` folders were removed after the migration pass.
-- The remaining feature implementation is split across domain folders, shared feature folders, and `shared/lib/` instead of a flat `components/` tree.
+## Modelos de Monetização
+O sistema suporta múltiplos níveis de acesso baseados na tabela `plans`, processados pelo Stripe:
+- **Gratuito/Teste**: Funcionalidades limitadas (ex: 1 foto, sem YouTube).
+- **Sonho**: Assinatura básica.
+- **Eterno**: Assinatura intermediária (senha, música, 5 fotos).
+- **Infinito**: Pagamento único (lifetime access, 10-20 fotos, botões customizados).
 
-## Most important invariants
-- There is effectively one love story per authenticated user.
-- The story share link is derived from the Supabase auth `user.id` and only UUID-based links are accepted.
-- Plan restrictions are enforced in the UI for UX and revalidated on the backend for `save-story` and payment processing.
-- `plans` rows are integration-aware: the active billing provider and external product/price ids live alongside a JSON `feature_rules` payload that can override limits and feature flags without changing the editor code.
-- Free-plan behavior depends on a synthetic `Gratis` plan object that does not come from the pricing catalog.
-
-## High-risk findings already confirmed
-- `npm run build` and `npx tsc --noEmit` both pass after the current restore and cleanup pass.
-- Public sharing now uses an opaque UUID-based identifier and old email-derived URLs are no longer accepted.
-- Story password editing no longer exposes the stored hash in the editor state; the backend preserves the existing hash unless the user explicitly removes it.
-- `save-story` now performs image replacement through an atomic database function and only cleans up storage after the database commit succeeds.
-- Shell image and logo references now point at assets that actually exist in `public/images/`.
-
-## Source of truth
-- UI behavior should be read from the React source files, not the generated `dist/` folder.
-- Data model expectations are inferred from code because there are no full schema migrations in the repository.
+## Ponto de Atenção Arquitetural
+A aplicação é uma SPA pura (Single Page Application) hospedada na Cloudflare. Toda a lógica de servidor, regras de negócio severas de validação e integrações com o gateway de pagamento rodam em **Supabase Edge Functions** (ex: `process-payment`). O acesso a dados é feito via Supabase JS SDK, dependendo pesadamente de Row Level Security (RLS) no PostgreSQL para garantir o isolamento de tenants (usuários não podem ver histórias alheias que estão em rascunho, ou editar sem permissão).
