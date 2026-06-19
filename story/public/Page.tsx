@@ -11,10 +11,10 @@ import { uiCopy } from '@/shared/lib/ui-copy';
 
 const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col text-white relative bg-[#050505]">
+    <div className="h-screen w-screen flex flex-col text-white relative bg-[#050505] overflow-hidden">
       <div className="fixed inset-0 z-[-1] lights-container opacity-40"></div>
       <div className="bg-grain" />
-      <main className="flex-grow flex items-center justify-center p-4 z-10">
+      <main className="flex-grow relative z-10">
         {children}
       </main>
     </div>

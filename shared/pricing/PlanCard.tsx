@@ -19,9 +19,12 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
   const isCurrentPlan = status === 'current';
   const isFeatured = plan.isFeatured;
   const isCompact = density === 'compact';
+  const isComingSoon = plan.is_active === false;
 
   let buttonText = plan.cta;
-  if (disabled) {
+  if (isComingSoon) {
+    buttonText = uiCopy.pricing.comingSoon;
+  } else if (disabled) {
     buttonText = uiCopy.pricing.loading;
   } else if (isCurrentPlan) {
     buttonText = uiCopy.pricing.currentPlanButton;
@@ -41,7 +44,9 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
         className={`group relative flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-3xl border transition-all duration-500 ${
           isCurrentPlan 
             ? 'bg-primary/[0.03] border-primary/20 shadow-[0_0_30px_rgba(255,45,85,0.05)]' 
-            : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.03]'
+            : isComingSoon
+                ? 'bg-white/[0.01] border-white/5 opacity-60'
+                : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.03]'
         }`}
       >
         {/* Left: Identity */}
@@ -54,6 +59,9 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
                 <h3 className="text-sm font-black text-white uppercase tracking-wider">{plan.name}</h3>
                 {isCurrentPlan && (
                     <span className="px-2 py-0.5 rounded-md bg-green-500/10 border border-green-500/20 text-[7px] font-black text-green-500 uppercase tracking-widest">Active</span>
+                )}
+                {isComingSoon && (
+                    <span className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-[7px] font-black text-primary uppercase tracking-widest">Em breve</span>
                 )}
               </div>
               <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest font-mono">Tier Level {plan.id}</p>
@@ -82,13 +90,15 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
 
             <button
                 onClick={handleSelect}
-                disabled={isCurrentPlan || disabled}
+                disabled={isCurrentPlan || isComingSoon || disabled}
                 className={`min-w-[140px] py-4 px-6 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
                     isCurrentPlan
                     ? 'bg-transparent border border-primary/20 text-primary cursor-default'
-                    : isFeatured
-                        ? 'bg-primary text-white shadow-[0_10px_20px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_30px_rgba(255,45,85,0.3)] hover:-translate-y-0.5'
-                        : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/10'
+                    : isComingSoon
+                        ? 'bg-white/5 border border-white/10 text-slate-500 cursor-default'
+                        : isFeatured
+                            ? 'bg-primary text-white shadow-[0_10px_20px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_30px_rgba(255,45,85,0.3)] hover:-translate-y-0.5'
+                            : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/10'
                 } disabled:opacity-30 disabled:pointer-events-none`}
             >
                 {buttonText}
@@ -102,12 +112,18 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
     <div
       className={`card-elite flex flex-col h-full relative group transition-all duration-500 p-8 md:p-10 ${
         isFeatured ? 'border-primary/20 bg-white/[0.05]' : ''
-      } ${isCurrentPlan ? 'ring-2 ring-primary/40' : ''}`}
+      } ${isCurrentPlan ? 'ring-2 ring-primary/40' : ''} ${isComingSoon ? 'opacity-70 border-white/5' : ''}`}
     >
-      {isFeatured && !isCurrentPlan && (
+      {isFeatured && !isCurrentPlan && !isComingSoon && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white font-black rounded-full uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(255,45,85,0.4)] flex items-center gap-2 text-[9px] px-4 py-1.5">
           <Sparkles className="w-3 h-3" />
           {uiCopy.pricing.popularBadge}
+        </div>
+      )}
+      
+      {isComingSoon && (
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/10 text-slate-400 font-black rounded-full uppercase tracking-[0.2em] backdrop-blur-md border border-white/10 text-[9px] px-4 py-1.5">
+          {uiCopy.pricing.comingSoon}
         </div>
       )}
       
@@ -149,11 +165,15 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
 
       <button
         onClick={handleSelect}
-        disabled={isCurrentPlan || disabled}
+        disabled={isCurrentPlan || isComingSoon || disabled}
         className={`w-full font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-300 py-5 px-6 text-10px ${
-          isFeatured 
-            ? 'bg-primary text-white shadow-[0_10px_25px_-5px_rgba(255,45,85,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(255,45,85,0.5)] hover:-translate-y-1' 
-            : 'btn-secondary'
+          isCurrentPlan
+            ? 'bg-transparent border border-primary/20 text-primary cursor-default'
+            : isComingSoon
+                ? 'bg-white/5 border border-white/10 text-slate-500 cursor-default'
+                : isFeatured 
+                    ? 'bg-primary text-white shadow-[0_10px_25px_-5px_rgba(255,45,85,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(255,45,85,0.5)] hover:-translate-y-1' 
+                    : 'btn-secondary'
         } disabled:opacity-30 disabled:pointer-events-none disabled:transform-none`}
       >
         {buttonText}

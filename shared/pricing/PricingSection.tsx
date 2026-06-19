@@ -42,6 +42,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ id, plans: dbPlans, cur
         billingCycle: p.billing_cycle,
         features: p.features,
         isFeatured: p.is_featured,
+        is_active: p.is_active,
         cta: `Escolher ${p.name}`,
       })),
     [dbPlans],

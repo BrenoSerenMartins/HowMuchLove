@@ -10,6 +10,7 @@ import PageWrapper from '@/shared/ui/PageWrapper';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import QRCodeModal from './components/QRCodeModal';
+import DashboardHero from './components/DashboardHero';
 import DashboardSummary from './components/DashboardSummary';
 import DashboardActions from './components/DashboardActions';
 import DashboardPreviewPane from './components/DashboardPreviewPane';
@@ -193,12 +194,7 @@ const DashboardPage: React.FC = () => {
                   {/* Submerged Content: Perfectly Contained & Centered */}
                   <div className="relative z-30 w-full px-[clamp(1.5rem,6vw,6rem)] py-12 drop-shadow-[0_0_40px_rgba(0,0,0,0.6)]">
                       {isActiveStory ? (
-                          <DashboardSummary 
-                            storyData={storyData!} 
-                            onEdit={() => setIsEditing(true)} 
-                            onPreview={() => setIsPreviewing(true)}
-                            onlyHero 
-                          />
+                          <DashboardHero storyData={storyData!} />
                       ) : isEditing ? (
                           <div className="text-center space-y-6 animate-fade-in-up">
                               <h2 className="text-[clamp(3rem,9vw,6rem)] font-black text-white uppercase tracking-tighter leading-none drop-shadow-2xl">Studio <br/> Creation</h2>
@@ -240,7 +236,6 @@ const DashboardPage: React.FC = () => {
                             storyData={storyData!} 
                             onEdit={() => setIsEditing(true)} 
                             onPreview={() => setIsPreviewing(true)}
-                            onlyStats 
                           />
                           
                           {shareLink && (

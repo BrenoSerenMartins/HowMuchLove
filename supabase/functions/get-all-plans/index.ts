@@ -27,7 +27,6 @@ Deno.serve(async (req) => {
     const { data: plans, error } = await supabaseClient
       .from('plans')
       .select('id, name, price, image_limit, allow_youtube, allow_password_protection, allow_custom_button, features, billing_cycle, billing_provider, billing_product_id, billing_price_id, feature_rules, is_featured, is_active, show_on_pricing_page')
-      .eq('is_active', true)
       .eq('show_on_pricing_page', true)
       .order('price', { ascending: true });
 

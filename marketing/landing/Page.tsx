@@ -122,32 +122,12 @@ const HomePage: React.FC = () => {
       
       <SocialProofSection />
 
-      {/* Coming Soon / Pricing Placeholder */}
-      <section id="pricing" className="section-fluid relative overflow-visible">
-        <div className="relative z-10 container-fluid overflow-visible">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="card-elite p-12 md:p-20 max-w-4xl mx-auto text-center relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary font-mono">Lançamento Próximo</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black text-white leading-none tracking-tighter mb-8 uppercase">
-              Novos Planos <br/>
-              <span className="text-primary italic font-cursive lowercase tracking-normal px-2">em breve.</span>
-            </h2>
-            <p className="text-slate-400 text-lg font-medium max-w-xl mx-auto leading-relaxed">
-              Estamos preparando pacotes exclusivos para eternizar histórias de forma ainda mais épica. 
-              <br className="hidden md:block" />
-              <span className="text-white/60">Por enquanto, aproveite o nosso plano grátis!</span>
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {/* Dynamic Pricing Section with 'Coming Soon' support */}
+      <PricingSection 
+        id="pricing"
+        plans={plans}
+        onPlanSelect={handlePlanSelected}
+      />
 
       {/* New FAQ Section Added */}
       <FAQSection />

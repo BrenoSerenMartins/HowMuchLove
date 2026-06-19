@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import type { CSSProperties } from 'react';
 import type { LoveStoryData } from '@/types';
 import YouTubePlayer from './YouTubePlayer';
@@ -125,24 +125,37 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
         const imagesCount = images?.length || 0;
         if (imagesCount <= 1) return;
         
-        const timer = setTimeout(() => {
+        const timer = setInterval(() => {
             setTopImageIndex((prevIndex) => (prevIndex + 1) % imagesCount);
         }, 5000); 
         
-        return () => clearTimeout(timer);
-    }, [topImageIndex, images?.length]);
+        return () => clearInterval(timer);
+    }, [images?.length]);
 
     return (
         <div
             ref={containerRef}
-            className={`w-full flex flex-col relative h-full overflow-y-auto overflow-x-hidden hide-scrollbar`}
+            className={`w-full flex flex-col relative h-full min-h-screen overflow-y-auto overflow-x-hidden hide-scrollbar`}
         >
-            <div className="absolute inset-0 z-0 bg-[#050505]">
+            <div className="absolute inset-0 z-0 bg-[#050505] pointer-events-none">
                 <div className="absolute inset-0 z-[-1] lights-container opacity-40"></div>
                 <div className="bg-grain" />
-                <motion.div style={{ scale: bgScale, opacity: bgOpacity }} className="w-full h-full">
-                    <img src={backgroundImageUrl} alt="" className="w-full h-full object-cover brightness-[0.2] blur-xl" />
-                </motion.div>
+                <AnimatePresence mode="popLayout">
+                    <motion.div 
+                        key={activeHeroImageUrl}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.2 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 2 }}
+                        className="absolute inset-0 w-full h-full"
+                    >
+                        <img 
+                            src={activeHeroImageUrl} 
+                            alt="" 
+                            className="w-full h-full object-cover blur-3xl scale-110" 
+                        />
+                    </motion.div>
+                </AnimatePresence>
                 {isFreePlan(plan) && <StoryWatermark density={storyDensity} />}
             </div>
 

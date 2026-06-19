@@ -144,6 +144,7 @@ export const uiCopy = {
     description: 'Escolha o plano perfeito para eternizar sua história e garantir que suas memórias durem para sempre.',
     loadError: 'Não foi possível carregar os planos agora. Tente novamente em instantes.',
     loading: 'Carregando...',
+    comingSoon: 'Em breve',
     currentPlanButton: 'Seu plano atual',
     upgradeButton: 'Fazer upgrade',
     downgradeButton: 'Mudar para este plano',
