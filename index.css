@@ -32,28 +32,27 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary font-black uppercase tracking-[0.2em] text-[10px] py-4 px-8 rounded-2xl transition-all duration-300 inline-flex items-center justify-center gap-3 border-none cursor-pointer;
-    box-shadow: 0 10px 20px -5px rgba(255, 45, 85, 0.3);
+    @apply bg-primary font-black uppercase tracking-[0.2em] text-[clamp(9px,1.5vw,11px)] py-[clamp(0.9rem,2.5dvh,1.25rem)] px-[clamp(1.5rem,4vw,2rem)] rounded-2xl transition-all duration-150 ease-out inline-flex items-center justify-center gap-3 border-none cursor-pointer;
   }
   .btn-primary:hover {
-    @apply -translate-y-1 shadow-[0_20px_40px_-12px_rgba(255,45,85,0.4)];
+    @apply scale-[1.02] shadow-[0_15px_30px_-5px_rgba(255,45,85,0.4)];
     background-color: var(--primary-hover);
   }
   .btn-primary:active { @apply scale-[0.98]; }
 
   .btn-secondary {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-[10px] py-4 px-8 rounded-2xl transition-all duration-300 inline-flex items-center justify-center gap-3 cursor-pointer;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-[clamp(9px,1.5vw,11px)] py-[clamp(0.9rem,2.5dvh,1.25rem)] px-[clamp(1.5rem,4vw,2rem)] rounded-2xl transition-all duration-150 ease-out inline-flex items-center justify-center gap-3 cursor-pointer;
   }
   .btn-secondary:hover {
-    @apply bg-white/10 -translate-y-1 border-white/20 shadow-[0_15px_30px_-10px_rgba(0,0,0,0.5)];
+    @apply scale-[1.02] bg-white/10 border-white/20 shadow-[0_15px_30px_-5px_rgba(255,255,255,0.1)];
   }
+  .btn-secondary:active { @apply scale-[0.98]; }
 
   .card-elite {
-    @apply bg-white/[0.03] backdrop-blur-3xl border border-white/[0.08] rounded-[2.5rem] transition-all duration-700 shadow-elite will-change-transform relative;
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-[2.5rem] transition-all duration-200 ease-out relative shadow-[0_15px_35px_-10px_rgba(0,0,0,0.5)];
   }
   .card-elite:hover {
-    @apply border-white/20 -translate-y-4 z-20;
-    box-shadow: 0 55px 120px -25px rgba(0,0,0,0.88), 0 0 0 1px rgba(255,255,255,0.03), 0 20px 50px -30px rgba(255,45,85,0.14);
+    @apply border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)];
   }
 
   .glass-panel {
@@ -61,11 +60,7 @@
   }
 
   .input-elite {
-    @apply !bg-white/[0.03] !border !border-white/10 !rounded-2xl !py-4 px-6 !text-sm !font-medium !transition-all !duration-300 !text-white !w-full outline-none;
-  }
-  .input-elite:focus {
-    @apply !border-primary !bg-white/[0.05];
-    box-shadow: 0 0 0 4px rgba(255, 45, 85, 0.1);
+    @apply !bg-white/[0.03] !border !border-white/10 !rounded-2xl !py-[clamp(1rem,2.5dvh,1.5rem)] !px-[clamp(1.25rem,3vw,1.5rem)] !text-[clamp(13px,1.5vw,15px)] !font-medium !transition-all !duration-150 !ease-out !text-white !w-full outline-none hover:!bg-white/5 hover:!border-white/20 focus:!bg-white/[0.07] focus:!border-primary/50 focus:!shadow-[0_0_20px_rgba(255,45,85,0.15)] focus:!-translate-y-0.5;
   }
 }
 
@@ -78,8 +73,10 @@
   height: 100%;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Custom Scrollbar */

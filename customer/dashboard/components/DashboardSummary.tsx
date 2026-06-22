@@ -23,7 +23,7 @@ const DashboardSummary: React.FC<{
       <div className="flex flex-col md:flex-row items-center gap-4 w-full">
           <button 
             onClick={onEdit} 
-            className="flex-grow py-[clamp(1rem,2vw,1.5rem)] px-[clamp(1.5rem,3vw,3rem)] rounded-[clamp(1rem,2vw,1.5rem)] bg-white/5 border border-white/10 text-white font-black uppercase tracking-[0.3em] text-[clamp(10px,1vw,14px)] transition-all hover:bg-white/10 hover:border-primary/30 flex items-center justify-center gap-3 group"
+            className="flex-grow py-[clamp(1rem,2vw,1.5rem)] px-[clamp(1.5rem,3vw,3rem)] rounded-[clamp(1rem,2vw,1.5rem)] bg-primary/[0.03] border border-primary/10 text-white font-black uppercase tracking-[0.3em] text-[clamp(10px,1vw,14px)] transition-all hover:bg-primary/[0.08] hover:border-primary/30 flex items-center justify-center gap-3 group"
           >
             <PencilLine className="w-[clamp(1rem,1.5vw,1.5rem)] h-[clamp(1rem,1.5vw,1.5rem)] text-primary group-hover:scale-110 transition-transform" />
             {uiCopy.dashboard.editStory}

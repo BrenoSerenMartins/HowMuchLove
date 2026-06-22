@@ -11,14 +11,12 @@ interface NavigationContextType {
     setPreviewMode: (mode: boolean) => void; // New function
 }
 
-const getRouteFromHash = () => {
-    const hash = window.location.hash.substring(1);
-    // Handle paths that might include their own hash for scrolling (e.g., /settings#pricing)
-    return hash.split('#')[0] || '/';
+const getRouteFromPath = () => {
+    return window.location.pathname + window.location.search || '/';
 };
 
 export const NavigationContext = createContext<NavigationContextType>({
-    route: getRouteFromHash(),
+    route: getRouteFromPath(),
     navigate: () => {},
     setIsDirty: () => {},
     isConfirmationModalOpen: false,
@@ -29,27 +27,40 @@ export const NavigationContext = createContext<NavigationContextType>({
 });
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [route, setRoute] = useState(getRouteFromHash());
+    const [route, setRoute] = useState(getRouteFromPath());
     const [isDirty, setIsDirty] = useState(false);
     const [modalState, setModalState] = useState({ isOpen: false, pendingPath: '' });
     const [isPreviewMode, setPreviewMode] = useState(false); // New state
 
     useEffect(() => {
-        const handleHashChange = () => {
-            setRoute(getRouteFromHash());
+        const handlePopState = () => {
+            setRoute(getRouteFromPath());
         };
-        window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
     const navigate = useCallback((path: string) => {
-        const currentRoute = getRouteFromHash();
-        if (currentRoute === path) return;
+        const targetRoute = path.split('#')[0] || '/';
+        const currentRoute = getRouteFromPath();
+        
+        const pathHash = path.includes('#') ? '#' + path.split('#')[1] : '';
+        if (currentRoute === targetRoute && window.location.hash === pathHash) return;
 
         if (isDirty) {
             setModalState({ isOpen: true, pendingPath: path });
         } else {
-            window.location.hash = path;
+            window.history.pushState(null, '', path);
+            setRoute(targetRoute);
+            
+            if (pathHash) {
+                setTimeout(() => {
+                    const id = pathHash.substring(1);
+                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            } else {
+                window.scrollTo(0, 0);
+            }
         }
     }, [isDirty]);
 
@@ -57,7 +68,21 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setIsDirty(false);
         const path = modalState.pendingPath;
         setModalState({ isOpen: false, pendingPath: '' });
-        window.location.hash = path;
+        
+        const targetRoute = path.split('#')[0] || '/';
+        const pathHash = path.includes('#') ? '#' + path.split('#')[1] : '';
+        
+        window.history.pushState(null, '', path);
+        setRoute(targetRoute);
+        
+        if (pathHash) {
+            setTimeout(() => {
+                const id = pathHash.substring(1);
+                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } else {
+            window.scrollTo(0, 0);
+        }
     };
 
     const cancelNavigation = () => {

@@ -230,7 +230,11 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoId, isMuted, hasEnte
     }
   }, [isMuted, hasEntered]);
 
-  return <div ref={playerRef} style={{ width: 1, height: 1, opacity: 0, position: 'absolute', top: -9999, left: -9999, pointerEvents: 'none' }} />;
+  return (
+    <div style={{ width: 1, height: 1, overflow: 'hidden', position: 'absolute', top: -9999, left: -9999, pointerEvents: 'none' }}>
+      <div ref={playerRef} />
+    </div>
+  );
 };
 
 export default YouTubePlayer;

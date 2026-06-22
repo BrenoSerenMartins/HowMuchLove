@@ -16,6 +16,10 @@ import BottomNavBar from '../shared/ui/BottomNavBar';
 const HomePage = React.lazy(() => import('../marketing/landing/Page'));
 const LoginPage = React.lazy(() => import('../auth/login/Page'));
 const RegisterPage = React.lazy(() => import('../auth/register/Page'));
+const ForgotPasswordPage = React.lazy(() => import('../auth/forgot-password/Page'));
+const ResetPasswordPage = React.lazy(() => import('../auth/reset-password/Page'));
+const TermsPage = React.lazy(() => import('../marketing/legal/terms/Page'));
+const PrivacyPage = React.lazy(() => import('../marketing/legal/privacy/Page'));
 const DashboardPage = React.lazy(() => import('../customer/dashboard/Page'));
 const SettingsPage = React.lazy(() => import('../customer/settings/Page'));
 const StoryPage = React.lazy(() => import('../story/public/Page'));
@@ -82,7 +86,7 @@ const Main: React.FC = () => {
 
     const protectedRoutes = ['/dashboard', '/settings'];
     const isProtectedRoute = protectedRoutes.some(pr => route.startsWith(pr));
-    const publicOnlyRoutes = ['/login', '/register'];
+    const publicOnlyRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
     const isPublicOnlyRoute = publicOnlyRoutes.includes(route);
 
     if (!user && isProtectedRoute) {
@@ -129,6 +133,10 @@ const Main: React.FC = () => {
   switch (route) {
     case '/login': pageComponent = <LoginPage />; break;
     case '/register': pageComponent = <RegisterPage />; break;
+    case '/forgot-password': pageComponent = <ForgotPasswordPage />; break;
+    case '/reset-password': pageComponent = <ResetPasswordPage />; break;
+    case '/terms': pageComponent = <TermsPage />; break;
+    case '/privacy': pageComponent = <PrivacyPage />; break;
     case '/dashboard': pageComponent = user ? <DashboardPage /> : <HomePage />; break;
     case '/settings': pageComponent = user ? <SettingsPage /> : <HomePage />; break;
     case '/payment-success': pageComponent = <PaymentSuccessPage />; break;
@@ -138,7 +146,7 @@ const Main: React.FC = () => {
     default: pageComponent = <HomePage />; break;
   }
 
-  const showHeaderFooter = !isPreviewMode;
+  const showHeaderFooter = !isPreviewMode && !['/login', '/register', '/forgot-password', '/reset-password'].includes(route);
   const isProtected = user && (route === '/dashboard' || route === '/settings');
   const isPublicHome = !user && route === '/';
   const showBottomNavBar = (isProtected || isPublicHome) && !isPreviewMode;

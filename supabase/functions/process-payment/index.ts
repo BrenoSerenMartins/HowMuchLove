@@ -72,7 +72,7 @@ serve(async (req) => {
 
     const { data: planDetails, error: planError } = await supabaseAdmin
       .from('plans')
-      .select('id, name, price, type, external_id, billing_provider, billing_product_id, billing_price_id, is_active, show_on_pricing_page')
+      .select('id, name, price, type, external_id, billing_provider, billing_product_id, billing_price_id, is_active, show_on_pricing_page, stripe_lookup_key')
       .eq('id', normalizedPlanId)
       .single();
 
@@ -92,7 +92,28 @@ serve(async (req) => {
       throw new Error(`Plan '${planDetails.name}' is not configured for Stripe.`);
     }
 
-    if (!planDetails.billing_price_id) {
+    let activePriceId = planDetails.billing_price_id;
+    let activeProductId = planDetails.billing_product_id;
+
+    if (planDetails.stripe_lookup_key) {
+      try {
+        const stripePath = `/prices?lookup_keys[]=${encodeURIComponent(planDetails.stripe_lookup_key)}&active=true`;
+        const stripeResponse = await stripeRequest<{ data: any[] }>(stripeSecretKey, stripePath, { method: 'GET' });
+        const matchedPrice = stripeResponse.data?.[0];
+        
+        if (matchedPrice) {
+          activePriceId = matchedPrice.id;
+          activeProductId = typeof matchedPrice.product === 'string' ? matchedPrice.product : matchedPrice.product?.id || activeProductId;
+        } else {
+          logEdgeError('process-payment.stripe_lookup', new Error(`No active price found in Stripe for lookup_key: ${planDetails.stripe_lookup_key}`), { planId: planDetails.id });
+        }
+      } catch (stripeErr) {
+        logEdgeError('process-payment.stripe_lookup', stripeErr, { planId: planDetails.id });
+        // Fallback to the DB price ID
+      }
+    }
+
+    if (!activePriceId) {
       throw new Error(`Plan '${planDetails.name}' is missing the Stripe price reference.`);
     }
 
@@ -117,14 +138,14 @@ serve(async (req) => {
       ['client_reference_id', user.id],
       ['customer_email', user.email || ''],
       ['allow_promotion_codes', false],
-      ['line_items[0][price]', planDetails.billing_price_id],
+      ['line_items[0][price]', activePriceId],
       ['line_items[0][quantity]', 1],
       ['metadata[user_id]', user.id],
       ['metadata[plan_id]', String(planDetails.id)],
       ['metadata[plan_name]', planDetails.name],
       ['metadata[billing_provider]', 'stripe'],
-      ['metadata[billing_price_id]', planDetails.billing_price_id],
-      ['metadata[billing_product_id]', planDetails.billing_product_id || ''],
+      ['metadata[billing_price_id]', activePriceId],
+      ['metadata[billing_product_id]', activeProductId || ''],
       ['customer', profileData?.billing_customer_id || ''],
     ];
 
@@ -134,8 +155,8 @@ serve(async (req) => {
         ['subscription_data[metadata][plan_id]', String(planDetails.id)],
         ['subscription_data[metadata][plan_name]', planDetails.name],
         ['subscription_data[metadata][billing_provider]', 'stripe'],
-        ['subscription_data[metadata][billing_price_id]', planDetails.billing_price_id],
-        ['subscription_data[metadata][billing_product_id]', planDetails.billing_product_id || ''],
+        ['subscription_data[metadata][billing_price_id]', activePriceId],
+        ['subscription_data[metadata][billing_product_id]', activeProductId || ''],
       );
     }
 

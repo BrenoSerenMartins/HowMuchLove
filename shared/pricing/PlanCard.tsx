@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, ArrowRight } from 'lucide-react';
 import type { Plan } from '@/types';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
 
 type PlanStatus = 'current' | 'upgrade' | 'downgrade';
 type PlanDensity = 'default' | 'compact';
@@ -88,21 +89,14 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, status, onSelect, disabled = 
                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] font-mono leading-none">/ {plan.billingCycle}</p>
             </div>
 
-            <button
-                onClick={handleSelect}
-                disabled={isCurrentPlan || isComingSoon || disabled}
-                className={`min-w-[140px] py-4 px-6 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
-                    isCurrentPlan
-                    ? 'bg-transparent border border-primary/20 text-primary cursor-default'
-                    : isComingSoon
-                        ? 'bg-white/5 border border-white/10 text-slate-500 cursor-default'
-                        : isFeatured
-                            ? 'bg-primary text-white shadow-[0_10px_20px_rgba(255,45,85,0.2)] hover:shadow-[0_15px_30px_rgba(255,45,85,0.3)] hover:-translate-y-0.5'
-                            : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/10'
-                } disabled:opacity-30 disabled:pointer-events-none`}
+            <EliteButton 
+              variant={isCurrentPlan ? 'secondary' : (isFeatured ? 'primary' : 'secondary')}
+              onClick={handleSelect}
+              disabled={isCurrentPlan || isComingSoon || disabled}
+              className={`min-w-[140px] ${!isFeatured && !isCurrentPlan ? '!bg-white/5 hover:!bg-white/10 !border-white/10' : ''}`}
             >
                 {buttonText}
-            </button>
+            </EliteButton>
         </div>
       </div>
     );

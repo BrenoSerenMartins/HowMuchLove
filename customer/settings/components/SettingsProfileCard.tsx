@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, Mail, Sparkles, UserRound } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+
 
 const SettingsProfileCard: React.FC<{
   planName?: string | null;
@@ -58,13 +60,13 @@ const SettingsProfileCard: React.FC<{
             </p>
         </div>
 
-        <button
+        <EliteButton variant="secondary"
           onClick={onLogout}
-          className="btn-secondary group w-full justify-center !border-white/5 !bg-white/[0.02] !text-slate-400 hover:!text-white hover:!border-white/10"
+           className="group w-full justify-center !border-white/5 !bg-white/[0.02] !text-slate-400 hover:!text-white hover:!border-white/10"
         >
           <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           {uiCopy.account.logout}
-        </button>
+        </EliteButton>
       </div>
     </motion.div>
   );

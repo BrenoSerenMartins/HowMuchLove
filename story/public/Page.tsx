@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Heart, ShieldAlert, Sparkles, Play } from 'lucide-react';
+import { AlertCircle, Lock, Heart, Play, Sparkles, ShieldAlert } from 'lucide-react';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import { fetchPublicStory, verifyStoryPassword } from '@/shared/lib/story-api';
 import type { LoveStoryData } from '@/types';
@@ -8,6 +8,9 @@ import PublicStory from '@/shared/ui/story-view/PublicStory';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+import EliteInput from '@/shared/ui/EliteInput';
+
 
 const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -179,18 +182,18 @@ const StoryPage: React.FC = () => {
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 font-mono">Uma Nova História</span>
                 </div>
                 
-                <h1 className="text-4xl sm:text-7xl font-black text-white leading-none tracking-tighter mb-12">
+                <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black text-white leading-none tracking-tighter mb-[clamp(2rem,5vh,3rem)] uppercase">
                   Pronto para <br/>
                   <span className="text-primary italic font-cursive lowercase tracking-normal">se emocionar?</span>
                 </h1>
 
-                <button
+                <EliteButton variant="primary"
                   onClick={startEntryTransition}
-                  className="btn-primary !py-6 !px-16 !text-xs group"
+                   className="!py-[clamp(1.2rem,3vh,1.5rem)] !px-[clamp(3rem,6vw,4rem)] !text-[clamp(10px,1.2vw,12px)] group mx-auto"
                 >
-                  <Play className="w-4 h-4 fill-current" />
+                  <Play className="w-[clamp(14px,2vw,16px)] h-[clamp(14px,2vw,16px)] fill-current" />
                   {storyData.entryButtonText || uiCopy.story.enterButton}
-                </button>
+                </EliteButton>
               </motion.div>
             </motion.div>
           )}
@@ -214,16 +217,16 @@ const StoryPage: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="card-elite p-12 text-center max-w-lg w-full relative overflow-hidden"
+          className="card-elite p-[clamp(2rem,5dvh,4rem)] text-center max-w-[clamp(320px,90vw,480px)] w-full mx-4 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-red-500/10 text-red-500 mb-8 border border-red-500/20">
-            <ShieldAlert className="w-10 h-10" />
+          <div className="inline-flex items-center justify-center w-[clamp(4rem,8vw,5rem)] h-[clamp(4rem,8vw,5rem)] rounded-3xl bg-red-500/10 text-red-500 mb-[clamp(1.5rem,4dvh,2rem)] border border-red-500/20">
+            <ShieldAlert className="w-[clamp(2rem,4vw,2.5rem)] h-[clamp(2rem,4vw,2.5rem)]" />
           </div>
-          <h1 className="text-4xl font-black text-white leading-none tracking-tighter mb-4 uppercase">
+          <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-white leading-none tracking-tighter mb-[clamp(1rem,3dvh,1.5rem)] uppercase">
             {isNotFound ? uiCopy.story.notFoundTitle : uiCopy.story.loadErrorTitle}
           </h1>
-          <p className="text-lg text-slate-400 font-medium">{error}</p>
+          <p className="text-[clamp(14px,2vw,16px)] text-slate-400 font-medium leading-relaxed font-mono tracking-widest uppercase">{error}</p>
         </motion.div>
       </PageWrapper>
     );
@@ -235,38 +238,36 @@ const StoryPage: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="card-elite p-12 text-center max-w-lg w-full relative overflow-hidden"
+          className="card-elite p-[clamp(2rem,5dvh,4rem)] text-center max-w-[clamp(320px,90vw,480px)] w-full mx-4 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full -mr-16 -mt-16" />
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary/10 text-primary mb-8 border border-primary/20">
-            <Lock className="w-8 h-8" />
+          <div className="inline-flex items-center justify-center w-[clamp(4rem,8vw,5rem)] h-[clamp(4rem,8vw,5rem)] rounded-3xl bg-primary/10 text-primary mb-[clamp(1.5rem,4dvh,2rem)] border border-primary/20">
+            <Lock className="w-[clamp(2rem,4vw,2.5rem)] h-[clamp(2rem,4vw,2.5rem)]" />
           </div>
-          <h2 className="text-3xl font-black text-white leading-none tracking-tighter mb-4 uppercase">{uiCopy.story.privateTitle}</h2>
-          <p className="text-slate-400 mb-10 font-medium leading-relaxed">{uiCopy.story.privateDescription}</p>
+          <h2 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-white leading-none tracking-tighter mb-[clamp(1rem,3dvh,1.5rem)] uppercase">{uiCopy.story.privateTitle}</h2>
+          <p className="text-[clamp(10px,1.5vw,12px)] text-slate-400 mb-[clamp(2rem,5dvh,2.5rem)] font-medium leading-relaxed uppercase tracking-[0.1em] font-mono">{uiCopy.story.privateDescription}</p>
           
-          <form onSubmit={handlePasswordSubmit} className="space-y-6">
-            <div className="relative group">
-              <input
+          <form onSubmit={handlePasswordSubmit} className="space-y-[clamp(1.5rem,3dvh,2rem)]">
+            <EliteInput
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError('');
+                }}
                 placeholder={uiCopy.story.passwordPlaceholder}
-                className={`input-elite pr-12 ${passwordError ? '!border-red-500/50' : ''}`}
-              />
-              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-            </div>
-            
-            {passwordError && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-[11px] font-black uppercase tracking-widest">{passwordError}</motion.p>
-            )}
+                className="text-center text-[clamp(16px,2.5vw,20px)] tracking-[0.3em] !py-[clamp(1rem,2.5dvh,1.5rem)]"
+                icon={Lock}
+                error={passwordError}
+            />
 
-            <button
+            <EliteButton variant="primary"
               type="submit"
-              className="btn-primary w-full !py-5"
+              fullWidth
             >
               {uiCopy.story.enterButton}
               <Heart className="w-4 h-4 fill-current" />
-            </button>
+            </EliteButton>
           </form>
         </motion.div>
       </PageWrapper>

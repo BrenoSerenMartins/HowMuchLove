@@ -84,8 +84,37 @@ const resolveFreePlanId = async (supabase: ReturnType<typeof createClient>) => {
   return typeof freePlanByName === 'number' ? freePlanByName : 0;
 };
 
-const resolvePlanByPriceId = async (supabase: ReturnType<typeof createClient>, priceId: string | null) => {
+const getStripePriceDetails = async (stripeSecretKey: string, priceId: string) => {
+  return stripeRequest<{ lookup_key?: string | null }>(stripeSecretKey, `/prices/${priceId}`, {
+    method: 'GET',
+  });
+};
+
+const resolvePlanByPriceId = async (
+  supabase: ReturnType<typeof createClient>,
+  priceId: string | null,
+  stripeSecretKey?: string
+) => {
   if (!priceId) return null;
+
+  if (stripeSecretKey) {
+    try {
+      const priceDetails = await getStripePriceDetails(stripeSecretKey, priceId);
+      if (priceDetails?.lookup_key) {
+        const { data: lookupData, error: lookupError } = await supabase
+          .from('plans')
+          .select('id, billing_price_id')
+          .eq('stripe_lookup_key', priceDetails.lookup_key)
+          .maybeSingle();
+        
+        if (!lookupError && lookupData) {
+          return lookupData;
+        }
+      }
+    } catch (err) {
+      logEdgeError('stripe-webhook.resolvePlanByPriceId', err instanceof Error ? err : new Error(String(err)));
+    }
+  }
 
   const { data, error } = await supabase
     .from('plans')
@@ -244,7 +273,7 @@ Deno.serve(async (req) => {
         billingStatus = mapSubscriptionStatus(subscription.status);
         billingCurrentPeriodEnd = toIsoDate(subscription.current_period_end ?? null);
         billingCancelAtPeriodEnd = Boolean(subscription.cancel_at_period_end);
-        planRow = await resolvePlanByPriceId(supabase, getStripePriceId(subscription));
+        planRow = await resolvePlanByPriceId(supabase, getStripePriceId(subscription), stripeSecretKey);
         if (!planRow && Number.isFinite(planIdFromMetadata) && planIdFromMetadata > 0) {
           planRow = await resolvePlanById(supabase, planIdFromMetadata);
         }
@@ -297,7 +326,7 @@ Deno.serve(async (req) => {
       }
 
       const priceId = getStripePriceId(subscription);
-      const planRow = await resolvePlanByPriceId(supabase, priceId);
+      const planRow = await resolvePlanByPriceId(supabase, priceId, stripeSecretKey);
       const metadataPlanId = Number(subscription?.metadata?.plan_id);
       const fallbackPlanRow = !planRow && Number.isFinite(metadataPlanId) && metadataPlanId > 0
         ? await resolvePlanById(supabase, metadataPlanId)
@@ -351,7 +380,7 @@ Deno.serve(async (req) => {
 
       const subscription = await getSubscriptionDetails(stripeSecretKey, subscriptionId);
       const priceId = getStripePriceId(subscription);
-      const planRow = await resolvePlanByPriceId(supabase, priceId);
+      const planRow = await resolvePlanByPriceId(supabase, priceId, stripeSecretKey);
       const metadataPlanId = Number(subscription?.metadata?.plan_id);
       const fallbackPlanRow = !planRow && Number.isFinite(metadataPlanId) && metadataPlanId > 0
         ? await resolvePlanById(supabase, metadataPlanId)

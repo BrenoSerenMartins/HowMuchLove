@@ -94,8 +94,26 @@ const DashboardHero: React.FC<{
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-12 text-center relative group">
-        {/* Heartbeat Ambient Glow */}
+        {/* Heartbeat Ambient Glow & Floating Orbs */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full animate-glow-pulse pointer-events-none z-0" />
+        <motion.div 
+            animate={{ 
+                x: [0, 50, -30, 0], 
+                y: [0, -40, 20, 0],
+                scale: [1, 1.1, 0.9, 1]
+            }} 
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-amber-500/10 blur-[100px] rounded-full pointer-events-none z-0" 
+        />
+        <motion.div 
+            animate={{ 
+                x: [0, -60, 40, 0], 
+                y: [0, 30, -50, 0],
+                scale: [1, 1.2, 0.8, 1]
+            }} 
+            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full pointer-events-none z-0" 
+        />
 
         <div className="relative z-10 space-y-12">
             <h2 className="text-fluid-h2 font-black text-white tracking-tighter uppercase leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">

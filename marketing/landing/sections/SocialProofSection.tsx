@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+
 
 interface TestimonialCardProps {
   quote: string;
@@ -53,7 +55,7 @@ const SocialProofSection: React.FC = () => {
 
   return (
     <section id="testimonials" className="section-fluid relative overflow-visible">
-      <div className="relative z-10 overflow-visible">
+      <div className="relative z-10 container-fluid overflow-visible">
         
         {/* Section Header */}
         <motion.div 
@@ -76,10 +78,10 @@ const SocialProofSection: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Testimonials Grid - Horizontal scroll on mobile, Grid on desktop */}
-        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-[clamp(1.5rem,4vw,4rem)] -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch">
+        {/* Testimonials Grid */}
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-[clamp(1.5rem,4vw,4rem)] items-stretch mt-12">
           {uiCopy.marketing.socialProof.testimonials.map((testimonial, index) => (
-            <div key={testimonial.author} className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto">
+            <div key={testimonial.author} className="w-full h-auto">
               <TestimonialCard 
                 index={index}
                 quote={testimonial.quote}
@@ -98,13 +100,13 @@ const SocialProofSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mt-20"
         >
-          <button 
+          <EliteButton variant="secondary" 
             onClick={handleScrollToDemo}
-            className="btn-secondary group"
+             className="group"
           >
             {uiCopy.marketing.socialProof.cta}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </EliteButton>
         </motion.div>
 
       </div>

@@ -27,7 +27,7 @@ const DashboardActions: React.FC<{
 
       <button
           onClick={handleShareClick}
-          className="w-full group relative overflow-hidden rounded-[clamp(2rem,4vw,3rem)] border border-white/[0.03] bg-white/[0.005] backdrop-blur-2xl p-[clamp(1.5rem,4vw,3rem)] transition-all duration-1000 hover:border-primary/20 hover:bg-white/[0.01] hover:shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+          className="w-full group relative overflow-hidden rounded-[clamp(2rem,4vw,3rem)] border border-primary/[0.05] bg-primary/[0.02] backdrop-blur-2xl p-[clamp(1.5rem,4vw,3rem)] transition-all duration-1000 hover:border-primary/30 hover:bg-primary/[0.04] hover:shadow-[0_0_50px_rgba(255,45,85,0.15)]"
       >
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.03] blur-[80px] rounded-full -mr-32 -mt-32 group-hover:scale-150 transition-transform duration-1000" />
           
@@ -36,10 +36,10 @@ const DashboardActions: React.FC<{
                   <div className="p-[clamp(1rem,2vw,1.5rem)] rounded-[clamp(1.5rem,3vw,2rem)] bg-primary/10 text-primary shadow-[0_0_30px_rgba(255,45,85,0.2)] group-hover:scale-110 transition-transform duration-700">
                       <Share2 className="w-[clamp(1.5rem,3vw,2rem)] h-[clamp(1.5rem,3vw,2rem)]" />
                   </div>
-                  <div className="text-left space-y-1">
-                      <h3 className="text-[clamp(1.25rem,2.5vw,2rem)] font-black text-white uppercase tracking-tight opacity-90 group-hover:opacity-100 transition-opacity">Compartilhar Legado</h3>
-                      <p className="text-[clamp(10px,1vw,13px)] font-bold text-slate-500 uppercase tracking-widest font-mono opacity-60">
-                          {isFreePlan ? 'Upgrade Necessário para publicar' : 'QR Code Ativo • Pronto para Enviar'}
+                  <div className="text-left space-y-2">
+                      <h3 className="text-[clamp(1.25rem,2.5vw,2rem)] font-black text-white uppercase tracking-tight opacity-90 group-hover:opacity-100 transition-opacity">Eternize Seus Momentos</h3>
+                      <p className="text-[clamp(1.1rem,1.5vw,1.5rem)] font-cursive text-primary/80 lowercase italic tracking-normal opacity-90">
+                          {isFreePlan ? 'acesse o portal e libere a chave do seu amor...' : 'a chave desta história está pronta para o envio...'}
                       </p>
                   </div>
               </div>

@@ -14,6 +14,13 @@ export const uiCopy = {
     registerPrompt: 'Já tem uma conta?',
     loginCta: 'Entrar',
     registerCta: 'Cadastre-se',
+    forgotPasswordTitle: 'Recuperar senha',
+    forgotPasswordPrompt: 'Lembrou a senha?',
+    forgotPasswordCta: 'Enviar e-mail',
+    forgotPasswordSuccess: 'Enviamos um link de recuperação para o seu e-mail.',
+    resetPasswordTitle: 'Criar nova senha',
+    resetPasswordCta: 'Salvar nova senha',
+    resetPasswordSuccess: 'Sua senha foi atualizada com sucesso.',
   },
   navigation: {
     features: 'Funcionalidades',

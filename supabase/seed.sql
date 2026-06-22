@@ -30,7 +30,8 @@ INSERT INTO public.plans (
   show_on_pricing_page,
   duration_days,
   description,
-  is_landing_offer
+  is_landing_offer,
+  stripe_lookup_key
 ) VALUES
   (
     1,
@@ -53,7 +54,8 @@ INSERT INTO public.plans (
     true,
     NULL,
     NULL,
-    false
+    false,
+    'sonho'
   ),
   (
     2,
@@ -76,7 +78,8 @@ INSERT INTO public.plans (
     true,
     NULL,
     NULL,
-    false
+    false,
+    'eterno_anual'
   ),
   (
     3,
@@ -99,7 +102,8 @@ INSERT INTO public.plans (
     true,
     NULL,
     NULL,
-    false
+    false,
+    'infinito_lifetime'
   ),
   (
     7,
@@ -122,7 +126,8 @@ INSERT INTO public.plans (
     false,
     NULL,
     NULL,
-    false
+    false,
+    NULL
   ),
   (
     8,
@@ -145,7 +150,8 @@ INSERT INTO public.plans (
     false,
     30,
     'Plano de produto Teste',
-    true
+    true,
+    'teste_produto'
   ),
   (
     9,
@@ -168,7 +174,8 @@ INSERT INTO public.plans (
     true,
     60,
     NULL,
-    false
+    false,
+    'teste_assinatura'
   )
 ON CONFLICT (name) DO UPDATE
   SET price = EXCLUDED.price,
@@ -189,7 +196,8 @@ ON CONFLICT (name) DO UPDATE
     show_on_pricing_page = EXCLUDED.show_on_pricing_page,
     duration_days = EXCLUDED.duration_days,
     description = EXCLUDED.description,
-    is_landing_offer = EXCLUDED.is_landing_offer;
+    is_landing_offer = EXCLUDED.is_landing_offer,
+    stripe_lookup_key = EXCLUDED.stripe_lookup_key;
 
 INSERT INTO storage.buckets (
   id,

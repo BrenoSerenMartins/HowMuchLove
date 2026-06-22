@@ -129,6 +129,9 @@ const DashboardPage: React.FC = () => {
   return (
     <PageWrapper>
       <div className="relative">
+        {/* Texture Layer - Old Film Romance */}
+        <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.25] bg-grain mix-blend-overlay" />
+        
         {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
         {isActiveStory && heroImages.length > 0 && createPortal(
            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60 animate-fade-in">
@@ -251,7 +254,7 @@ const DashboardPage: React.FC = () => {
 
                   {/* Right: Immersive Monitor (ONLY IN EDITING MODE) */}
                   {isEditing && (
-                    <div className="relative group p-8 md:p-12 lg:p-16 border border-white/5 bg-white/[0.01] backdrop-blur-3xl rounded-[3rem]">
+                    <div className="relative group p-8 md:p-12 lg:p-16 border border-primary/[0.05] bg-primary/[0.02] backdrop-blur-3xl rounded-[3rem]">
                         <div className="lg:sticky lg:top-32 space-y-10">
                             <div className="flex items-center justify-between px-4">
                                 <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-600 font-mono">

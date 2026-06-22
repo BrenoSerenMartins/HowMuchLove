@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
 
 const FinalCTASection: React.FC = () => {
   const handleScrollToDemo = () => {
@@ -19,7 +20,7 @@ const FinalCTASection: React.FC = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="card-elite max-w-7xl mx-auto p-12 md:p-24 lg:p-32 text-center relative overflow-visible"
+          className="card-elite max-w-7xl mx-auto p-[clamp(2rem,6vw,8rem)] text-center relative overflow-visible"
         >
           {/* Decorative Sparkles */}
           <div className="absolute top-10 left-10 opacity-20">
@@ -52,17 +53,22 @@ const FinalCTASection: React.FC = () => {
             {uiCopy.marketing.finalCta.description}
           </motion.p>
 
-          <motion.button 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            onClick={handleScrollToDemo}
-            className="btn-primary !py-6 !px-16 !text-sm group shadow-[0_0_30px_rgba(255,45,85,0.4)]"
           >
-            {uiCopy.marketing.finalCta.cta}
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
-          </motion.button>
+            <EliteButton 
+              variant="primary"
+              onClick={handleScrollToDemo}
+              size="lg"
+              className="group shadow-[0_0_30px_rgba(255,45,85,0.4)]"
+            >
+              {uiCopy.marketing.finalCta.cta}
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+            </EliteButton>
+          </motion.div>
         </motion.div>
       </div>
     </section>

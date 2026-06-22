@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+
 
 const HeroSection: React.FC = () => {
   const handleScrollToDemo = () => {
@@ -43,7 +45,7 @@ const HeroSection: React.FC = () => {
             ...fadeInUp,
             transition: { ...fadeInUp.transition, delay: 0.3 }
           }}
-          className="text-fluid-body text-slate-400 max-w-[clamp(28rem,45vw,45rem)] mx-auto mb-10 font-medium leading-relaxed"
+          className="text-fluid-body text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed"
         >
           {uiCopy.marketing.hero.description}
         </motion.p>
@@ -55,13 +57,14 @@ const HeroSection: React.FC = () => {
           }}
           className="flex flex-col sm:flex-row items-center justify-center gap-8"
         >
-          <button 
+          <EliteButton variant="primary" 
             onClick={handleScrollToDemo}
-            className="btn-primary !py-5 !px-12 !text-xs group"
+            size="lg"
+            className="group"
           >
             {uiCopy.marketing.hero.cta}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </EliteButton>
           
           <div className="flex -space-x-3">
             {[1, 2, 3, 4].map((i) => (

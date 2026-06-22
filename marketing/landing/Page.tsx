@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
   const handlePlanSelected = async (plan: { id: number; name: string; amount: number }) => {
     if (!user) {
       addToast(uiCopy.payment.createAccount, 'info');
-      navigate('/register');
+      navigate(`/register?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}`);
       return;
     }
 

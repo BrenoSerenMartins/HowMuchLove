@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { UserPlus, Wand2, Share2, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+
 
 interface StepCardProps {
   step: number;
@@ -66,10 +68,10 @@ const HowItWorksSection: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Steps Grid - Horizontal scroll on mobile, Grid on desktop */}
-        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch">
+        {/* Steps Grid */}
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8 items-stretch mt-12">
           {uiCopy.marketing.howItWorks.steps.map((step, index) => (
-            <div key={step.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto">
+            <div key={step.title} className="w-full h-auto">
               <StepCard
                 index={index}
                 step={index + 1}
@@ -93,13 +95,14 @@ const HowItWorksSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mt-20"
         >
-          <button 
+          <EliteButton variant="primary" 
             onClick={handleScrollToDemo}
-            className="btn-primary group !py-5 !px-12"
+            size="lg"
+            className="group"
           >
             {uiCopy.marketing.howItWorks.cta}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </EliteButton>
         </motion.div>
       </div>
     </section>

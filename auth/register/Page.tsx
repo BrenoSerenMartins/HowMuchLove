@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import { ArrowRight, Mail, Lock, User, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useNavigate } from '@/app/hooks/useNavigate';
 import { useFormValidator } from '@/app/hooks/useFormValidator';
 import { validateRequired, validateEmail, validatePassword } from '@/shared/lib/validators';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+import EliteInput from '@/shared/ui/EliteInput';
+
 
 const RegisterPage: React.FC = () => {
     const { register } = useAuth();
@@ -22,23 +25,36 @@ const RegisterPage: React.FC = () => {
     const handleRegister = async () => {
         try {
             await register(values.name, values.email, values.password);
-            navigate('/dashboard');
+            const searchParams = new URLSearchParams(window.location.search);
+            const planId = searchParams.get('planId');
+            const planName = searchParams.get('planName');
+
+            if (planId && planName) {
+                navigate(`/settings?checkoutPlanId=${planId}&checkoutPlanName=${encodeURIComponent(planName)}`);
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err: any) {
             setErrors({ form: err.message || uiCopy.auth.registerFormError });
         }
     };
 
     return (
-        <div className="container-fluid w-full max-w-md mx-auto relative z-10 py-12">
+        <div className="h-[100dvh] flex flex-col items-center justify-center px-[clamp(1rem,4vw,2rem)] relative overflow-hidden">
+            {/* Ambient Orbs */}
+            <div className="fixed top-1/4 right-1/4 w-[600px] h-[600px] bg-primary/[0.06] blur-[120px] rounded-full pointer-events-none" />
+            <div className="fixed bottom-1/4 left-1/4 w-[400px] h-[400px] bg-amber-500/[0.04] blur-[100px] rounded-full pointer-events-none" />
+
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-12"
+                className="text-center mb-[clamp(1.5rem,4vh,3rem)] relative z-10"
             >
-                 <button onClick={() => navigate('/')} className="group focus:outline-none">
-                    <span className="text-4xl font-black text-white tracking-tighter uppercase transition-transform group-hover:scale-105 block">
+                <button onClick={() => navigate('/')} className="group focus:outline-none">
+                    <span className="text-[clamp(2rem,5vw,3rem)] font-black text-white tracking-tighter uppercase transition-transform group-hover:scale-105 block">
                         HowMuch<span className="text-primary italic font-cursive lowercase px-1">Love</span>
                     </span>
+                    <p className="text-[clamp(0.9rem,1.3vw,1.2rem)] font-cursive text-primary/60 lowercase italic mt-1">comece sua história de amor...</p>
                 </button>
             </motion.div>
             
@@ -46,11 +62,12 @@ const RegisterPage: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
-                className="card-elite p-10 relative overflow-hidden"
+                className="card-elite p-[clamp(1.5rem,4vw,3rem)] relative overflow-hidden w-full max-w-md z-10"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full -mr-16 -mt-16" />
+                <div className="absolute top-0 right-0 w-48 h-48 bg-primary/[0.08] blur-3xl rounded-full -mr-20 -mt-20" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/[0.05] blur-2xl rounded-full -ml-10 -mb-10" />
                 
-                <h2 className="text-3xl font-black text-white tracking-tight mb-8 uppercase">{uiCopy.auth.registerTitle}</h2>
+                <h2 className="text-[clamp(1.25rem,2vw,1.6rem)] font-black text-center text-white tracking-tight mb-[clamp(1.5rem,4vh,2.5rem)] uppercase whitespace-nowrap">{uiCopy.auth.registerTitle}</h2>
                 
                 <form onSubmit={handleSubmit(handleRegister)} className="space-y-6">
                     {errors.form && (
@@ -60,67 +77,47 @@ const RegisterPage: React.FC = () => {
                         </motion.div>
                     )}
                     
-                    <div>
-                        <label htmlFor="name" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Nome</label>
-                        <div className="relative group">
-                            <input
-                                id="name"
-                                name="name"
-                                type="text"
-                                value={values.name}
-                                onChange={handleChange}
-                                placeholder="Seu nome"
-                                required
-                                aria-invalid={!!errors.name}
-                                className={`input-elite pr-12 ${errors.name ? '!border-red-500/50' : ''}`}
-                            />
-                            <User className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                        </div>
-                        {errors.name && <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-1">{errors.name}</p>}
-                    </div>
+                    <EliteInput
+                        label="Nome"
+                        name="name"
+                        type="text"
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder="Seu nome"
+                        required
+                        icon={User}
+                        error={errors.name}
+                    />
                     
-                    <div>
-                        <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Email</label>
-                        <div className="relative group">
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={values.email}
-                                onChange={handleChange}
-                                placeholder="seu@email.com"
-                                required
-                                aria-invalid={!!errors.email}
-                                className={`input-elite pr-12 ${errors.email ? '!border-red-500/50' : ''}`}
-                            />
-                            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                        </div>
-                        {errors.email && <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-1">{errors.email}</p>}
-                    </div>
+                    <EliteInput
+                        label="Email"
+                        name="email"
+                        type="email"
+                        value={values.email}
+                        onChange={handleChange}
+                        placeholder="seu@email.com"
+                        required
+                        icon={Mail}
+                        error={errors.email}
+                    />
                     
-                    <div>
-                        <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Senha</label>
-                        <div className="relative group">
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                value={values.password}
-                                onChange={handleChange}
-                                placeholder="Mínimo 6 caracteres"
-                                required
-                                aria-invalid={!!errors.password}
-                                className={`input-elite pr-12 ${errors.password ? '!border-red-500/50' : ''}`}
-                            />
-                            <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                        </div>
-                         {errors.password && <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mt-2 ml-1">{errors.password}</p>}
-                    </div>
+                    <EliteInput
+                        label="Senha"
+                        name="password"
+                        type="password"
+                        value={values.password}
+                        onChange={handleChange}
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                        icon={Lock}
+                        error={errors.password}
+                    />
                     
-                    <button
+                    <EliteButton variant="primary"
                         type="submit"
                         disabled={isSubmitting}
-                        className="btn-primary w-full !py-5 group"
+                        fullWidth
+                        className="group"
                     >
                         {isSubmitting ? (
                             <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -130,7 +127,7 @@ const RegisterPage: React.FC = () => {
                                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                             </>
                         )}
-                    </button>
+                    </EliteButton>
                 </form>
                 
                 <p className="text-center text-slate-400 mt-10 text-sm font-medium">

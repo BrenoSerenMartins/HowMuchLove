@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Image, Music, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import EliteButton from '@/shared/ui/EliteButton';
+
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -60,10 +62,10 @@ const FeaturesSection: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Features Grid - Horizontal scroll on mobile, Grid on desktop */}
-        <div className="flex overflow-x-auto pb-12 pt-6 md:grid md:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory overflow-y-visible items-stretch">
+        {/* Features Grid */}
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8 items-stretch mt-12">
           {uiCopy.marketing.features.cards.map((card, index) => (
-            <div key={card.title} className="w-[85vw] md:w-auto flex-shrink-0 snap-center h-auto">
+            <div key={card.title} className="w-full h-auto">
               <FeatureCard 
                 index={index}
                 icon={
@@ -86,13 +88,13 @@ const FeaturesSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mt-20"
         >
-          <button 
+          <EliteButton variant="secondary" 
             onClick={handleScrollToDemo}
-            className="btn-secondary group"
+             className="group"
           >
             {uiCopy.marketing.features.cta}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </EliteButton>
         </motion.div>
       </div>
     </section>

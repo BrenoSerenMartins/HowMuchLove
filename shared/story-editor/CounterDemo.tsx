@@ -27,6 +27,10 @@ import StoryPreview from './StoryPreview';
 import type { LoveStoryData, StoryImage, PlanFeatures } from '@/types';
 import { resolvePlanCapabilities } from '@/shared/lib/plans';
 import { uiCopy } from '@/shared/lib/ui-copy';
+import imageCompression from 'browser-image-compression';
+import EliteButton from '@/shared/ui/EliteButton';
+import EliteInput from '@/shared/ui/EliteInput';
+
 
 registerLocale('pt-BR', ptBR);
 
@@ -46,11 +50,11 @@ const AccordionSection: React.FC<{
   };
 
   return (
-    <div className="border-b border-white/5 last:border-0">
+    <div className="border-b border-primary/[0.06] last:border-0">
       <button
         onClick={handleToggle}
         className={`w-full flex justify-between items-center py-6 text-left font-black uppercase tracking-[0.15em] text-[10px] transition-all px-4 rounded-xl ${
-          isOpen ? 'bg-white/5 text-primary' : 'text-slate-400 hover:text-white hover:bg-white/[0.02]'
+          isOpen ? 'bg-primary/[0.06] text-primary' : 'text-slate-400 hover:text-white hover:bg-primary/[0.03]'
         }`}
       >
         <div className="flex items-center gap-4">
@@ -89,14 +93,14 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
     const style = { transform: CSS.Transform.toString(transform), transition };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} className="relative group flex items-center bg-white/[0.03] border border-white/5 p-3 rounded-2xl mb-2 hover:bg-white/[0.05] transition-colors">
-            <button {...listeners} className="cursor-grab touch-none p-2 text-slate-500 hover:text-white transition-colors">
+        <div ref={setNodeRef} style={style} {...attributes} className="relative group flex items-center bg-primary/[0.02] border border-primary/[0.08] p-3 rounded-2xl mb-2 hover:bg-primary/[0.05] hover:border-primary/20 transition-all duration-300">
+            <button {...listeners} className="cursor-grab touch-none p-2 text-slate-500 hover:text-primary transition-colors">
                 <GripVertical className="w-4 h-4" />
             </button>
-            <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 mx-4">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/20 mx-4 shadow-[0_0_15px_rgba(255,45,85,0.1)]">
                 <img src={image.image_url} alt="Thumbnail" className="w-full h-full object-cover" />
             </div>
-            <span className="flex-grow text-[11px] font-black uppercase tracking-widest text-slate-400 truncate">{uiCopy.editor.imageItem}</span>
+            <span className="flex-grow text-[11px] font-black uppercase tracking-widest text-slate-400 truncate group-hover:text-slate-300 transition-colors">{uiCopy.editor.imageItem}</span>
             <button 
               onClick={() => onDelete(image.id)} 
               className="p-2 text-slate-500 hover:text-primary transition-colors"
@@ -143,6 +147,7 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [imageIdsToDelete, setImageIdsToDelete] = useState<number[]>([]); 
   const [openSection, setOpenSection] = useState<string | null>('content');
+  const [isCompressing, setIsCompressing] = useState(false);
   const hasHydratedInitialDataRef = useRef(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -192,12 +197,28 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      onDirty?.();
-      setNewImageFiles(prevFiles => [...prevFiles, file]);
-      const localUrl = URL.createObjectURL(file);
-      const tempId = Date.now();
-      updateLocalData('images', [...localData.images, { id: tempId, image_url: localUrl, display_order: localData.images.length, originalFilename: file.name }]);
+      setIsCompressing(true);
+      try {
+        const file = event.target.files[0];
+        
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1080,
+          useWebWorker: true,
+        };
+        const compressedFile = await imageCompression(file, options);
+        
+        onDirty?.();
+        setNewImageFiles(prevFiles => [...prevFiles, compressedFile]);
+        const localUrl = URL.createObjectURL(compressedFile);
+        const tempId = Date.now();
+        updateLocalData('images', [...localData.images, { id: tempId, image_url: localUrl, display_order: localData.images.length, originalFilename: compressedFile.name }]);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+      } finally {
+        setIsCompressing(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -255,8 +276,8 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
               <Layout className="w-6 h-6" />
             </div>
             <div>
-                <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Painel de Criação</h3>
-                <p className="text-[clamp(9px,0.7vw,11px)] font-bold text-slate-500 uppercase tracking-widest mt-1 font-mono">Personalize sua História</p>
+                <h3 className="font-black uppercase tracking-[0.3em] text-[clamp(10px,0.8vw,12px)] text-white/90">Seu Estúdio</h3>
+                <p className="text-[clamp(1rem,1.2vw,1.3rem)] font-cursive text-primary/70 lowercase italic tracking-normal mt-0.5">escreva com o coração...</p>
             </div>
           </div>
 
@@ -287,10 +308,11 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
                   <div className="relative group w-full min-w-0">
                     <textarea
                       id="message" value={localData.message} onChange={(e) => updateLocalData('message', e.target.value)}
-                      placeholder={uiCopy.editor.messagePlaceholder} rows={5}
-                      className="input-elite resize-none !py-5 !w-full !min-w-0"
+                      placeholder="Escreva o que seu coração sente... cada palavra é um momento eternizado." rows={6}
+                      className="input-elite resize-none !py-5 !w-full !min-w-0 placeholder:italic placeholder:text-slate-600/80"
                     ></textarea>
                     <MessageSquare className="absolute right-5 top-5 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
+                    <span className="absolute bottom-4 right-5 text-[10px] font-mono text-slate-700">{localData.message.length}</span>
                   </div>
                 </div>
               </div>
@@ -322,15 +344,24 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
                     </div>
                   )}
                   
-                  <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={isDashboard && limitReached} />
+                  <input type="file" id="images" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" disabled={(isDashboard && limitReached) || isCompressing} />
                   <UpgradeToUnlock isFeatureAllowed={!isDashboard || !limitReached} message={uiCopy.editor.imageLimitMessage(features.imageLimit)}>
                     <button 
                       onClick={() => fileInputRef.current?.click()} 
-                      disabled={isDashboard && limitReached} 
+                      disabled={(isDashboard && limitReached) || isCompressing} 
                       className="w-full btn-secondary !py-5 group border-dashed"
                     >
-                        <Plus className="w-5 h-5 text-primary transition-transform group-hover:rotate-90" />
-                        {uiCopy.editor.addPhoto}
+                        {isCompressing ? (
+                          <div className="flex items-center justify-center gap-2">
+                             <div className="w-4 h-4 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
+                             <span className="text-primary/80">Comprimindo imagem...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Plus className="w-5 h-5 text-primary transition-transform group-hover:rotate-90" />
+                            {uiCopy.editor.addPhoto}
+                          </>
+                        )}
                     </button>
                   </UpgradeToUnlock>
                 </div>
@@ -352,15 +383,16 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
                   </div>
                 </div>
                 <UpgradeToUnlock isFeatureAllowed={features.allowYoutube} message={uiCopy.editor.youtubeUpgradeMessage}>
-                  <div className="w-full min-w-0">
-                    <label htmlFor="youtubeUrl" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.youtubeLabel}</label>
-                    <div className="relative group w-full min-w-0">
-                      <input type="text" id="youtubeUrl" value={localData.youtubeUrl} onChange={(e) => updateLocalData('youtubeUrl', e.target.value)} placeholder={uiCopy.editor.youtubePlaceholder}
-                        className="input-elite pr-14 !py-5 !w-full !min-w-0" disabled={!features.allowYoutube}
-                      />
-                      <Music className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                    </div>
-                  </div>
+                  <EliteInput
+                    label={uiCopy.editor.youtubeLabel}
+                    id="youtubeUrl"
+                    value={localData.youtubeUrl}
+                    onChange={(e) => updateLocalData('youtubeUrl', e.target.value)}
+                    placeholder={uiCopy.editor.youtubePlaceholder}
+                    disabled={!features.allowYoutube}
+                    icon={Music}
+                    containerClassName="w-full min-w-0"
+                  />
                 </UpgradeToUnlock>
               </div>
             </AccordionSection>
@@ -375,15 +407,16 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
               <div className="space-y-6 w-full min-w-0">
                 <UpgradeToUnlock isFeatureAllowed={features.allowPasswordProtection} message={uiCopy.editor.passwordUpgradeMessage}>
                   <div className="w-full min-w-0">
-                    <label htmlFor="storyPassword" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.passwordLabel}</label>
-                    <div className="relative group w-full min-w-0">
-                      <input type="password" id="storyPassword" value={localData.storyPassword} onChange={(e) => updateLocalData('storyPassword', e.target.value)}
-                        placeholder={localData.requiresPassword ? uiCopy.editor.passwordPlaceholderKeep : uiCopy.editor.passwordPlaceholderSet} 
-                        className="input-elite pr-14 !py-5 !w-full !min-w-0" 
-                        disabled={!features.allowPasswordProtection || localData.removePassword}
-                      />
-                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                    </div>
+                    <EliteInput
+                      label={uiCopy.editor.passwordLabel}
+                      id="storyPassword"
+                      type="password"
+                      value={localData.storyPassword}
+                      onChange={(e) => updateLocalData('storyPassword', e.target.value)}
+                      placeholder={localData.requiresPassword ? uiCopy.editor.passwordPlaceholderKeep : uiCopy.editor.passwordPlaceholderSet}
+                      disabled={!features.allowPasswordProtection || localData.removePassword}
+                      icon={Lock}
+                    />
                     {localData.requiresPassword && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed mb-6">
@@ -408,15 +441,16 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
                   </div>
                 </UpgradeToUnlock>
                 <UpgradeToUnlock isFeatureAllowed={features.allowCustomButton} message={uiCopy.editor.customButtonUpgradeMessage}>
-                  <div className="w-full min-w-0">
-                    <label htmlFor="entryButtonText" className="block text-[clamp(9px,0.7vw,11px)] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-1">{uiCopy.editor.entryButtonLabel}</label>
-                    <div className="relative group w-full min-w-0">
-                      <input type="text" id="entryButtonText" value={localData.entryButtonText} onChange={(e) => updateLocalData('entryButtonText', e.target.value)}
-                        placeholder={uiCopy.editor.entryButtonPlaceholder} className="input-elite pr-14 !py-5 !w-full !min-w-0" disabled={!features.allowCustomButton}
-                      />
-                      <MousePointer2 className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-primary transition-colors pointer-events-none" />
-                    </div>
-                  </div>
+                  <EliteInput
+                    label={uiCopy.editor.entryButtonLabel}
+                    id="entryButtonText"
+                    value={localData.entryButtonText}
+                    onChange={(e) => updateLocalData('entryButtonText', e.target.value)}
+                    placeholder={uiCopy.editor.entryButtonPlaceholder}
+                    disabled={!features.allowCustomButton}
+                    icon={MousePointer2}
+                    containerClassName="w-full min-w-0"
+                  />
                 </UpgradeToUnlock>
               </div>
             </AccordionSection>
@@ -424,10 +458,10 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
           
           {isDashboard && (
             <div className="flex flex-col sm:flex-row gap-4 mt-12 px-2">
-              <button 
+              <EliteButton variant="primary" 
                 onClick={handleSave} 
                 disabled={saveStatus === 'saving'} 
-                className="btn-primary flex-grow !py-5"
+                 className="flex-grow !py-5"
               >
                 {saveStatus === 'saving' ? (
                   <>
@@ -440,16 +474,14 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
                     {uiCopy.editor.save}
                   </>
                 )}
-              </button>
+              </EliteButton>
               {onCancel && (
-                <button 
+                <EliteButton variant="secondary" 
                   onClick={onCancel} 
-                  disabled={saveStatus === 'saving'} 
-                  className="btn-secondary !py-5"
-                >
-                  <X className="w-4 h-4" />
-                  {uiCopy.editor.cancel}
-                </button>
+                  disabled={saveStatus === 'saving'}
+                  icon={X}
+                  title={uiCopy.editor.cancel}
+                />
               )}
             </div>
           )}
@@ -474,15 +506,20 @@ const CounterDemo: React.FC<CounterDemoProps> = ({
               </div>
               
               {!isDashboard && (
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleScrollToPricing}
-                  className="btn-primary w-full max-w-[500px] mx-auto flex mt-12 !py-6 shadow-[0_30px_60px_-10px_rgba(255,45,85,0.4)] text-[11px]"
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                 >
-                  {uiCopy.editor.saveAndShare}
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
+                  <EliteButton
+                    variant="primary"
+                    onClick={handleScrollToPricing}
+                    className="w-full max-w-[500px] mx-auto mt-12 !py-6 shadow-[0_30px_60px_-10px_rgba(255,45,85,0.4)]"
+                  >
+                    {uiCopy.editor.saveAndShare}
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                  </EliteButton>
+                </motion.div>
               )}
             </div>
           </div>
