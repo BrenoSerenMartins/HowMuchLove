@@ -5,7 +5,8 @@ import { Heart, Share2, Download } from 'lucide-react';
 import { useNotification } from '@/app/providers/NotificationProvider';
 import { logError } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteModal from '@/shared/ui/EliteModal';
+import EliteModal from '@/shared/ui/EliteModal/index';
+import EliteButton from '@/shared/ui/EliteButton/index';
 
 interface QRCodeModalProps {
   isOpen: boolean;

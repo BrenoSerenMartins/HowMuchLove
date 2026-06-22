@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Check, Sparkles, ArrowRight } from 'lucide-react';
 import type { Plan } from '@/types';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteButton from '@/shared/ui/EliteButton';
+import EliteButton from '@/shared/ui/EliteButton/index';
 
 type PlanStatus = 'current' | 'upgrade' | 'downgrade';
 type PlanDensity = 'default' | 'compact';

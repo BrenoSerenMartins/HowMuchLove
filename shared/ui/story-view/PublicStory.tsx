@@ -139,7 +139,6 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
         >
             <div className="absolute inset-0 z-0 bg-[#050505] pointer-events-none">
                 <div className="absolute inset-0 z-[-1] lights-container opacity-40"></div>
-                <div className="bg-grain" />
                 <AnimatePresence mode="popLayout">
                     <motion.div 
                         key={activeHeroImageUrl}

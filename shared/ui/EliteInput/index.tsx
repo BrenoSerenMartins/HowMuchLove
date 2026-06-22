@@ -1,4 +1,5 @@
-import React, { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import React, { InputHTMLAttributes, TextareaHTMLAttributes, forwardRef } from 'react';
+import './styles.css';
 import { LucideIcon } from 'lucide-react';
 
 export interface EliteInputProps extends InputHTMLAttributes<HTMLInputElement> {

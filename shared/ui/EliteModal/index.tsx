@@ -74,14 +74,14 @@ const EliteModal: React.FC<EliteModalProps> = ({
       role="dialog"
     >
       <div 
-        className={`bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/[0.04] rounded-[clamp(1.5rem,4dvh,2.5rem)] shadow-2xl p-[clamp(1.5rem,4dvh,3rem)] relative overflow-hidden flex flex-col min-h-0 w-full ${maxWidthClass} text-center ring-1 ring-white/[0.02] ${className}`}
+        className={`bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/[0.04] rounded-[clamp(1.5rem,4dvh,2.5rem)] shadow-2xl relative overflow-hidden flex flex-col min-h-0 w-full ${maxWidthClass} text-center ring-1 ring-white/[0.02] ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Orbs */}
         <div className={`absolute top-0 right-0 w-32 h-32 blur-[40px] rounded-full -mr-16 -mt-16 pointer-events-none ${orbColorClass[orbColor]}`} />
         <div className={`absolute bottom-0 left-0 w-24 h-24 blur-[30px] rounded-full -ml-10 -mb-10 pointer-events-none ${orbColor === 'red' ? 'bg-red-500/5' : 'bg-amber-500/[0.03]'}`} />
 
-        <div className="relative z-10 flex flex-col flex-grow min-h-0 overflow-y-auto hide-scrollbar">
+        <div className="relative z-10 flex flex-col flex-grow min-h-0 overflow-y-auto hide-scrollbar p-[clamp(1.5rem,4dvh,3rem)]">
           {(title || icon) && (
             <header className="mb-[clamp(1.5rem,4dvh,2.5rem)] flex-shrink-0">
               {icon && (

@@ -8,15 +8,14 @@ import PublicStory from '@/shared/ui/story-view/PublicStory';
 import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteButton from '@/shared/ui/EliteButton';
-import EliteInput from '@/shared/ui/EliteInput';
+import EliteButton from '@/shared/ui/EliteButton/index';
+import EliteInput from '@/shared/ui/EliteInput/index';
 
 
 const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="h-screen w-screen flex flex-col text-white relative bg-[#050505] overflow-hidden">
       <div className="fixed inset-0 z-[-1] lights-container opacity-40"></div>
-      <div className="bg-grain" />
       <main className="flex-grow relative z-10">
         {children}
       </main>

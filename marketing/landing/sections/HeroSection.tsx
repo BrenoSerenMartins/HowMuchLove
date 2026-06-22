@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteButton from '@/shared/ui/EliteButton';
+import EliteButton from '@/shared/ui/EliteButton/index';
 
 
 const HeroSection: React.FC = () => {

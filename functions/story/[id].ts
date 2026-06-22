@@ -3,7 +3,16 @@ interface Env {
   SUPABASE_ANON_KEY: string;
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+interface OnRequestContext<EnvShape> {
+  request: Request;
+  env: EnvShape;
+  params: Record<string, string>;
+  next: () => Promise<Response>;
+}
+
+declare const HTMLRewriter: any;
+
+export const onRequest = async (context: OnRequestContext<Env>) => {
   const { request, env, params } = context;
   const id = params.id as string;
 

@@ -129,8 +129,6 @@ const DashboardPage: React.FC = () => {
   return (
     <PageWrapper>
       <div className="relative">
-        {/* Texture Layer - Old Film Romance */}
-        <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.25] bg-grain mix-blend-overlay" />
         
         {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
         {isActiveStory && heroImages.length > 0 && createPortal(

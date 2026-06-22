@@ -52,8 +52,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
         },
         glowPulse: {
-          '0%': { opacity: '0.4', filter: 'blur(10px)' },
-          '100%': { opacity: '0.8', filter: 'blur(20px)' },
+          '0%': { opacity: '0.4', transform: 'scale(0.95)' },
+          '100%': { opacity: '0.8', transform: 'scale(1.05)' },
         },
       },
       boxShadow: {

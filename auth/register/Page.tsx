@@ -6,8 +6,8 @@ import { useNavigate } from '@/app/hooks/useNavigate';
 import { useFormValidator } from '@/app/hooks/useFormValidator';
 import { validateRequired, validateEmail, validatePassword } from '@/shared/lib/validators';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteButton from '@/shared/ui/EliteButton';
-import EliteInput from '@/shared/ui/EliteInput';
+import EliteButton from '@/shared/ui/EliteButton/index';
+import EliteInput from '@/shared/ui/EliteInput/index';
 
 
 const RegisterPage: React.FC = () => {

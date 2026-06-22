@@ -1,0 +1,20 @@
+@tailwind components;
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary font-black uppercase tracking-[0.2em] text-[clamp(9px,1.5vw,11px)] py-[clamp(0.9rem,2.5dvh,1.25rem)] px-[clamp(1.5rem,4vw,2rem)] rounded-2xl transition-all duration-150 ease-out inline-flex items-center justify-center gap-3 border-none cursor-pointer;
+  }
+  .btn-primary:hover {
+    @apply scale-[1.02] shadow-[0_15px_30px_-5px_rgba(255,45,85,0.4)];
+    background-color: var(--primary-hover);
+  }
+  .btn-primary:active { @apply scale-[0.98]; }
+
+  .btn-secondary {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-[clamp(9px,1.5vw,11px)] py-[clamp(0.9rem,2.5dvh,1.25rem)] px-[clamp(1.5rem,4vw,2rem)] rounded-2xl transition-all duration-150 ease-out inline-flex items-center justify-center gap-3 cursor-pointer;
+  }
+  .btn-secondary:hover {
+    @apply scale-[1.02] bg-white/10 border-white/20 shadow-[0_15px_30px_-5px_rgba(255,255,255,0.1)];
+  }
+  .btn-secondary:active { @apply scale-[0.98]; }
+}

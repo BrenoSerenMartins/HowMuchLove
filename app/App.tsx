@@ -34,7 +34,6 @@ const App: React.FC = () => {
     <NavigationProvider>
       <AuthProvider>
         <NotificationProvider>
-          <div className="bg-grain" />
           <Main />
         </NotificationProvider>
       </AuthProvider>

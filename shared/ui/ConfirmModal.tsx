@@ -1,6 +1,6 @@
 import React from 'react';
 import EliteModal from './EliteModal';
-import EliteButton from '@/shared/ui/EliteButton';
+import EliteButton from '@/shared/ui/EliteButton/index';
 
 
 interface ConfirmModalProps {

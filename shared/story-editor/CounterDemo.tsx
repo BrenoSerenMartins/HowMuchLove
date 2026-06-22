@@ -28,8 +28,8 @@ import type { LoveStoryData, StoryImage, PlanFeatures } from '@/types';
 import { resolvePlanCapabilities } from '@/shared/lib/plans';
 import { uiCopy } from '@/shared/lib/ui-copy';
 import imageCompression from 'browser-image-compression';
-import EliteButton from '@/shared/ui/EliteButton';
-import EliteInput from '@/shared/ui/EliteInput';
+import EliteButton from '@/shared/ui/EliteButton/index';
+import EliteInput from '@/shared/ui/EliteInput/index';
 
 
 registerLocale('pt-BR', ptBR);

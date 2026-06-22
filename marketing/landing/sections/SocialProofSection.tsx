@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, ArrowRight } from 'lucide-react';
 import { uiCopy } from '@/shared/lib/ui-copy';
-import EliteButton from '@/shared/ui/EliteButton';
+import EliteButton from '@/shared/ui/EliteButton/index';
 
 
 interface TestimonialCardProps {
