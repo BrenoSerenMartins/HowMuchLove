@@ -21,15 +21,15 @@ import PublicStory from '@/shared/ui/story-view/PublicStory';
 // --- Styled Dashboard Page ---
 const DashboardPage: React.FC = () => {
   const { user, saveStory, loadStory, planFeatures } = useAuth();
-  const { setIsDirty, navigate, setPreviewMode } = useNavigate();
+  const { setIsDirty, navigate, setPreviewMode, route } = useNavigate();
   const { addToast } = useNotification();
   const [storyData, setStoryData] = useState<LoveStoryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving'>('idle');
   const [shareLink, setShareLink] = useState<string | null>(null);
-  const [isPreviewing, setIsPreviewing] = useState(false);
+  const isPreviewing = route === '/dashboard/preview';
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const isEditing = route === '/dashboard/edit';
   const [editorPreviewData, setEditorPreviewData] = useState<LoveStoryData | null>(null);
   
   const generateShareLink = (userId: string) => {
@@ -82,7 +82,7 @@ const DashboardPage: React.FC = () => {
       }
       setIsDirty(false);
       addToast(uiCopy.dashboard.saveSuccess, 'success');
-      setIsEditing(false);
+      navigate('/dashboard');
     } catch (error) {
       addToast(getErrorMessage(error, uiCopy.dashboard.saveError), 'error');
     } finally {
@@ -112,7 +112,7 @@ const DashboardPage: React.FC = () => {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => setIsPreviewing(false)}
+            onClick={() => navigate('/dashboard')}
             className="fixed top-8 left-8 z-[110] btn-secondary group !bg-black/60 !backdrop-blur-xl border-white/10 shadow-2xl pointer-events-auto"
           >
             <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -225,7 +225,7 @@ const DashboardPage: React.FC = () => {
                           <CounterDemo
                           initialData={storyData}
                           onSave={handleSaveStory}
-                          onCancel={() => setIsEditing(false)}
+                          onCancel={() => navigate('/dashboard')}
                           saveStatus={saveStatus}
                           isDashboard
                           onDirty={() => setIsDirty(true)}
@@ -238,8 +238,8 @@ const DashboardPage: React.FC = () => {
                       <div className="space-y-[clamp(2rem,6vh,10rem)] max-w-4xl mx-auto w-full">
                           <DashboardSummary 
                             storyData={storyData!} 
-                            onEdit={() => setIsEditing(true)} 
-                            onPreview={() => setIsPreviewing(true)}
+                            onEdit={() => navigate('/dashboard/edit')} 
+                            onPreview={() => navigate('/dashboard/preview')}
                           />
                           
                           {shareLink && (

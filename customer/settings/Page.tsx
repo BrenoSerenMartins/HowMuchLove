@@ -17,38 +17,55 @@ import SettingsSection from './components/SettingsSection';
 
 const SettingsPage: React.FC = () => {
   const { user, logout } = useAuth();
-  const { navigate } = useNavigate();
+  const { navigate, route } = useNavigate();
   const { addToast } = useNotification();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPlansLoading, setIsPlansLoading] = useState(false);
   const [plans, setPlans] = useState<PlanFromDB[]>([]);
-  const [activeSection, setActiveSection] = useState('profile');
+  
+  const cleanRoute = route.split('?')[0].split('#')[0];
+  const activeSection = cleanRoute === '/settings' ? 'profile' : cleanRoute.split('/').pop() || 'profile';
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedPlans = await fetchAllPlans();
-        if (fetchedPlans) {
-          setPlans(fetchedPlans);
-        }
-      } catch (error) {
-        logError('customer/settings/Page.fetchInitialData', error);
-        addToast(getErrorMessage(error, uiCopy.common.unexpectedError), 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-
     if (window.location.hash.includes('pricing-section')) {
-      setActiveSection('billing');
+      navigate('/settings/billing');
       setTimeout(() => {
         const element = document.getElementById('pricing-section');
         if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 300);
     }
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (activeSection !== 'billing') return;
+    if (plans.length > 0) return;
+
+    let cancelled = false;
+
+    const fetchPlans = async () => {
+      setIsPlansLoading(true);
+      try {
+        const fetchedPlans = await fetchAllPlans();
+        if (!cancelled && fetchedPlans) {
+          setPlans(fetchedPlans);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          logError('customer/settings/Page.fetchPlans', error);
+          addToast(getErrorMessage(error, uiCopy.common.unexpectedError), 'error');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsPlansLoading(false);
+        }
+      }
+    };
+
+    fetchPlans();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSection, plans.length, addToast]);
 
   const handleLogout = () => {
     logout();
@@ -82,15 +99,14 @@ const SettingsPage: React.FC = () => {
     const checkoutPlanId = searchParams.get('checkoutPlanId');
     const checkoutPlanName = searchParams.get('checkoutPlanName');
     
-    if (checkoutPlanId && checkoutPlanName && !isLoading) {
-      setActiveSection('billing');
+    if (checkoutPlanId && checkoutPlanName) {
+      navigate('/settings/billing');
       handlePlanSelected({ id: Number(checkoutPlanId), name: checkoutPlanName, amount: 0 });
       window.history.replaceState(null, '', '/settings');
     }
-  }, [isLoading]);
+  }, [navigate]);
 
   if (!user) return null;
-  if (isLoading) return <div className="flex items-center justify-center py-32"><LoadingSpinner /></div>;
 
   const currentPlanLabel = user?.plan || uiCopy.account.noPlanActive;
 
@@ -102,7 +118,7 @@ const SettingsPage: React.FC = () => {
           <aside className="lg:h-full flex flex-col">
             <SettingsSidebar 
                 activeSection={activeSection}
-                onSectionChange={setActiveSection}
+                onSectionChange={(section) => navigate(section === 'profile' ? '/settings' : `/settings/${section}`)}
                 onLogout={handleLogout}
                 onBack={() => navigate('/dashboard')}
                 userName={user.name}
@@ -159,6 +175,11 @@ const SettingsPage: React.FC = () => {
                             description="Escolha o nível de acesso e desbloqueie todo o potencial da sua cápsula do tempo."
                         >
                             <div className="space-y-[clamp(1rem,3vh,2rem)] h-full overflow-y-auto custom-scrollbar pr-2">
+                                {isPlansLoading && plans.length === 0 ? (
+                                  <div className="min-h-[24rem] flex items-center justify-center">
+                                    <LoadingSpinner />
+                                  </div>
+                                ) : null}
                                 {/* Current Plan */}
                                 <div className="flex items-center justify-between p-[clamp(1.5rem,4vw,3rem)] rounded-[clamp(2rem,4vw,3rem)] bg-gradient-to-br from-primary/[0.06] to-amber-500/[0.02] border border-primary/20 group overflow-hidden relative shrink-0">
                                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 blur-3xl pointer-events-none" />

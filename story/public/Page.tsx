@@ -9,6 +9,7 @@ import LoadingSpinner from '@/shared/ui/LoadingSpinner';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { uiCopy } from '@/shared/lib/ui-copy';
 import EliteButton from '@/shared/ui/EliteButton/index';
+import NotFoundPage from '@/app/pages/NotFoundPage';
 import EliteInput from '@/shared/ui/EliteInput/index';
 
 
@@ -213,7 +214,10 @@ const StoryPage: React.FC = () => {
   }
 
   if (error) {
-    const isNotFound = errorKind === 'notFound';
+    if (errorKind === 'notFound') {
+      return <NotFoundPage />;
+    }
+    
     return (
       <PageWrapper>
         <motion.div 
@@ -226,7 +230,7 @@ const StoryPage: React.FC = () => {
             <ShieldAlert className="w-[clamp(2rem,4vw,2.5rem)] h-[clamp(2rem,4vw,2.5rem)]" />
           </div>
           <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-white leading-none tracking-tighter mb-[clamp(1rem,3dvh,1.5rem)] uppercase">
-            {isNotFound ? uiCopy.story.notFoundTitle : uiCopy.story.loadErrorTitle}
+            {uiCopy.story.loadErrorTitle}
           </h1>
           <p className="text-[clamp(14px,2vw,16px)] text-slate-400 font-medium leading-relaxed font-mono tracking-widest uppercase">{error}</p>
         </motion.div>

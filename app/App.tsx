@@ -26,7 +26,7 @@ const StoryPage = React.lazy(() => import('../story/public/Page'));
 const PaymentSuccessPage = React.lazy(() => import('../customer/billing/success/Page'));
 const PaymentFailurePage = React.lazy(() => import('../customer/billing/failure/Page'));
 const PaymentPendingPage = React.lazy(() => import('../customer/billing/pending/Page'));
-
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 const shellBackgroundImage = '/images/main-background.avif';
 
 const App: React.FC = () => {
@@ -139,13 +139,20 @@ const Main: React.FC = () => {
     case '/reset-password': pageComponent = <ResetPasswordPage />; break;
     case '/terms': pageComponent = <TermsPage />; break;
     case '/privacy': pageComponent = <PrivacyPage />; break;
-    case '/dashboard': pageComponent = user ? <DashboardPage /> : <HomePage />; break;
-    case '/settings': pageComponent = user ? <SettingsPage /> : <HomePage />; break;
+    case '/dashboard': 
+    case '/dashboard/edit':
+    case '/dashboard/preview':
+      pageComponent = user ? <DashboardPage /> : <HomePage />; break;
+    case '/settings': 
+    case '/settings/profile':
+    case '/settings/billing':
+    case '/settings/security':
+      pageComponent = user ? <SettingsPage /> : <HomePage />; break;
     case '/payment-success': pageComponent = <PaymentSuccessPage />; break;
     case '/payment-failure': pageComponent = <PaymentFailurePage />; break;
     case '/payment-pending': pageComponent = <PaymentPendingPage />; break;
-    case '/':
-    default: pageComponent = <HomePage />; break;
+    case '/': pageComponent = <HomePage />; break;
+    default: pageComponent = <NotFoundPage />; break;
   }
 
   const showHeaderFooter = !isPreviewMode && !['/login', '/register', '/forgot-password', '/reset-password'].includes(route);
@@ -153,6 +160,13 @@ const Main: React.FC = () => {
   const isPublicHome = !user && route === '/';
   const showBottomNavBar = (isProtected || isPublicHome) && !isPreviewMode;
   const isHomePage = route === '/';
+  const pageTransitionKey = route.startsWith('/settings')
+    ? '/settings'
+    : route.startsWith('/dashboard')
+      ? '/dashboard'
+      : route.startsWith('/story/')
+        ? '/story'
+        : route;
 
   return (
     <div className="min-h-screen flex flex-col text-white relative selection:bg-primary selection:text-white overflow-x-hidden">
@@ -204,7 +218,7 @@ const Main: React.FC = () => {
         
         <AnimatePresence mode="wait">
           <motion.div
-            key={route}
+            key={pageTransitionKey}
             initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -10, filter: 'blur(10px)' }}
