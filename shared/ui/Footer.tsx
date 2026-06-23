@@ -12,6 +12,8 @@ const Footer: React.FC = () => {
               src="/images/logo.avif"
               alt="HowMuchLove Logo"
               className="max-h-5 w-auto opacity-50 hover:opacity-100 transition-opacity"
+              loading="lazy"
+              decoding="async"
               width="400"
               height="66"
             />

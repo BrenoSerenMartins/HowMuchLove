@@ -129,7 +129,7 @@ const DashboardPage: React.FC = () => {
   return (
     <PageWrapper>
       <div className="relative">
-        
+        <div className="bg-grain fixed" />
         {/* Cinematic Background Layer - Liquid & Breathing - Portal to Body for Zero Clipping */}
         {isActiveStory && heroImages.length > 0 && createPortal(
            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-60 animate-fade-in">
@@ -157,6 +157,7 @@ const DashboardPage: React.FC = () => {
                         <img 
                             src={img.image_url} 
                             alt="" 
+                            decoding="async"
                             className="w-full h-full object-cover blur-[80px]"
                         />
                     </motion.div>
@@ -181,6 +182,8 @@ const DashboardPage: React.FC = () => {
                           <img 
                               src={heroImages[0].image_url} 
                               alt="" 
+                              fetchpriority="high"
+                              decoding="async"
                               className="absolute inset-0 w-full h-full object-cover opacity-70 blur-[2px] scale-110 transition-transform duration-[25s] group-hover:scale-100"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/20 z-10" />

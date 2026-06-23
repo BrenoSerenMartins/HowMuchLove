@@ -61,6 +61,7 @@ const Header: React.FC<HeaderProps> = ({ handleScrollTo: handleScrollToProp, onL
                 alt="HowMuchLove Logo"
                 className="max-h-4 md:max-h-5 w-auto brightness-125 opacity-80 group-hover:opacity-100 transition-opacity"
                 fetchpriority="high"
+                decoding="async"
                 width="400"
                 height="66"
               />

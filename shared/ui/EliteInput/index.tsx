@@ -1,6 +1,6 @@
-import React, { InputHTMLAttributes, TextareaHTMLAttributes, forwardRef } from 'react';
+import React, { InputHTMLAttributes, TextareaHTMLAttributes, useState } from 'react';
 import './styles.css';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Eye, EyeOff } from 'lucide-react';
 
 export interface EliteInputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** Label text displayed above the input */
@@ -62,11 +62,13 @@ const EliteInput: React.FC<EliteInputProps> = ({
   ...props
 }) => {
   const inputId = id || props.name;
+  const [showPassword, setShowPassword] = useState(false);
   const s = sizeMap[size];
 
   const containerStyle: React.CSSProperties = maxWidth ? { maxWidth } : {};
 
-  const inputClasses = `input-elite ${s.input} ${Icon ? s.paddingRight : ''} ${error ? '!border-red-500/50' : ''} ${className}`;
+  const hasRightIcon = !!Icon || (!multiline && props.type === 'password');
+  const inputClasses = `input-elite ${s.input} ${hasRightIcon ? s.paddingRight : ''} ${error ? '!border-red-500/50' : ''} ${className}`;
 
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -90,9 +92,23 @@ const EliteInput: React.FC<EliteInputProps> = ({
             className={inputClasses}
             aria-invalid={!!error}
             {...props}
+            type={props.type === 'password' && showPassword ? 'text' : props.type}
           />
         )}
-        {Icon && (
+        {props.type === 'password' && !multiline ? (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className={`absolute ${s.iconRight} top-1/2 -translate-y-1/2 text-slate-600 hover:text-primary transition-colors focus:outline-none`}
+            title={showPassword ? "Ocultar senha" : "Ver senha"}
+          >
+            {showPassword ? (
+              <EyeOff className={s.icon} />
+            ) : (
+              <Eye className={s.icon} />
+            )}
+          </button>
+        ) : Icon && (
           <Icon className={`absolute ${s.iconRight} ${multiline ? 'top-[clamp(1rem,2.5dvh,1.25rem)]' : 'top-1/2 -translate-y-1/2'} ${s.icon} text-slate-600 transition-colors pointer-events-none ${error ? 'text-red-400' : 'group-focus-within:text-primary'}`} />
         )}
       </div>

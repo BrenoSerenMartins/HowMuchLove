@@ -37,7 +37,9 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, author, detail
         <img 
           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
           src={`https://i.pravatar.cc/100?u=${author}`} 
-          alt={author} 
+          alt={author}
+          loading="lazy"
+          decoding="async"
         />
       </div>
       <div className="ml-4">

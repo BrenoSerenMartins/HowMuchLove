@@ -34,6 +34,7 @@ const App: React.FC = () => {
     <NavigationProvider>
       <AuthProvider>
         <NotificationProvider>
+          <div className="bg-grain fixed" />
           <Main />
         </NotificationProvider>
       </AuthProvider>
@@ -102,6 +103,8 @@ const Main: React.FC = () => {
           src={shellBackgroundImage}
           alt=""
           aria-hidden="true"
+          decoding="async"
+          fetchpriority="high"
           className="w-full h-full object-cover object-center opacity-20"
           style={{
             filter: 'blur(40px) brightness(0.3)',
@@ -158,6 +161,8 @@ const Main: React.FC = () => {
           src={shellBackgroundImage}
           alt=""
           aria-hidden="true"
+          decoding="async"
+          fetchpriority="high"
           className="w-full h-full object-cover object-center opacity-30"
           style={{
             filter: 'blur(50px) brightness(0.4)',

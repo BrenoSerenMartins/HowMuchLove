@@ -80,6 +80,8 @@ const StoryHero: React.FC<StoryHeroProps> = ({
                 <img
                   src={images?.[topImageIndex]?.image_url || activeHeroImageUrl || backgroundImageUrl}
                   alt=""
+                  fetchpriority="high"
+                  decoding="async"
                   className="h-full w-full object-cover object-center"
                 />
               </div>

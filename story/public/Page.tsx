@@ -16,6 +16,7 @@ const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="h-screen w-screen flex flex-col text-white relative bg-[#050505] overflow-hidden">
       <div className="fixed inset-0 z-[-1] lights-container opacity-40"></div>
+      <div className="bg-grain fixed" />
       <main className="flex-grow relative z-10">
         {children}
       </main>
@@ -166,6 +167,8 @@ const StoryPage: React.FC = () => {
                 <img 
                   src={storyData.images?.[0]?.image_url} 
                   alt="" 
+                  fetchpriority="high"
+                  decoding="async"
                   className="w-full h-full object-cover opacity-30 blur-2xl scale-110"
                 />
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-3xl" />

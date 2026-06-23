@@ -139,6 +139,7 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
         >
             <div className="absolute inset-0 z-0 bg-[#050505] pointer-events-none">
                 <div className="absolute inset-0 z-[-1] lights-container opacity-40"></div>
+                <div className="bg-grain fixed" />
                 <AnimatePresence mode="popLayout">
                     <motion.div 
                         key={activeHeroImageUrl}
@@ -151,6 +152,8 @@ const PublicStory: React.FC<PublicStoryProps> = ({ storyData, hasEntered, isMute
                         <img 
                             src={activeHeroImageUrl} 
                             alt="" 
+                            fetchpriority="high"
+                            decoding="async"
                             className="w-full h-full object-cover blur-3xl scale-110" 
                         />
                     </motion.div>

@@ -98,7 +98,7 @@ const SortableImage: React.FC<{ image: StoryImage; onDelete: (id: number) => voi
                 <GripVertical className="w-4 h-4" />
             </button>
             <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/20 mx-4 shadow-[0_0_15px_rgba(255,45,85,0.1)]">
-                <img src={image.image_url} alt="Thumbnail" className="w-full h-full object-cover" />
+                <img src={image.image_url} alt="Thumbnail" loading="lazy" decoding="async" className="w-full h-full object-cover" />
             </div>
             <span className="flex-grow text-[11px] font-black uppercase tracking-widest text-slate-400 truncate group-hover:text-slate-300 transition-colors">{uiCopy.editor.imageItem}</span>
             <button 
